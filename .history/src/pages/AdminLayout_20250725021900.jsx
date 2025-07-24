@@ -15,12 +15,11 @@ const AdminLayout = () => {
           {adminLinks.map((link) => {
             return (
               <NavLink
-                key={link.name}
                 to={link.path}
-                className={({ isActive }) =>
-                  `flex py-2 px-3 rounded-md items-center gap-2 transition-all duration-200 hover:bg-gray-500/20 ${
-                    isActive ? "bg-gray-500/30 text-white" : "text-gray-300"
-                  }`
+                className={(isActive) =>
+                  isActive
+                    ? "flex py-2 px-3 rounded-md items-center gap-2 hover:bg-gray-500/20 transition-all duration-200"
+                    : "bg-red-100"
                 }
               >
                 {link.icon}

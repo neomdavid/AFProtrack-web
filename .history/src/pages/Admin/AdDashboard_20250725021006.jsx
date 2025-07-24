@@ -47,7 +47,7 @@ const AdDashboard = () => {
           description={"Certificates awaiting review"}
           subdescription={"24hr avg response time"}
           iconBgColor={"bg-[#EB8918]"}
-          icon={<ClockUserIcon size={25} weight="fill" color="white" />}
+          icon={<ClockUserIcon size={23} weight="fill" color="white" />}
         />
       </div>
     </div>

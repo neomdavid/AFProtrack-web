@@ -1,5 +1,4 @@
 import {
-  ClockUserIcon,
   GraduationCapIcon,
   TrendUpIcon,
   UsersIcon,
@@ -16,7 +15,7 @@ const AdDashboard = () => {
           AFProTrack Training Management System
         </p>
       </div>
-      <div className="flex flex-wrap gap-4">
+      <div className="flex gap-4">
         <DashboardCard
           title={"Total Personnel"}
           number={"3,000"}
@@ -34,20 +33,12 @@ const AdDashboard = () => {
           icon={<GraduationCapIcon size={23} weight="fill" color="white" />}
         />
         <DashboardCard
-          title={"Pending Validation"}
+          title={"Completion Rate"}
           number={"90%"}
           description={"Overall program completion"}
           subdescription={"+5% improvement"}
           iconBgColor={"bg-[#9E4195]"}
           icon={<TrendUpIcon size={23} weight="fill" color="white" />}
-        />
-        <DashboardCard
-          title={"Pending Validation"}
-          number={"50"}
-          description={"Certificates awaiting review"}
-          subdescription={"24hr avg response time"}
-          iconBgColor={"bg-[#EB8918]"}
-          icon={<ClockUserIcon size={25} weight="fill" color="white" />}
         />
       </div>
     </div>
