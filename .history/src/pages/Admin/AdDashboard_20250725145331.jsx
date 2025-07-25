@@ -9,8 +9,6 @@ import {
 } from "@phosphor-icons/react";
 import React, { useState } from "react";
 import { DashboardCard } from "../../components";
-import ProgramsTab from "../../components/Admin/ProgramsTab";
-import CompletionTab from "../../components/Admin/CompletionTab";
 
 const AdDashboard = () => {
   const [activeTab, setActiveTab] = useState("programs");
@@ -78,7 +76,35 @@ const AdDashboard = () => {
           Training Completion
         </button>
       </div>
-      {activeTab === "programs" ? <ProgramsTab /> : <CompletionTab />}
+      <div className="flex flex-col gap-8">
+        <div className="flex gap-4">
+          <DashboardCard
+            title="Total Trainings"
+            number="67"
+            icon={<PersonSimpleRunIcon size={31} weight="fill" color="white" />}
+            iconBgColor={"bg-[#272262]"}
+          />
+          <DashboardCard
+            title="Total Schools"
+            number="8"
+            icon={<WarehouseIcon size={31} color="white" />}
+            iconBgColor={"bg-[#E5B700]"}
+          />
+        </div>
+        <div className="flex gap-2">
+          <div className="flex flex-col gap-1">
+            <p className="font-semibold">Search</p>
+            <input className="bg-white/90 border w-70  rounded-md border-gray-300 p-2" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <p className="font-semibold">Filter</p>
+            <div className="relative">
+              <select className="bg-white/90 border w-70 appearance-none  rounded-md border-gray-300 p-2" />
+              <CaretDownIcon className="absolute" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

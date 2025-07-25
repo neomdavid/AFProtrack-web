@@ -1,19 +1,13 @@
 import {
-  CaretDownIcon,
   ClockUserIcon,
   GraduationCapIcon,
-  PersonSimpleRunIcon,
   TrendUpIcon,
   UsersIcon,
-  WarehouseIcon,
 } from "@phosphor-icons/react";
-import React, { useState } from "react";
+import React from "react";
 import { DashboardCard } from "../../components";
-import ProgramsTab from "../../components/Admin/ProgramsTab";
-import CompletionTab from "../../components/Admin/CompletionTab";
 
 const AdDashboard = () => {
-  const [activeTab, setActiveTab] = useState("programs");
   return (
     <div className="flex flex-col">
       <div className="flex flex-col gap-1 mb-8">
@@ -22,7 +16,7 @@ const AdDashboard = () => {
           AFProTrack Training Management System
         </p>
       </div>
-      <div className="flex flex-wrap gap-4 mb-14">
+      <div className="flex flex-wrap gap-4 mb-15">
         <DashboardCard
           title={"Total Personnel"}
           number={"3,000"}
@@ -40,7 +34,7 @@ const AdDashboard = () => {
           icon={<GraduationCapIcon size={23} weight="fill" color="white" />}
         />
         <DashboardCard
-          title={"Completion Rate"}
+          title={"Pending Validation"}
           number={"90%"}
           description={"Overall program completion"}
           subdescription={"+5% improvement"}
@@ -56,29 +50,11 @@ const AdDashboard = () => {
           icon={<ClockUserIcon size={25} weight="fill" color="white" />}
         />
       </div>
-      <div className="flex flex-wrap mb-8">
-        <button
-          onClick={() => setActiveTab("programs")}
-          className={` w-70 flex justify-center border-3 shadow-sm rounded-sm bg-white py-2 px-2  border-gray-200 ${
-            activeTab === "programs"
-              ? "border-[3px] border-primary text-primary z-4 font-bold"
-              : "hover:bg-gray-100 transition-all duration-100 hover:cursor-pointer"
-          }`}
-        >
+      <div className="flex w-[50%]">
+        <button className="flex-1 flex justify-center border-3 shadow-sm bg-white py-2  border-gray-200">
           Training Programs
         </button>
-        <button
-          onClick={() => setActiveTab("completion")}
-          className={` w-70 flex justify-center border-3 shadow-sm rounded-sm bg-white py-2 px-2  border-gray-200 ml-[-2px] ${
-            activeTab !== "programs"
-              ? "border-primary text-primary z-4  font-bold"
-              : "hover:bg-gray-100 transition-all duration-100 hover:cursor-pointer"
-          }`}
-        >
-          Training Completion
-        </button>
       </div>
-      {activeTab === "programs" ? <ProgramsTab /> : <CompletionTab />}
     </div>
   );
 };

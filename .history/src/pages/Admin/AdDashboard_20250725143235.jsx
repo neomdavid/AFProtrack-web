@@ -1,5 +1,4 @@
 import {
-  CaretDownIcon,
   ClockUserIcon,
   GraduationCapIcon,
   PersonSimpleRunIcon,
@@ -9,8 +8,6 @@ import {
 } from "@phosphor-icons/react";
 import React, { useState } from "react";
 import { DashboardCard } from "../../components";
-import ProgramsTab from "../../components/Admin/ProgramsTab";
-import CompletionTab from "../../components/Admin/CompletionTab";
 
 const AdDashboard = () => {
   const [activeTab, setActiveTab] = useState("programs");
@@ -40,7 +37,7 @@ const AdDashboard = () => {
           icon={<GraduationCapIcon size={23} weight="fill" color="white" />}
         />
         <DashboardCard
-          title={"Completion Rate"}
+          title={"Pending Validation"}
           number={"90%"}
           description={"Overall program completion"}
           subdescription={"+5% improvement"}
@@ -56,10 +53,10 @@ const AdDashboard = () => {
           icon={<ClockUserIcon size={25} weight="fill" color="white" />}
         />
       </div>
-      <div className="flex flex-wrap mb-8">
+      <div className="flex w-[50%] mb-13">
         <button
           onClick={() => setActiveTab("programs")}
-          className={` w-70 flex justify-center border-3 shadow-sm rounded-sm bg-white py-2 px-2  border-gray-200 ${
+          className={`flex-1 flex justify-center border-3 shadow-sm rounded-sm bg-white py-2 px-2  border-gray-200 ${
             activeTab === "programs"
               ? "border-[3px] border-primary text-primary z-4 font-bold"
               : "hover:bg-gray-100 transition-all duration-100 hover:cursor-pointer"
@@ -69,7 +66,7 @@ const AdDashboard = () => {
         </button>
         <button
           onClick={() => setActiveTab("completion")}
-          className={` w-70 flex justify-center border-3 shadow-sm rounded-sm bg-white py-2 px-2  border-gray-200 ml-[-2px] ${
+          className={`flex-1 flex justify-center border-3 shadow-sm rounded-sm bg-white py-2 px-2  border-gray-200 ml-[-2px] ${
             activeTab !== "programs"
               ? "border-primary text-primary z-4  font-bold"
               : "hover:bg-gray-100 transition-all duration-100 hover:cursor-pointer"
@@ -78,7 +75,20 @@ const AdDashboard = () => {
           Training Completion
         </button>
       </div>
-      {activeTab === "programs" ? <ProgramsTab /> : <CompletionTab />}
+      <div className="flex gap-4">
+        <DashboardCard
+          title="Total Trainings"
+          number="67"
+          icon={<PersonSimpleRunIcon size={34} weight="fill" color="white" />}
+          iconBgColor={"bg-[#272262]"}
+        />
+        <DashboardCard
+          title="Total Schools"
+          number="8"
+          icon={<WarehouseIcon size={34} color="white" />}
+          iconBgColor={"bg-[#E5B700]"}
+        />
+      </div>
     </div>
   );
 };

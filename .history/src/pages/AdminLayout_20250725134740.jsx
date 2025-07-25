@@ -6,8 +6,8 @@ const AdminLayout = () => {
   return (
     <main className="bg-base-400 h-screen ">
       <nav className="fixed text-white w-58  flex flex-col left-0 top-0 bottom-0 py-10 px-4 bg-primary">
-        <div className="flex items-center flex-col mb-2">
-          <img src={logo} className="w-33" />
+        <div className="flex items-center flex-col">
+          <img src={logo} className="w-35 bg-red-100" />
         </div>
 
         <div className="flex flex-col text-sm gap-2">

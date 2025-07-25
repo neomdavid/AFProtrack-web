@@ -9,8 +9,6 @@ import {
 } from "@phosphor-icons/react";
 import React, { useState } from "react";
 import { DashboardCard } from "../../components";
-import ProgramsTab from "../../components/Admin/ProgramsTab";
-import CompletionTab from "../../components/Admin/CompletionTab";
 
 const AdDashboard = () => {
   const [activeTab, setActiveTab] = useState("programs");
@@ -78,7 +76,6 @@ const AdDashboard = () => {
           Training Completion
         </button>
       </div>
-      {activeTab === "programs" ? <ProgramsTab /> : <CompletionTab />}
     </div>
   );
 };
