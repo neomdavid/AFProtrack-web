@@ -16,7 +16,7 @@ const AdDashboard = () => {
   const [activeTab, setActiveTab] = useState("programs");
   return (
     <div className="flex flex-col">
-      <div className="flex flex-col gap-1 mb-10">
+      <div className="flex flex-col gap-1 mb-12">
         <h1 className="font-bold text-3xl">System Administration</h1>
         <p className="text-sm text-gray-600">
           AFProTrack Training Management System

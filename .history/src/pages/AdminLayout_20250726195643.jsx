@@ -48,14 +48,17 @@ const AdminLayout = () => {
         </div>
       </nav>
 
-      <div className="ml-58 flex-1 p-8 bg-base-400 relative ">
+      {/* Main Content */}
+      <div className="ml-58 flex-1 p-8 bg-base-400 relative h-[200vh]">
+        {/* Scroll Observer Target */}
         <div ref={sectionRef} className="h-1" />
 
-        <div className="fixed top-6 right-8 z-50">
+        {/* Fixed container on top right — doesn't affect layout */}
+        <div className="fixed top-7 right-8 z-50">
           <div
             className={`
         transition-all duration-300 ease-in-out px-4 py-3 flex items-center gap-1.5 rounded-3xl
-        ${isSticky ? "backdrop-blur-sm shadow  bg-white/20" : "bg-transparent"}
+        ${isSticky ? "backdrop-blur-md shadow  bg-white/70" : "bg-transparent"}
       `}
           >
             <UserCircleIcon size={40} />
@@ -70,6 +73,7 @@ const AdminLayout = () => {
           </div>
         </div>
 
+        {/* Actual Page Content */}
         <Outlet />
       </div>
     </main>

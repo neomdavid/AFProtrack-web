@@ -48,9 +48,12 @@ const AdminLayout = () => {
         </div>
       </nav>
 
-      <div className="ml-58 flex-1 p-8 bg-base-400 relative ">
+      {/* Main Content */}
+      <div className="ml-58 flex-1 p-8 bg-base-400 relative h-[200vh] ">
+        {/* Scroll Observer Target */}
         <div ref={sectionRef} className="h-1" />
 
+        {/* Fixed container on top right — doesn't affect layout */}
         <div className="fixed top-6 right-8 z-50">
           <div
             className={`
@@ -70,6 +73,7 @@ const AdminLayout = () => {
           </div>
         </div>
 
+        {/* Actual Page Content */}
         <Outlet />
       </div>
     </main>

@@ -7,10 +7,11 @@ import { ShieldIcon, UserCircleIcon } from "@phosphor-icons/react";
 const AdminLayout = () => {
   const [isSticky, setIsSticky] = useState(false);
   const sectionRef = useRef();
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => setIsSticky(!entry.isIntersecting),
-      { threshold: 1.0 }
+      { threshold: 1.0, rootMargin: "-1px 0px 0px 0px" }
     );
 
     if (sectionRef.current) {
@@ -23,9 +24,8 @@ const AdminLayout = () => {
   }, []);
 
   return (
-    <main className="bg-base-400 h-screen flex">
-      {/* Sidebar */}
-      <nav className="fixed text-white w-58 flex flex-col top-0 bottom-0 py-10 px-4 bg-primary bg-gradient-to-b from-primary to-[#8DB684]">
+    <main className="bg-base-400 h-screen">
+      <nav className="fixed text-white w-58 flex flex-col left-0 top-0 bottom-0 py-10 px-4 bg-primary bg-linear-to-b from-primary to-[#8DB684]">
         <div className="flex items-center flex-col mb-2">
           <img src={logo} className="w-33" />
         </div>
@@ -48,29 +48,32 @@ const AdminLayout = () => {
         </div>
       </nav>
 
-      <div className="ml-58 flex-1 p-8 bg-base-400 relative ">
-        <div ref={sectionRef} className="h-1" />
+      <div className="ml-58 p-8 relative bg-base-400">
+        <Outlet />
 
-        <div className="fixed top-6 right-8 z-50">
-          <div
-            className={`
-        transition-all duration-300 ease-in-out px-4 py-3 flex items-center gap-1.5 rounded-3xl
-        ${isSticky ? "backdrop-blur-sm shadow  bg-white/20" : "bg-transparent"}
-      `}
-          >
-            <UserCircleIcon size={40} />
-            <div className="flex flex-col gap-1">
-              <p className="text-xs text-gray-700 mb-[-3px]">Lt.</p>
-              <p className="text-sm flex font-light">Surname, FN</p>
-              <div className="flex items-center gap-0.5 text-success text-xs bg-base-success px-2 py-1 ml-[-3px] border border-success rounded-2xl">
-                <ShieldIcon size={13} weight="bold" />
-                <p className="mb-[-2px] text-[11px]">Admin Access</p>
-              </div>
+        {/* Observer target — invisible spacer */}
+        <div ref={sectionRef} className="h-1"></div>
+
+        {/* Sticky section */}
+        <section
+          className={`sticky top-0 flex items-center gap-1.5 right-0 z-50 px-4 py-2 ml-auto transition-all duration-300 w-fit rounded-md
+            ${
+              isSticky
+                ? "backdrop-blur-md bg-white/70 shadow border border-gray-200"
+                : ""
+            }
+          `}
+        >
+          <UserCircleIcon size={40} />
+          <div className="flex flex-col gap-1">
+            <p className="text-xs text-gray-700 mb-[-3px]">Lt.</p>
+            <p className="text-sm flex font-light">Surname, FN</p>
+            <div className="flex items-center gap-0.5 text-success text-xs bg-base-success px-2 py-1 ml-[-3px] border border-success rounded-2xl">
+              <ShieldIcon size={13} weight="bold" />
+              <p className="mb-[-2px] text-[11px]">Admin Access</p>
             </div>
           </div>
-        </div>
-
-        <Outlet />
+        </section>
       </div>
     </main>
   );

@@ -48,16 +48,20 @@ const AdminLayout = () => {
         </div>
       </nav>
 
-      <div className="ml-58 flex-1 p-8 bg-base-400 relative ">
-        <div ref={sectionRef} className="h-1" />
+      {/* Main Content */}
+      <div className="ml-58 flex-1 p-8 bg-base-400 relative h-[200vh]">
+        {/* Spacer to detect scroll */}
+        <div ref={sectionRef} className="h-1 bg-red-100" />
 
-        <div className="fixed top-6 right-8 z-50">
-          <div
-            className={`
-        transition-all duration-300 ease-in-out px-4 py-3 flex items-center gap-1.5 rounded-3xl
-        ${isSticky ? "backdrop-blur-sm shadow  bg-white/20" : "bg-transparent"}
-      `}
-          >
+        {/* Sticky User Section */}
+        <div
+          className={` bg-red-100 z-50 flex justify-end transition-all duration-300 ${
+            isSticky
+              ? "sticky right-5 top-7 backdrop-blur-md bg-white/70 shadow border border-gray-200 rounded-md"
+              : "absolute right-5 top-7"
+          }`}
+        >
+          <div className="flex items-center gap-1.5 px-4 py-2">
             <UserCircleIcon size={40} />
             <div className="flex flex-col gap-1">
               <p className="text-xs text-gray-700 mb-[-3px]">Lt.</p>
@@ -70,6 +74,7 @@ const AdminLayout = () => {
           </div>
         </div>
 
+        {/* Page Content */}
         <Outlet />
       </div>
     </main>
