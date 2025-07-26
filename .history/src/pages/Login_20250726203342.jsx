@@ -3,7 +3,7 @@ import logo from "../assets/AFProTrack_logo.png";
 const Login = () => {
   return (
     <main className="bg-base h-screen w-screen flex justify-around items-center bg-primary">
-      <section className="flex flex-col px-10 gap-2 py-8 rounded-xl bg-base-400 text-primary min-w-130 max-w-130">
+      <section className="flex flex-col px-10 gap-2 py-8 rounded-xl bg-base-400 text-primary min-w-130 max-w-150">
         <div className="self-center shadow-sm mb-1 bg-primary flex items-center justify-around p-1 rounded-full">
           <img src={logo} className="h-22 w-22" />
         </div>
@@ -41,7 +41,7 @@ const Login = () => {
           </Link>
           <button
             type="submit"
-            className="mb-6 bg-primary text-md py-2.5 rounded-2xl text-white font-semibold hover:cursor-pointer hover:bg-primary/90 transition-all duration-200"
+            className="bg-primary text-md py-2.5 rounded-2xl text-white font-semibold"
           >
             Login
           </button>

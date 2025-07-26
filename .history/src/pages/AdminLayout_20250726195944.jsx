@@ -58,7 +58,7 @@ const AdminLayout = () => {
         ${isSticky ? "backdrop-blur-sm shadow  bg-white/20" : "bg-transparent"}
       `}
           >
-            <UserCircleIcon size={39} />
+            <UserCircleIcon size={38} />
             <div className="flex flex-col gap-1">
               <p className="text-xs text-gray-700 mb-[-3px]">Lt.</p>
               <p className="text-sm flex font-light">Surname, FN</p>

@@ -41,7 +41,7 @@ const Login = () => {
           </Link>
           <button
             type="submit"
-            className="mb-6 bg-primary text-md py-2.5 rounded-2xl text-white font-semibold hover:cursor-pointer hover:bg-primary/90 transition-all duration-200"
+            className="mb-6 bg-primary text-md py-2.5 rounded-2xl text-white font-semibold"
           >
             Login
           </button>

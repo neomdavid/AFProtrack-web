@@ -54,11 +54,11 @@ const AdminLayout = () => {
         <div className="fixed top-6 right-8 z-50">
           <div
             className={`
-        transition-all duration-300 ease-in-out px-4 py-3 flex items-center gap-1.5 rounded-3xl
+        transition-all duration-300 ease-in-out px-4 py-3 flex items-center gap-2 rounded-3xl
         ${isSticky ? "backdrop-blur-sm shadow  bg-white/20" : "bg-transparent"}
       `}
           >
-            <UserCircleIcon size={39} />
+            <UserCircleIcon size={38} />
             <div className="flex flex-col gap-1">
               <p className="text-xs text-gray-700 mb-[-3px]">Lt.</p>
               <p className="text-sm flex font-light">Surname, FN</p>

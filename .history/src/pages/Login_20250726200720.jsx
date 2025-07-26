@@ -1,0 +1,14 @@
+import logo from "../assets/AFProTrack_logo.png";
+const Login = () => {
+  return (
+    <main className="bg-base h-screen w-screen flex justify-around items-center bg-primary">
+      <section className="flex flex-col px-6 py-4 rounded-lg bg-base-400 text=primary">
+        <div className="bg-base flex items-center justify-around p-2">
+          <img src={logo} />
+        </div>
+      </section>
+    </main>
+  );
+};
+
+export default Login;

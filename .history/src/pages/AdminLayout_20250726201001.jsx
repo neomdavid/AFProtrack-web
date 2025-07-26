@@ -48,7 +48,7 @@ const AdminLayout = () => {
         </div>
       </nav>
 
-      <div className="ml-58 flex-1 p-8 bg-base-400 relative ">
+      <div className="ml-58 flex-1 p-8 bg-base-500 relative ">
         <div ref={sectionRef} className="h-1" />
 
         <div className="fixed top-6 right-8 z-50">
