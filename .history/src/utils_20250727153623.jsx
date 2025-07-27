@@ -42,7 +42,7 @@ const fullDatasets = [
     type: "bar",
     label: "Trainings",
     data: [12, 19, 3, 5, 2, 3, 4, 6, 2, 8, 1, 5],
-    backgroundColor: "#557CB7",
+    backgroundColor: "#4444b5",
   },
   {
     type: "line",

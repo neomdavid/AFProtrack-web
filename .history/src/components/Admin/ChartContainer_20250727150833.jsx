@@ -24,10 +24,7 @@ const ChartContainer = () => {
       {/* Chart */}
       <MixedChart labels={visibleLabels} datasets={visibleDatasets} />
       {/* Slider */}
-      <div
-        style={{ width: "calc(100vw - 350px)" }}
-        className="bg-white mt-1 2xl:max-w-350  "
-      >
+      <div style={{ width: "calc(100vw - 350px)" }} className="bg-white mt-1  ">
         <DateRangeSlider range={range} setRange={setRange} />
       </div>
     </div>

@@ -26,7 +26,7 @@ const ChartContainer = () => {
       {/* Slider */}
       <div
         style={{ width: "calc(100vw - 350px)" }}
-        className="bg-white mt-1 2xl:max-w-350  "
+        className="bg-white mt-1 2xl:max-w-300  "
       >
         <DateRangeSlider range={range} setRange={setRange} />
       </div>
