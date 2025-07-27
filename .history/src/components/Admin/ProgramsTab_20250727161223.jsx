@@ -7,7 +7,6 @@ import {
 } from "@phosphor-icons/react";
 import MixedChart from "./MixedChart";
 import ChartContainer from "./ChartContainer";
-import MetricsList from "./MetricsList";
 
 const ProgramsTab = () => {
   return (
@@ -55,7 +54,18 @@ const ProgramsTab = () => {
         </div>
       </div>
       <ChartContainer />
-      <MetricsList />
+      <section className="flex gap-2">
+        <div className="flex flex-col gap-2 bg-white">
+          <p className="text-xl font-semibold">Performance Metrics</p>
+          <div className="flex flex-col">
+            <div className="flex justify-between">
+              <p>Program Completion Rate</p>
+              <p>89%</p>
+            </div>
+            <div className="h-4 w-full rounded-lg "></div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

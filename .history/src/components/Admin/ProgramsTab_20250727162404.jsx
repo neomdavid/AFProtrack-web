@@ -7,7 +7,6 @@ import {
 } from "@phosphor-icons/react";
 import MixedChart from "./MixedChart";
 import ChartContainer from "./ChartContainer";
-import MetricsList from "./MetricsList";
 
 const ProgramsTab = () => {
   return (
@@ -55,7 +54,53 @@ const ProgramsTab = () => {
         </div>
       </div>
       <ChartContainer />
-      <MetricsList />
+      <section className="flex gap-8">
+        <div className="flex flex-1 flex-col gap-10 bg-white p-4 border-3 shadow-sm border-gray-200 rounded-sm">
+          <p className="text-xl font-semibold mb-2">Performance Metrics</p>
+
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between mb-1 ">
+              <p className="font-semibold text-md text-black/80">
+                Program Completion Rate
+              </p>
+              <p className="font-semibold text-md text-black/80">89%</p>
+            </div>
+
+            <div className="h-5 w-full rounded-full bg-gray-200 overflow-hidden">
+              <div
+                className="h-full bg-[#3a77d2] rounded-full transition-all duration-500"
+                style={{ width: "89%" }}
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between mb-1 ">
+              <p className="font-semibold text-md text-black/80">
+                Program Completion Rate
+              </p>
+              <p className="font-semibold text-md text-black/80">89%</p>
+            </div>
+
+            <div className="h-5 w-full rounded-full bg-gray-200 overflow-hidden">
+              <div
+                className="h-full bg-[#3a77d2] rounded-full transition-all duration-500"
+                style={{ width: "89%" }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-1 flex-col gap-2 bg-white">
+          <p className="text-xl font-semibold">Performance Metrics</p>
+          <div className="flex flex-col">
+            <div className="flex justify-between">
+              <p>Program Completion Rate</p>
+              <p>19%</p>
+            </div>
+            <div className="h-4 w-full rounded-lg "></div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
