@@ -16,7 +16,7 @@ const AdDashboard = () => {
   const [activeTab, setActiveTab] = useState("programs");
   return (
     <div className="flex flex-col">
-      <div className="flex flex-wrap gap-4 mb-14">
+      <div className="flex justify-center flex-wrap gap-4 mb-14">
         <DashboardCard
           title={"Total Personnel"}
           number={"3,000"}

@@ -12,7 +12,7 @@ const adminLinks = [
   },
   {
     name: "Training Data Overview",
-    path: "training-data-overview",
+    path: "training-data",
     icon: <PresentationChartIcon size={17} />,
   },
   {
@@ -73,7 +73,9 @@ const fullDatasets = [
 ];
 
 function getCurrentPage(location) {
-  return adminLinks.find((link) => location.pathname.includes(link.path));
+  adminLinks.find((link) => {
+    return location.pathname.includes(link.path) || "";
+  });
 }
 
 export { adminLinks, fullLabels, fullDatasets, getCurrentPage };

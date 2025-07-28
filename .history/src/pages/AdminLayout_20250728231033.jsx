@@ -55,7 +55,7 @@ const AdminLayout = () => {
         <div className="flex flex-col gap-1 mb-10">
           <h1 className="font-bold text-3xl">System Administration</h1>
           <p className="text-sm  text-gray-600">
-            AFProTrack Training Management System &nbsp;{">>"} &nbsp;
+            AFProTrack Training Management System &nbsp;{">>"}{" "}
             {getCurrentPage(location).name}
           </p>
         </div>

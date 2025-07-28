@@ -12,7 +12,7 @@ const adminLinks = [
   },
   {
     name: "Training Data Overview",
-    path: "training-data-overview",
+    path: "training-data",
     icon: <PresentationChartIcon size={17} />,
   },
   {
