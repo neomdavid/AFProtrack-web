@@ -3,7 +3,6 @@ import { NavLink, Outlet } from "react-router-dom";
 import { adminLinks } from "../utils";
 import logo from "../assets/AFProTrack_logo.png";
 import { ShieldIcon, UserCircleIcon } from "@phosphor-icons/react";
-import FloatingProfile from "../components/Admin/FloatingProfile";
 
 const AdminLayout = () => {
   const [isSticky, setIsSticky] = useState(false);
@@ -50,7 +49,7 @@ const AdminLayout = () => {
       </nav>
 
       <div className="ml-58 flex-1 p-8 bg-base-400 relative min-h-screen ">
-        <FloatingProfile sectionRef={sectionRef} isSticky={isSticky} />
+        <div ref={sectionRef} className="h-1" />
 
         <Outlet />
       </div>

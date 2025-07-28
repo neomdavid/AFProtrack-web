@@ -5,19 +5,19 @@ const STEP = 1;
 const MIN = 0;
 const MAX = 11;
 
-const fullLabels = [
-  "2025-01-10",
-  "2025-02-14",
-  "2025-03-12",
-  "2025-04-09",
-  "2025-05-14",
-  "2025-06-11",
-  "2025-07-09",
-  "2025-08-13",
-  "2025-09-10",
-  "2025-10-15",
-  "2025-11-12",
-  "2025-12-10",
+const monthLabels = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
 export default function DateRangeSlider({ range, setRange }) {

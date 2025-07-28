@@ -50,7 +50,7 @@ const AdminLayout = () => {
       </nav>
 
       <div className="ml-58 flex-1 p-8 bg-base-400 relative min-h-screen ">
-        <FloatingProfile sectionRef={sectionRef} isSticky={isSticky} />
+        <FloatingProfile />
 
         <Outlet />
       </div>
