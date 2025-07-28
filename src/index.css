@@ -1,16 +1,46 @@
 @import "tailwindcss";
+@plugin "daisyui";
 
-@theme {
+
+
+@plugin "daisyui/theme" {
+  name: "afprotrack";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-base-100: #faf9f6;
+  --color-base-200: #f5f5f5;
+  --color-base-300: #e5e5e5;
+  --color-base-content: #1f2937;
   --color-primary: #3e503a;
+  --color-primary-content: #ffffff;
   --color-secondary: #dcb207;
-  --color-base-400: #faf9f6;
-
+  --color-secondary-content: #ffffff;
+  --color-accent: #1c8f1c;
+  --color-accent-content: #ffffff;
+  --color-neutral: #565656;
+  --color-neutral-content: #ffffff;
+  --color-info: #3abff8;
+  --color-info-content: #ffffff;
   --color-success: #1c8f1c;
-  --color-base-success: #ddf6db;
+  --color-success-content: #ffffff;
+  --color-warning: #fbbd23;
+  --color-warning-content: #ffffff;
+  --color-error: #f87272;
+  --color-error-content: #ffffff;
 
-  --color-gray: #565656;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
 
-  --font-inter: "Inter", sans-serif;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  --border: 1px;
+
+  --depth: 1;
+  --noise: 0;
 }
 
 * {

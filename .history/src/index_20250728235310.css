@@ -1,0 +1,16 @@
+@theme {
+  --color-primary: #3e503a;
+  --color-secondary: #dcb207;
+  --color-base-400: #faf9f6;
+
+  --color-success: #1c8f1c;
+  --color-base-success: #ddf6db;
+
+  --color-gray: #565656;
+
+  --font-inter: "Inter", sans-serif;
+}
+
+* {
+  font-family: "Inter", sans-serif;
+}
