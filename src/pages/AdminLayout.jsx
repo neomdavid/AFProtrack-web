@@ -25,7 +25,7 @@ const AdminLayout = () => {
   const location = useLocation();
   console.log(location);
   return (
-    <main className="bg-base-400  flex">
+    <main className="bg-base-400 flex">
       {/* Sidebar */}
       <nav className="fixed text-white w-[230px] z-[10000] flex flex-col top-0 bottom-0 py-10 px-4 bg-primary bg-gradient-to-b from-primary to-[#8DB684]">
         <div className="flex items-center flex-col mb-2">
@@ -50,7 +50,7 @@ const AdminLayout = () => {
         </div>
       </nav>
 
-      <div className="ml-58 flex-1 p-8 bg-base-400 relative min-h-screen ">
+      <div className="ml-58 flex-1 p-8 bg-base-400 relative min-h-screen admin-content">
         <FloatingProfile sectionRef={sectionRef} isSticky={isSticky} />
         <div className="flex flex-col gap-1 mb-10">
           <h1 className="font-bold text-3xl">System Administration</h1>
