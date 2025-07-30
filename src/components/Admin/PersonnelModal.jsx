@@ -122,7 +122,6 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
                     </td>
                     <td>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{record.attendance}%</span>
                         <div className="w-16 bg-base-300 rounded-full h-2">
                           <div 
                             className={`h-2 rounded-full ${
@@ -133,11 +132,12 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
                             style={{ width: `${record.attendance}%` }}
                           ></div>
                         </div>
+                        <span className="text-sm font-medium">{record.attendance}%</span>
+
                       </div>
                     </td>
                     <td>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{record.progress}%</span>
                         <div className="w-16 bg-base-300 rounded-full h-2">
                           <div 
                             className={`h-2 rounded-full ${
@@ -148,6 +148,8 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
                             style={{ width: `${record.progress}%` }}
                           ></div>
                         </div>
+                        <span className="text-sm font-medium">{record.progress}%</span>
+
                       </div>
                     </td>
                   </tr>

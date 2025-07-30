@@ -1,0 +1,84 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+@theme {
+  --color-primary: #3e503a;
+  --color-secondary: #dcb207;
+  --color-base-400: #faf9f6;
+
+  --color-success: #1c8f1c;
+  --color-base-success: #ddf6db;
+
+  --color-gray: #565656;
+
+  --font-inter: "Inter", sans-serif;
+}
+
+@plugin "daisyui/theme" {
+  name: "afprotrack";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-base-100: #faf9f6;
+  --color-base-200: #f5f5f5;
+  --color-base-300: #e5e5e5;
+  --color-base-400: #faf9f6;
+  --color-base-content: #1f2937;
+  --color-primary: #3e503a;
+  --color-primary-content: #ffffff;
+  --color-secondary: #dcb207;
+  --color-secondary-content: #ffffff;
+  --color-accent: #1c8f1c;
+  --color-accent-content: #ffffff;
+  --color-neutral: #565656;
+  --color-neutral-content: #ffffff;
+  --color-info: #3052d9;
+  --color-info-content: #b8c6ff;
+  --color-success: #1c8f1c;
+  --color-success-content: #ffffff;
+  --color-warning: #fbbd23;
+  --color-warning-content: #ffffff;
+  --color-error: #f87272;
+  --color-error-content: #ffffff;
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  --border: 1px;
+
+  --depth: 1;
+  --noise: 0;
+}
+
+* {
+  font-family: "Inter", sans-serif;
+}
+
+/* Override modal backdrop to prevent interference with custom colors */
+.modal::backdrop {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Ensure base-400 color is preserved */
+.bg-base-400 {
+  background-color: #faf9f6 !important;
+}
+
+/* Ensure admin content area maintains its background */
+.admin-content {
+  background-color: #faf9f6 !important;
+}
+
+/* Custom zebra table colors */
+.table-zebra tbody tr:nth-child(even) {
+  background-color: #f0f4f0b1 !important; /* Light green tint */
+}
+
+.table-zebra tbody tr:nth-child(odd) {
+  background-color: #ffffff !important; /* White */
+}

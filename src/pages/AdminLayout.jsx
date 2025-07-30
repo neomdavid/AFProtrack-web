@@ -1,13 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { adminLinks, getCurrentPage } from "../utils";
 import logo from "../assets/AFProTrack_logo.png";
-import { ShieldIcon, UserCircleIcon } from "@phosphor-icons/react";
+import { ShieldIcon, UserCircleIcon, SignOutIcon } from "@phosphor-icons/react";
 import FloatingProfile from "../components/Admin/FloatingProfile";
+import { useAuth } from "../context/AuthContext";
 
 const AdminLayout = () => {
   const [isSticky, setIsSticky] = useState(false);
   const sectionRef = useRef();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => setIsSticky(!entry.isIntersecting),
@@ -47,6 +50,17 @@ const AdminLayout = () => {
               <p>{link.name}</p>
             </NavLink>
           ))}
+          
+          <button
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
+            className="flex py-2 px-3 rounded-md items-center gap-2 transition-all duration-200 hover:bg-white/20 text-gray-100 mt-auto"
+          >
+            <SignOutIcon size={17} />
+            <p>Logout</p>
+          </button>
         </div>
       </nav>
 
