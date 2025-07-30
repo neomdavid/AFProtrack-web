@@ -35,7 +35,8 @@ const AdminLayout = () => {
           <img src={logo} className="w-33" />
         </div>
 
-        <div className="flex flex-col text-sm gap-2">
+        <div className="flex flex-col text-sm  justify-between  h-full">
+          <div className="flex flex-col gap-2">
           {adminLinks.map((link) => (
             <NavLink
               key={link.name}
@@ -50,13 +51,14 @@ const AdminLayout = () => {
               <p>{link.name}</p>
             </NavLink>
           ))}
+          </div>
           
           <button
             onClick={() => {
               logout();
               navigate('/login');
             }}
-            className="flex py-2 px-3 rounded-md items-center gap-2 transition-all duration-200 hover:bg-white/20 text-gray-100 mt-auto"
+            className="flex py-2 px-3 rounded-md items-center gap-2 transition-all duration-200 hover:cursor-pointer hover:bg-white/20 text-gray-100 mt-auto"
           >
             <SignOutIcon size={17} />
             <p>Logout</p>

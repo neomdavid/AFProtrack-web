@@ -10,6 +10,7 @@ import ColorTest from "./components/ColorTest";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import AdAccounts from "./pages/Admin/AdAccounts";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -27,8 +28,13 @@ function App() {
               <Route index path="dashboard" element={<AdDashboard />} />
               <Route
                 index
-                path="training-data-overview"
+                path="training_data_overview"
                 element={<AdTrainingOverview />}
+              />
+                  <Route
+                index
+                path="accounts"
+                element={<AdAccounts/>}
               />
             </Route>
             <Route path="/trainer" element={<StaffLayout />} />

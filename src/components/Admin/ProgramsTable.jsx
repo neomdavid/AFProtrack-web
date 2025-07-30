@@ -42,14 +42,14 @@ const ProgramsTable = ({ onViewDetails }) => {
             <td>{program.duration}</td>
             <td>{program.instructor}</td>
             <td>{program.participants}</td>
-            <td className="flex justify-center items-center ">
+            <td className="flex justify-center items-center  ">
               <div className="bg-info text-info-content border border-info-content px-3 py-0.5 rounded-full font-semibold text-[12px] ">
                 {program.status}
               </div>
             </td>
             <td>
               <button
-                className="w-full bg-primary text-[12px] text-white py-1 mt-[-1px] rounded-sm hover:bg-primary/80 hover:cursor-pointer transition-all duration-300"
+                className="px-4 bg-primary text-[12px] text-white py-1 mt-[-1px] rounded-sm hover:bg-primary/80 hover:cursor-pointer transition-all duration-300"
                 onClick={() => onViewDetails(program)}
               >
                 View Details

@@ -79,7 +79,7 @@ const PersonnelTable = ({ data }) => {
               <th>Name</th>
               <th>Email</th>
               <th>Rank</th>
-              <th>Trainings Attended</th>
+              <th className="text-center">Trainings Attended</th>
               <th className="text-center">Action</th>
             </tr>
           </thead>
@@ -96,10 +96,10 @@ const PersonnelTable = ({ data }) => {
                 <td>{person.name}</td>
                 <td>{person.email}</td>
                 <td>{person.rank}</td>
-                <td>{person.trainingsAttended}</td>
+                <td className="text-center">{person.trainingsAttended}</td>
                 <td className="flex justify-center items-center">
                   <button
-                    className="w-full bg-primary text-[12px] text-white py-1 rounded-sm hover:bg-primary/80 hover:cursor-pointer transition-all duration-300"
+                    className=" bg-primary text-[12px] text-white py-1 px-3 rounded-sm hover:bg-primary/80 hover:cursor-pointer transition-all duration-300"
                     onClick={() => handleViewDetails(person)}
                   >
                     View Details

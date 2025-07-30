@@ -2,6 +2,7 @@ import {
   CheckerboardIcon,
   ClipboardIcon,
   PresentationChartIcon,
+  UsersIcon,
 } from "@phosphor-icons/react";
 
 const adminLinks = [
@@ -12,13 +13,14 @@ const adminLinks = [
   },
   {
     name: "Training Data Overview",
-    path: "training-data-overview",
+    path: "training_data_overview",
     icon: <PresentationChartIcon size={17} />,
   },
+
   {
-    name: "Generate Reports",
-    path: "generate-reports",
-    icon: <ClipboardIcon size={17} />,
+    name: "Account Management",
+    path: "accounts",
+    icon: <UsersIcon size={17}  />,
   },
 ];
 
@@ -156,8 +158,102 @@ const trainingData = [
   },
 ];
 
+// Dummy personnel data for WebAccessTab
+const personnelData = [
+  {
+    id: 1,
+    afpId: "AFP-2024-001",
+    name: "Neo David",
+    email: "neodavid@gmail.com",
+    unit: "1st Infantry Division",
+    branchOfService: "Army",
+    avatar: "ND",
+  },
+  {
+    id: 2,
+    afpId: "AFP-2024-002",
+    name: "Maria Santos",
+    email: "msantos@afp.mil.ph",
+    unit: "2nd Infantry Division",
+    branchOfService: "Army",
+    avatar: "MS",
+  },
+  {
+    id: 3,
+    afpId: "AFP-2024-003",
+    name: "Juan Dela Cruz",
+    email: "jdelacruz@afp.mil.ph",
+    unit: "3rd Infantry Division",
+    branchOfService: "Army",
+    avatar: "JC",
+  },
+  {
+    id: 4,
+    afpId: "AFP-2024-004",
+    name: "Ana Reyes",
+    email: "areyes@afp.mil.ph",
+    unit: "1st Infantry Division",
+    branchOfService: "Army",
+    avatar: "AR",
+  },
+  {
+    id: 5,
+    afpId: "AFP-2024-005",
+    name: "Pedro Martinez",
+    email: "pmartinez@afp.mil.ph",
+    unit: "2nd Infantry Division",
+    branchOfService: "Army",
+    avatar: "PM",
+  },
+  {
+    id: 6,
+    afpId: "AFP-2024-006",
+    name: "Carmen Lopez",
+    email: "clopez@afp.mil.ph",
+    unit: "3rd Infantry Division",
+    branchOfService: "Army",
+    avatar: "CL",
+  },
+  {
+    id: 7,
+    afpId: "AFP-2024-007",
+    name: "Roberto Garcia",
+    email: "rgarcia@afp.mil.ph",
+    unit: "1st Infantry Division",
+    branchOfService: "Army",
+    avatar: "RG",
+  },
+  {
+    id: 8,
+    afpId: "AFP-2024-008",
+    name: "Isabel Torres",
+    email: "itorres@afp.mil.ph",
+    unit: "2nd Infantry Division",
+    branchOfService: "Army",
+    avatar: "IT",
+  },
+  {
+    id: 9,
+    afpId: "AFP-2024-009",
+    name: "Miguel Rodriguez",
+    email: "mrodriguez@afp.mil.ph",
+    unit: "3rd Infantry Division",
+    branchOfService: "Army",
+    avatar: "MR",
+  },
+  {
+    id: 10,
+    afpId: "AFP-2024-010",
+    name: "Elena Fernandez",
+    email: "efernandez@afp.mil.ph",
+    unit: "1st Infantry Division",
+    branchOfService: "Army",
+    avatar: "EF",
+  },
+];
+
 function getCurrentPage(location) {
   return adminLinks.find((link) => location.pathname.includes(link.path));
 }
 
-export { adminLinks, fullLabels, fullDatasets, trainingData, getCurrentPage };
+export { adminLinks, fullLabels, fullDatasets, trainingData, personnelData, getCurrentPage };

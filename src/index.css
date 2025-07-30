@@ -40,7 +40,7 @@
   --color-success-content: #ffffff;
   --color-warning: #fbbd23;
   --color-warning-content: #ffffff;
-  --color-error: #f87272;
+  --color-error: #D21919;
   --color-error-content: #ffffff;
 
   --radius-selector: 0.5rem;
@@ -82,4 +82,8 @@
 
 .table-zebra tbody tr:nth-child(odd) {
   background-color: #ffffff !important; /* White */
+}
+
+.btn-hover {
+  @apply hover:opacity-80 transition-all duration-200 cursor-pointer;
 }
