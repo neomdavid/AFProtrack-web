@@ -2,8 +2,20 @@ import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
-import { BrowserRouter, Route, Router, Routes } from "react-router-dom";
-import { AdminLayout, Login, StaffLayout, ForgotPassword, ResetPassword } from "./pages";
+import {
+  BrowserRouter,
+  Route,
+  Router,
+  Routes,
+  Navigate,
+} from "react-router-dom";
+import {
+  AdminLayout,
+  Login,
+  StaffLayout,
+  ForgotPassword,
+  ResetPassword,
+} from "./pages";
 import AdDashboard from "./pages/Admin/AdDashboard";
 import AdTrainingOverview from "./pages/Admin/AdTrainingOverview";
 import ColorTest from "./components/ColorTest";
@@ -15,11 +27,12 @@ import AdAccounts from "./pages/Admin/AdAccounts";
 function App() {
   const [count, setCount] = useState(0);
 
-    return (
+  return (
     <div data-theme="afprotrack">
       <AuthProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
@@ -31,11 +44,7 @@ function App() {
                 path="training_data_overview"
                 element={<AdTrainingOverview />}
               />
-                  <Route
-                index
-                path="accounts"
-                element={<AdAccounts/>}
-              />
+              <Route index path="accounts" element={<AdAccounts />} />
             </Route>
             <Route path="/trainer" element={<StaffLayout />} />
           </Routes>
