@@ -35,11 +35,10 @@
   --color-neutral-content: #ffffff;
   --color-info: #b8c6ff;
   --color-info-content: #3052d9;
-
-  --color-success: #1c8f1c;
-  --color-success-content: #ffffff;
-  --color-warning: #fbbd23;
-  --color-warning-content: #ffffff;
+  --color-success: #b8d9b8;
+  --color-success-content: #1c8f1c;
+  --color-warning: #f5ecd5;
+  --color-warning-content: #ebb01e;
   --color-error: #D21919;
   --color-error-content: #ffffff;
 

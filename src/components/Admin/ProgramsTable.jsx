@@ -1,25 +1,6 @@
 import React from "react";
 
-const programs = [
-  {
-    id: "PRG-001",
-    name: "Basic Military Training",
-    duration: "12 weeks",
-    instructor: "MAJ. Rodriguez",
-    participants: "48/50",
-    status: "Ongoing",
-  },
-  {
-    id: "PRG-002",
-    name: "Advanced Leadership Course",
-    duration: "8 weeks",
-    instructor: "CAPT. Smith",
-    participants: "30/35",
-    status: "Ongoing",
-  },
-];
-
-const ProgramsTable = ({ onViewDetails }) => {
+const ProgramsTable = ({ onViewDetails, programs = [] }) => {
   return (
     <table className="table ">
       <thead className="text-black text-center">
@@ -42,11 +23,17 @@ const ProgramsTable = ({ onViewDetails }) => {
             <td>{program.duration}</td>
             <td>{program.instructor}</td>
             <td>{program.participants}</td>
-            <td className="flex justify-center items-center  ">
-              <div className="bg-info text-info-content border border-info-content px-3 py-0.5 rounded-full font-semibold text-[12px] ">
-                {program.status}
-              </div>
-            </td>
+                         <td className="flex justify-center items-center">
+               <div className={`px-3 py-0.5 rounded-full font-semibold text-[12px] border ${
+                 program.status === "Completed" 
+                   ? "bg-success text-success-content border-success-content"
+                   : program.status === "Upcoming"
+                   ? "bg-warning text-warning-content border-warning-content"
+                   : "bg-info text-info-content border-info-content"
+               }`}>
+                 {program.status}
+               </div>
+             </td>
             <td>
               <button
                 className="px-4 bg-primary text-[12px] text-white py-1 mt-[-1px] rounded-sm hover:bg-primary/80 hover:cursor-pointer transition-all duration-300"
