@@ -4,6 +4,7 @@ import { adminLinks, getCurrentPage } from "../utils";
 import logo from "../assets/AFProTrack_logo.png";
 import { ShieldIcon, UserCircleIcon, ListIcon } from "@phosphor-icons/react";
 import FloatingProfile from "../components/Admin/FloatingProfile";
+import MobileProfileDropdown from "../components/Admin/MobileProfileDropdown";
 import { useAuth } from "../context/AuthContext";
 
 const AdminLayout = () => {
@@ -44,12 +45,28 @@ const AdminLayout = () => {
       />
       
       <div className="drawer-content flex flex-col">
+        {/* Mobile Top Navigation */}
+        <div className="lg:hidden navbar bg-base-100 shadow-sm fixed top-0 left-0 right-0 z-30">
+          <div className="flex-1">
+            <label htmlFor="admin-drawer" className="btn btn-square btn-ghost">
+              <ListIcon size={24} />
+            </label>
+          </div>
+          <div className="flex-none">
+            <MobileProfileDropdown />
+          </div>
+        </div>
+
         {/* Main Content - keeping original design */}
-        <div className="flex-1 p-8 bg-base-400 relative min-h-screen">
+        <div className="flex-1 p-8 bg-base-400 relative min-h-screen lg:pt-8 pt-20">
           {/* Observer element - this should be at the top of the content */}
           <div ref={sectionRef} className="h-1" />
           
-          <FloatingProfile isSticky={isSticky} />
+          {/* Desktop Floating Profile */}
+          <div className="hidden lg:block">
+            <FloatingProfile isSticky={isSticky} />
+          </div>
+          
           <div className="flex flex-col gap-1 mb-10">
             <h1 className="font-bold text-3xl">System Administration</h1>
             <p className="text-sm text-gray-600">
@@ -62,7 +79,7 @@ const AdminLayout = () => {
       </div>
 
       {/* Sidebar Drawer */}
-      <div className="drawer-side">
+      <div className="drawer-side z-[1000]">
         <label htmlFor="admin-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
         <div className="min-h-full w-65 bg-primary bg-gradient-to-b from-primary to-[#8DB684] text-white">
           <div className="flex flex-col h-full">
