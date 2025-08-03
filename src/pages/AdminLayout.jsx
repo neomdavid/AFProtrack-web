@@ -2,25 +2,29 @@ import React, { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { adminLinks, getCurrentPage } from "../utils";
 import logo from "../assets/AFProTrack_logo.png";
-import { ShieldIcon, UserCircleIcon, SignOutIcon } from "@phosphor-icons/react";
+import { ShieldIcon, UserCircleIcon } from "@phosphor-icons/react";
 import FloatingProfile from "../components/Admin/FloatingProfile";
 import { useAuth } from "../context/AuthContext";
 
 const AdminLayout = () => {
   const [isSticky, setIsSticky] = useState(false);
   const sectionRef = useRef();
-  const { logout } = useAuth();
   const navigate = useNavigate();
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => setIsSticky(!entry.isIntersecting),
+      ([entry]) => {
+        const newStickyState = !entry.isIntersecting;
+        setIsSticky(newStickyState);
+        console.log('isSticky changed:', newStickyState);
+      },
       { threshold: 1.0 }
     );
 
     if (sectionRef.current) {
       observer.observe(sectionRef.current);
+      console.log('Observer set up for sectionRef');
     }
-
+    
     return () => {
       if (sectionRef.current) observer.unobserve(sectionRef.current);
     };
@@ -52,22 +56,14 @@ const AdminLayout = () => {
             </NavLink>
           ))}
           </div>
-          
-          <button
-            onClick={() => {
-              logout();
-              navigate('/login');
-            }}
-            className="flex py-2 px-3 rounded-md items-center gap-2 transition-all duration-200 hover:cursor-pointer hover:bg-white/20 text-gray-100 mt-auto"
-          >
-            <SignOutIcon size={17} />
-            <p>Logout</p>
-          </button>
         </div>
       </nav>
 
       <div className="ml-58 flex-1 p-8 bg-base-400 relative min-h-screen admin-content">
-        <FloatingProfile sectionRef={sectionRef} isSticky={isSticky} />
+        {/* Observer element - this should be at the top of the content */}
+        <div ref={sectionRef} className="h-1" />
+        
+        <FloatingProfile isSticky={isSticky} />
         <div className="flex flex-col gap-1 mb-10">
           <h1 className="font-bold text-3xl">System Administration</h1>
           <p className="text-sm  text-gray-600">
