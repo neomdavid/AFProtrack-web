@@ -4,15 +4,19 @@ import {
   CaretDownIcon,
   PersonSimpleRunIcon,
   WarehouseIcon,
+  PlusIcon,
 } from "@phosphor-icons/react";
 import MixedChart from "./MixedChart";
 import ChartContainer from "./ChartContainer";
 import MetricsList from "./MetricsList";
 import ProgramModal from "./ProgramModal";
+import AddProgramModal from "./AddProgramModal";
+import ProgramsTable from "./ProgramsTable";
 
 const ProgramsTab = () => {
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [addModalOpen, setAddModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterDate, setFilterDate] = useState("");
@@ -110,6 +114,13 @@ const ProgramsTab = () => {
     setFilterDate("");
   };
 
+  const handleAddProgram = (newProgram) => {
+    // In a real app, this would make an API call to add the program
+    console.log("Adding new program:", newProgram);
+    // For now, we'll just show an alert
+    alert("Program added successfully!");
+  };
+
   return (
     <div className="flex flex-col gap-8 pb-6">
       <div className="flex flex-wrap gap-4">
@@ -126,8 +137,19 @@ const ProgramsTab = () => {
           iconBgColor={"bg-[#E5B700]"}
         />
       </div>
+      <div className="flex flex-col gap-4">  
+         {/* Add New Program Button */}
+       <div className="flex justify-start items-center">
+         <button
+           onClick={() => setAddModalOpen(true)}
+           className="bg-primary text-white px-4 py-2 text-sm rounded-sm btn-sm flex items-center gap-2 btn-hover"
+         >
+           <PlusIcon size={16} />
+           Add New Program
+         </button>
+       </div>
       {/* Filter Controls */}
-      <div className="flex flex-wrap gap-2 mb-[-18px] text-[14px]">
+      <div className="flex flex-wrap gap-2 text-[14px] ">
         <div className="flex flex-col gap-1">
           <p className="font-semibold text-gray">Search</p>
           <input
@@ -176,66 +198,30 @@ const ProgramsTab = () => {
         </div>
       </div>
 
-      {/* Results Summary */}
-      <div className="mb-4 px-1">
-        <p className="text-sm text-gray-600">
-          Showing {filteredPrograms.length} of {programsData.length} programs
-          {(searchTerm || filterStatus || filterDate) && (
-            <span className="text-primary font-medium">
-              {" "}(filtered)
-            </span>
-          )}
-        </p>
-      </div>
-      <div className="overflow-x-auto rounded-box bg-white border-3 border-gray-200 py-1">
-        <table className="table w-full">
-          <thead className="text-black text-center">
-            <tr className="border-b-1 border-gray-200">
-              <th className="w-1/6">Program ID</th>
-              <th className="w-1/4">Program Name</th>
-              <th className="w-1/8">Duration</th>
-              <th className="w-1/8">Instructor</th>
-              <th className="w-1/8">Participants</th>
-              <th className="w-1/8">Status</th>
-              <th className="w-1/8">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredPrograms.map((program, idx) => (
-              <tr
-                key={program.id}
-                className="text-center border-b-1 border-gray-200 last:border-b-0"
-              >
-                <td className="font-mono text-sm">{program.id}</td>
-                <td className="text-left">{program.name}</td>
-                <td>{program.duration}</td>
-                <td>{program.instructor}</td>
-                <td>{program.participants}</td>
-                <td className="flex justify-center items-center">
-                  <div className={`px-3 py-0.5 rounded-full font-semibold text-[12px] border ${
-                    program.status === "Completed" 
-                      ? "bg-success text-success-content border-success-content"
-                      : program.status === "Upcoming"
-                      ? "bg-warning text-warning-content border-warning-content"
-                      : "bg-info text-info-content border-info-content"
-                  }`}>
-                    {program.status}
-                  </div>
-                </td>
-                <td>
-                  <button
-                    className="px-4 bg-primary text-[12px] text-white py-1 mt-[-1px] rounded-sm hover:bg-primary/80 hover:cursor-pointer transition-all duration-300"
-                    onClick={() => handleViewDetails(program)}
-                  >
-                    View Details
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+             {/* Results Summary */}
+       <div className="px-1 mb-[-2px]">
+         <p className="text-sm text-gray-600">
+           Showing {filteredPrograms.length} of {programsData.length} programs
+           {(searchTerm || filterStatus || filterDate) && (
+             <span className="text-primary font-medium">
+               {" "}(filtered)
+             </span>
+           )}
+         </p>
+       </div>
+       
+       {/* Programs Table */}
+       <ProgramsTable 
+         programs={filteredPrograms} 
+         onViewDetails={handleViewDetails}
+       />
       <ProgramModal open={modalOpen} onClose={() => setModalOpen(false)} program={selectedProgram} />
+      <AddProgramModal 
+        open={addModalOpen} 
+        onClose={() => setAddModalOpen(false)} 
+        onAdd={handleAddProgram}
+      /></div>
+          
     </div>
   );
 };

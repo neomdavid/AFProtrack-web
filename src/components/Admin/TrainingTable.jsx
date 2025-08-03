@@ -99,13 +99,13 @@ const PersonnelTable = ({ data }) => {
                 <td className="text-center">{person.trainingsAttended}</td>
                 <td className="flex justify-center items-center">
                   <button
-                    className=" bg-primary text-[12px] text-white py-1 px-3 rounded-sm hover:bg-primary/80 hover:cursor-pointer transition-all duration-300"
+                    className=" bg-primary  min-w-24.5 text-[12px] text-white py-1 px-3 rounded-sm hover:bg-primary/80 hover:cursor-pointer transition-all duration-300"
                     onClick={() => handleViewDetails(person)}
                   >
                     View Details
                   </button>
                 </td>
-              </tr>
+              </tr> 
             ))}
           </tbody>
         </table>
