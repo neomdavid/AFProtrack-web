@@ -86,3 +86,18 @@
 .btn-hover {
   @apply hover:opacity-80 transition-all duration-200 cursor-pointer;
 }
+
+
+.responsive-box {
+  width: calc(98vw - 320px);
+  max-height: 800px;
+  min-width: 400px;
+}
+
+/* Apply custom width and max-width when screen is ≥ 500px */
+@media (min-width: 1200px) {
+  .responsive-box {
+    width: calc(90vw - 320px);
+    max-width: 1200px;
+  }
+}

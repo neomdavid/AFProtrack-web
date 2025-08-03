@@ -6,7 +6,7 @@ import MetricsList from "./MetricsList";
 const CompletionTab = () => {
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <div className="flex flex-col gap-1">
           <p className="font-semibold">Search</p>
           <input

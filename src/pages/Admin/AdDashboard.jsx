@@ -55,7 +55,7 @@ const AdDashboard = () => {
           onClick={() => setActiveTab("programs")}
           className={` w-70 flex justify-center border-3 shadow-sm rounded-md bg-white py-2 px-2  border-gray-200 ${
             activeTab === "programs"
-              ? "border-[3px] border-primary text-primary z-4 font-bold"
+              ? "border-[3px] border-primary text-primary z-1 font-bold"
               : "hover:bg-gray-100 transition-all duration-100 hover:cursor-pointer"
           }`}
         >
@@ -65,7 +65,7 @@ const AdDashboard = () => {
           onClick={() => setActiveTab("completion")}
           className={` w-70 flex justify-center border-3 shadow-sm rounded-md bg-white py-2 px-2  border-gray-200 ml-[-4px] ${
             activeTab !== "programs"
-              ? "border-primary text-primary z-4  font-bold"
+              ? "border-primary text-primary z-1  font-bold"
               : "hover:bg-gray-100 transition-all duration-100 hover:cursor-pointer"
           }`}
         >

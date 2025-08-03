@@ -22,7 +22,7 @@ const fullLabels = [
 
 export default function DateRangeSlider({ range, setRange }) {
   return (
-    <div className="w-full  px-2">
+    <div className="w-full max-w-  px-2">
       <Range
         values={range}
         step={STEP}

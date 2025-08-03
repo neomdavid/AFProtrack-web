@@ -37,7 +37,7 @@ const FloatingProfile = ({ isSticky }) => {
 
   return (
     <>
-      <div className="fixed top-6 right-8 z-50" ref={dropdownRef}>
+      <div className="fixed top-6 right-8 z-20" ref={dropdownRef}>
         <div
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className={`
@@ -62,7 +62,7 @@ ${isSticky || isDropdownOpen ? "backdrop-blur-lg shadow bg-white/20" : "bg-trans
 
         {/* Dropdown Menu */}
         {isDropdownOpen && (
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
             <button
               onClick={handleViewProfile}
               className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 hover:cursor-pointer flex items-center gap-2"

@@ -14,8 +14,7 @@ const ChartContainer = () => {
 
   return (
     <div
-      style={{ width: "calc(90vw - 320px)" }}
-      className="flex flex-col items-center max-h-200 bg-white border-3 shadow-sm border-gray-200 p-2 lg:py-5 lg:px-5 rounded-sm"
+      className="responsive-box flex flex-col items-center bg-white border-3 shadow-sm border-gray-200 p-2 lg:py-5 lg:px-5 rounded-sm"
     >
       <p className="text-xl font-semibold w-full text-left mb-3">
         Training Completion Overview
@@ -25,7 +24,7 @@ const ChartContainer = () => {
       <MixedChart labels={visibleLabels} datasets={visibleDatasets} />
       {/* Slider */}
       <div
-        style={{ width: "calc(90vw - 350px)" }}
+        style={{ width: "calc(90vw - 350px)",maxWidth:'1150px' }}
         className="bg-white mt-1 2xl:max-w-350  "
       >
         <DateRangeSlider range={range} setRange={setRange} />
