@@ -114,7 +114,7 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
                     <td>{record.instructor}</td>
                     <td>
                       <span className={`badge badge-sm ${
-                        record.grade.startsWith('A') ? 'badge-success' : 
+                        record.grade.startsWith('A') ? 'bg-success' : 
                         record.grade.startsWith('B') ? 'badge-warning' : 'badge-error'
                       }`}>
                         {record.grade}
@@ -125,7 +125,7 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
                         <div className="w-16 bg-base-300 rounded-full h-2">
                           <div 
                             className={`h-2 rounded-full ${
-                              record.attendance >= 95 ? 'bg-success' :
+                              record.attendance >= 95 ? 'bg-success-content' :
                               record.attendance >= 85 ? 'bg-primary' :
                               record.attendance >= 75 ? 'bg-warning' : 'bg-error'
                             }`} 
@@ -141,7 +141,7 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
                         <div className="w-16 bg-base-300 rounded-full h-2">
                           <div 
                             className={`h-2 rounded-full ${
-                              record.progress >= 90 ? 'bg-success' :
+                              record.progress >= 90 ? 'bg-success-content' :
                               record.progress >= 80 ? 'bg-primary' :
                               record.progress >= 70 ? 'bg-warning' : 'bg-error'
                             }`} 
@@ -164,7 +164,7 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
               <p className="text-sm text-gray-600">Total Programs</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-success">A+</p>
+              <p className="text-2xl font-bold text-success-content">A+</p>
               <p className="text-sm text-gray-600">Average Grade</p>
             </div>
             <div className="text-center">
@@ -172,7 +172,7 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
               <p className="text-sm text-gray-600">Attendance Rate</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-success">90%</p>
+              <p className="text-2xl font-bold text-success-content">90%</p>
               <p className="text-sm text-gray-600">Average Progress</p>
             </div>
           </div>

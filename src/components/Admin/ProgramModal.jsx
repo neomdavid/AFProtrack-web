@@ -88,13 +88,13 @@ const ProgramModal = ({ open, onClose, program }) => {
                   <td>{t.grade}</td>
                   <td>
                     <div className="flex items-center gap-2">
-                      <progress className="progress progress-success w-24" value={t.attendance} max="100"></progress>
+                      <progress className="progress text-success-content w-24" value={t.attendance} max="100"></progress>
                       <span>{t.attendance}%</span>
                     </div>
                   </td>
                   <td>
                     <div className="flex items-center gap-2">
-                      <progress className="progress progress-success w-24" value={t.progress} max="100"></progress>
+                      <progress className="progress text-success-content w-24" value={t.progress} max="100"></progress>
                       <span>{t.progress}%</span>
                     </div>
                   </td>
