@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { canEditField, ROLES } from "../../utils/rolePermissions";
 
 const sampleTrainees = [
   {
@@ -18,10 +20,12 @@ const sampleTrainees = [
     progress: 70,
   },
 ];
+
 const handleExport = () => {
   // Mock export functionality
   alert('Exporting training records...');
 };
+
 const getInitials = (name) => {
   return name
     .split(' ')
@@ -29,7 +33,42 @@ const getInitials = (name) => {
     .join('')
     .toUpperCase();
 };
-const ProgramModal = ({ open, onClose, program }) => {
+
+const ProgramModal = ({ open, onClose, program, onEdit }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === ROLES.ADMIN;
+  const isTrainingStaff = user?.role === ROLES.TRAINING_STAFF;
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState(program || {});
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+    setEditData(program);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditData(program);
+  };
+
+  const handleSaveEdit = () => {
+    onEdit(editData);
+    setIsEditing(false);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Determine if field is editable based on role
+  const isFieldEditable = (fieldName) => {
+    return canEditField(user?.role, fieldName);
+  };
+
   if (!open || !program) return null;
 
   return (
@@ -43,15 +82,128 @@ const ProgramModal = ({ open, onClose, program }) => {
             </svg>
           </button>
         </form>
-        <h3 className="font-bold text-2xl  mb-1">{program.name}</h3>
-        <div className="mb-6 flex flex-col gap-1 text-gray">
-          <p><span className="font-semibold"></span> {program.id}</p>
-          <p><span className="font-semibold">Instructor:</span> {program.instructor}</p>
+
+        {/* Header with Edit Button */}
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h3 className="font-bold text-2xl mb-1">
+              {isEditing ? "Edit Program Details" : program.name}
+            </h3>
+            <div className="flex flex-col gap-1 text-gray">
+              <p><span className="font-semibold">Program ID:</span> {program.id}</p>
+              <p><span className="font-semibold">Instructor:</span> {program.instructor}</p>
+            </div>
+          </div>
+          {!isEditing && (isAdmin || isTrainingStaff) && (
+            <button
+              onClick={handleEditClick}
+              className="btn btn-primary btn-sm"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Edit Details
+            </button>
+          )}
         </div>
+
+        {/* Role-based notice when editing */}
+        {isEditing && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-700">
+              {isAdmin ? (
+                "You have full editing permissions as an administrator."
+              ) : isTrainingStaff ? (
+                "As training staff, you can only edit instructor, venue, time, and additional details."
+              ) : (
+                "You have limited editing permissions."
+              )}
+            </p>
+          </div>
+        )}
+
+        {/* Program Details Section */}
+        {isEditing && (
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+            <h4 className="font-semibold mb-4">Program Information</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="label">
+                  <span className="label-text font-semibold">Program Name</span>
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={editData.name || ""}
+                  onChange={handleInputChange}
+                  className={`input input-bordered w-full ${!isFieldEditable('name') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  disabled={!isFieldEditable('name')}
+                />
+              </div>
+              <div>
+                <label className="label">
+                  <span className="label-text font-semibold">Instructor</span>
+                </label>
+                <input
+                  type="text"
+                  name="instructor"
+                  value={editData.instructor || ""}
+                  onChange={handleInputChange}
+                  className={`input input-bordered w-full ${!isFieldEditable('instructor') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  disabled={!isFieldEditable('instructor')}
+                />
+              </div>
+              <div>
+                <label className="label">
+                  <span className="label-text font-semibold">Venue</span>
+                </label>
+                <input
+                  type="text"
+                  name="venue"
+                  value={editData.venue || ""}
+                  onChange={handleInputChange}
+                  className={`input input-bordered w-full ${!isFieldEditable('venue') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  disabled={!isFieldEditable('venue')}
+                />
+              </div>
+              <div>
+                <label className="label">
+                  <span className="label-text font-semibold">Time</span>
+                </label>
+                <input
+                  type="time"
+                  name="time"
+                  value={editData.time || ""}
+                  onChange={handleInputChange}
+                  className={`input input-bordered w-full ${!isFieldEditable('time') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  disabled={!isFieldEditable('time')}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Trainees Table Header Row */}
         <div className="flex items-center justify-between mb-2">
           <span className="font-semibold text-lg text-gray">List of Trainees</span>
-          <button 
+          <div className="flex gap-2">
+            {isEditing && (
+              <>
+                <button
+                  onClick={handleCancelEdit}
+                  className="btn btn-sm btn-outline"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  className="btn btn-sm btn-primary"
+                >
+                  Save Changes
+                </button>
+              </>
+            )}
+            <button 
               onClick={handleExport}
               className="btn btn-sm btn-primary"
             >
@@ -60,6 +212,7 @@ const ProgramModal = ({ open, onClose, program }) => {
               </svg>
               Export Records
             </button>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="table table-zebra">

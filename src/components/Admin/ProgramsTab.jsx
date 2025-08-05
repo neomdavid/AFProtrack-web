@@ -140,13 +140,7 @@ const ProgramsTab = () => {
       <div className="flex flex-col gap-4">  
          {/* Add New Program Button */}
        <div className="flex justify-start items-center">
-         <button
-           onClick={() => setAddModalOpen(true)}
-           className="bg-primary text-white px-4 py-2 text-sm rounded-sm btn-sm flex items-center gap-2 btn-hover"
-         >
-           <PlusIcon size={16} />
-           Add New Program
-         </button>
+        
        </div>
       {/* Filter Controls */}
       <div className="flex flex-wrap gap-2 text-[14px] ">

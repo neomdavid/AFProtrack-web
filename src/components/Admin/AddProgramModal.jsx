@@ -1,6 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { canEditField, ROLES } from "../../utils/rolePermissions";
 
-const AddProgramModal = ({ open, onClose, onAdd }) => {
+const AddProgramModal = ({ 
+  open, 
+  onClose, 
+  onAdd, 
+  onEdit, 
+  mode = "add", // "add" or "edit"
+  programData = null // For edit mode
+}) => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === ROLES.ADMIN;
+  const isTrainingStaff = user?.role === ROLES.TRAINING_STAFF;
+
   const [formData, setFormData] = useState({
     name: "",
     startDate: "",
@@ -11,6 +24,13 @@ const AddProgramModal = ({ open, onClose, onAdd }) => {
     participants: "",
     additionalDetails: ""
   });
+
+  // Load program data when in edit mode
+  useEffect(() => {
+    if (mode === "edit" && programData) {
+      setFormData(programData);
+    }
+  }, [mode, programData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -23,7 +43,11 @@ const AddProgramModal = ({ open, onClose, onAdd }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (formData.name && formData.startDate && formData.endDate && formData.instructor && formData.time && formData.venue) {
-      onAdd(formData);
+      if (mode === "edit") {
+        onEdit(formData);
+      } else {
+        onAdd(formData);
+      }
       setFormData({
         name: "",
         startDate: "",
@@ -52,7 +76,15 @@ const AddProgramModal = ({ open, onClose, onAdd }) => {
     onClose();
   };
 
+  // Determine if field is editable based on role
+  const isFieldEditable = (fieldName) => {
+    return canEditField(user?.role, fieldName);
+  };
+
   if (!open) return null;
+
+  const modalTitle = mode === "edit" ? "Edit Training Program" : "Add New Training Program";
+  const submitButtonText = mode === "edit" ? "Update Program" : "Add Program";
 
   return (
     <dialog open={open} className="modal z-[10000]">
@@ -66,7 +98,22 @@ const AddProgramModal = ({ open, onClose, onAdd }) => {
           </button>
         </form>
 
-        <h3 className="font-bold text-2xl mb-6 text-primary">Add New Training Program</h3>
+        <h3 className="font-bold text-2xl mb-6 text-primary">{modalTitle}</h3>
+
+        {/* Role-based notice */}
+        {mode === "edit" && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-700">
+              {isAdmin ? (
+                "You have full editing permissions as an administrator."
+              ) : isTrainingStaff ? (
+                "As training staff, you can only edit instructor, venue, time, and additional details."
+              ) : (
+                "You have limited editing permissions."
+              )}
+            </p>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -81,8 +128,9 @@ const AddProgramModal = ({ open, onClose, onAdd }) => {
                 value={formData.name}
                 onChange={handleInputChange}
                 placeholder="Enter program name"
-                className="input input-bordered w-full"
+                className={`input input-bordered w-full ${!isFieldEditable('name') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 required
+                disabled={!isFieldEditable('name')}
               />
             </div>
 
@@ -96,8 +144,9 @@ const AddProgramModal = ({ open, onClose, onAdd }) => {
                 name="startDate"
                 value={formData.startDate}
                 onChange={handleInputChange}
-                className="input input-bordered w-full"
+                className={`input input-bordered w-full ${!isFieldEditable('startDate') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 required
+                disabled={!isFieldEditable('startDate')}
               />
             </div>
 
@@ -111,25 +160,27 @@ const AddProgramModal = ({ open, onClose, onAdd }) => {
                 name="endDate"
                 value={formData.endDate}
                 onChange={handleInputChange}
-                className="input input-bordered w-full"
+                className={`input input-bordered w-full ${!isFieldEditable('endDate') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 required
+                disabled={!isFieldEditable('endDate')}
               />
             </div>
 
-                         {/* Time*/}
-             <div>
-               <label className="label">
-                 <span className="label-text font-semibold">Time*</span>
-               </label>
-               <input
-                 type="time"
-                 name="time"
-                 value={formData.time}
-                 onChange={handleInputChange}
-                 className="input input-bordered w-full"
-                 required
-               />
-             </div>
+            {/* Time*/}
+            <div>
+              <label className="label">
+                <span className="label-text font-semibold">Time*</span>
+              </label>
+              <input
+                type="time"
+                name="time"
+                value={formData.time}
+                onChange={handleInputChange}
+                className={`input input-bordered w-full ${!isFieldEditable('time') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                required
+                disabled={!isFieldEditable('time')}
+              />
+            </div>
 
             {/* Instructor*/}
             <div>
@@ -142,26 +193,28 @@ const AddProgramModal = ({ open, onClose, onAdd }) => {
                 value={formData.instructor}
                 onChange={handleInputChange}
                 placeholder="Enter instructor name"
-                className="input input-bordered w-full"
+                className={`input input-bordered w-full ${!isFieldEditable('instructor') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 required
+                disabled={!isFieldEditable('instructor')}
               />
             </div>
 
-                         {/* Venue*/}
-             <div>
-               <label className="label">
-                 <span className="label-text font-semibold">Venue*</span>
-               </label>
-               <input
-                 type="text"
-                 name="venue"
-                 value={formData.venue}
-                 onChange={handleInputChange}
-                 placeholder="Enter venue"
-                 className="input input-bordered w-full"
-                 required
-               />
-             </div>
+            {/* Venue*/}
+            <div>
+              <label className="label">
+                <span className="label-text font-semibold">Venue*</span>
+              </label>
+              <input
+                type="text"
+                name="venue"
+                value={formData.venue}
+                onChange={handleInputChange}
+                placeholder="Enter venue"
+                className={`input input-bordered w-full ${!isFieldEditable('venue') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                required
+                disabled={!isFieldEditable('venue')}
+              />
+            </div>
 
             {/* Number of Participants*/}
             <div>
@@ -175,8 +228,9 @@ const AddProgramModal = ({ open, onClose, onAdd }) => {
                 onChange={handleInputChange}
                 placeholder="Enter max participants"
                 min="1"
-                className="input input-bordered w-full"
+                className={`input input-bordered w-full ${!isFieldEditable('participants') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 required
+                disabled={!isFieldEditable('participants')}
               />
             </div>
           </div>
@@ -191,7 +245,8 @@ const AddProgramModal = ({ open, onClose, onAdd }) => {
               value={formData.additionalDetails}
               onChange={handleInputChange}
               placeholder="Enter any additional details about the program"
-              className="textarea textarea-bordered w-full h-24"
+              className={`textarea textarea-bordered w-full h-24 ${!isFieldEditable('additionalDetails') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+              disabled={!isFieldEditable('additionalDetails')}
             />
           </div>
 
@@ -204,12 +259,14 @@ const AddProgramModal = ({ open, onClose, onAdd }) => {
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              className="btn btn-primary"
-            >
-              Add Program
-            </button>
+            {(isAdmin || isTrainingStaff) && (
+              <button
+                type="submit"
+                className="btn btn-primary"
+              >
+                {submitButtonText}
+              </button>
+            )}
           </div>
         </form>
       </div>
