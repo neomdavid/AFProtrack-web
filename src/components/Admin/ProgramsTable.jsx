@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { canPerformAction, ROLES } from "../../utils/rolePermissions";
 import AddProgramModal from "./AddProgramModal";
 import ProgramModal from "./ProgramModal";
+import { PlusIcon } from "@phosphor-icons/react";
 
 const ProgramsTable = () => {
   const { user } = useAuth();
@@ -70,11 +71,9 @@ const ProgramsTable = () => {
         {canCreate && (
           <button
             onClick={() => setShowAddModal(true)}
-            className="btn btn-primary"
+            className="bg-primary text-white px-4 py-1.5 rounded-md  text-[14px] flex items-center gap-2 btn-hover"
           >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
+           <PlusIcon size={16}  weight="bold"/>
             Add New Program
           </button>
         )}
@@ -89,8 +88,8 @@ const ProgramsTable = () => {
               <th>Instructor</th>
               <th>Date Range</th>
               <th>Venue</th>
-              <th>Participants</th>
-              <th>Actions</th>
+              <th className="text-center">Participants</th>
+              <th className="text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -102,16 +101,16 @@ const ProgramsTable = () => {
                   {program.startDate} - {program.endDate}
                 </td>
                 <td>{program.venue}</td>
-                <td>{program.participants}</td>
-                <td>
+                <td className="text-center">{program.participants}</td>
+                <td className="flex justify-center items-center">
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleViewDetails(program)}
-                      className="btn btn-sm btn-outline"
+                      className="bg-primary  min-w-24.5 text-[12px] text-white py-1 px-3 rounded-sm hover:bg-primary/80 hover:cursor-pointer transition-all duration-300"
                     >
                       View Details
                     </button>
-                    {canEdit && (
+                    {/* {canEdit && (
                       <button
                         onClick={() => {
                           setSelectedProgram(program);
@@ -133,7 +132,7 @@ const ProgramsTable = () => {
                       >
                         Delete
                       </button>
-                    )}
+                    )} */}
                   </div>
                 </td>
               </tr>
