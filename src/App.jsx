@@ -23,6 +23,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AdAccounts from "./pages/Admin/AdAccounts";
+import AdAccountConfirmation from "./pages/Admin/AdAccountConfirmation";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -45,6 +46,7 @@ function App() {
                 element={<AdTrainingOverview />}
               />
               <Route index path="accounts" element={<AdAccounts />} />
+              <Route index path="account_confirmation" element={<AdAccountConfirmation />} />
             </Route>
             <Route path="/trainer" element={<StaffLayout />} />
           </Routes>

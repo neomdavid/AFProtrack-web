@@ -73,7 +73,7 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
             {person.avatar}
           </div>
           <div className="flex-1">
-            <h3 className="font-bold text-2xl text-primary mb-2">{person.name}</h3>
+            <h3 className="font-bold text-2xl text-black mb-0.5">{person.name}</h3>
             <p className="text-gray-600 mb-1">{person.rank}</p>
             <p className="text-sm text-gray-500 mb-1">AFP - {person.id.toString().padStart(6, '0')}</p>
             <p className="text-sm text-gray-500">{person.email}</p>

@@ -98,7 +98,7 @@ const AddProgramModal = ({
           </button>
         </form>
 
-        <h3 className="font-bold text-2xl mb-6 text-primary">{modalTitle}</h3>
+        <h3 className="font-bold text-2xl mb-6 text-black">{modalTitle}</h3>
 
         {/* Role-based notice */}
         {mode === "edit" && (

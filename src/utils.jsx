@@ -3,6 +3,7 @@ import {
   ClipboardIcon,
   PresentationChartIcon,
   UsersIcon,
+  CheckCircleIcon,
 } from "@phosphor-icons/react";
 
 const adminLinks = [
@@ -16,11 +17,15 @@ const adminLinks = [
     path: "training_data_overview",
     icon: <PresentationChartIcon size={17} />,
   },
-
   {
     name: "Account Management",
     path: "accounts",
     icon: <UsersIcon size={17}  />,
+  },
+  {
+    name: "Account Confirmation",
+    path: "account_confirmation",
+    icon: <CheckCircleIcon size={17} />,
   },
 ];
 

@@ -96,10 +96,10 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
 
         {/* Sticky Header */}
         <div className="sticky top-0 bg-white pt-2 pb-3 border-b border-gray-200 mb-4 z-5">
-          <h3 className="font-bold text-xl mb-1">
+          <h3 className="font-bold text-2xl mb-1">
             Create {accountType === 'web' ? 'Training Staff' : 'AFP Personnel'} Account
           </h3>
-          <p className="text-gray-600 text-sm">
+          <p className="text-gray font-normal text-md">
             {accountType === 'web' ? 'Web Access Account' : 'Mobile Access Account'}
           </p>
         </div>
