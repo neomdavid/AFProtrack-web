@@ -2,11 +2,13 @@ import { CaretDownIcon, PlusIcon } from '@phosphor-icons/react'
 import React, { useState, useMemo } from 'react'
 import { personnelData } from '../../utils'
 import AccessCard from './AccessCard'
+import CreateAccountModal from './CreateAccountModal'
 
 const MobileAccessTab = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUnit, setSelectedUnit] = useState('');
   const [selectedBranch, setSelectedBranch] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Get unique units and branches for filter options
   const units = [...new Set(personnelData.map(person => person.unit))];
@@ -29,7 +31,10 @@ const MobileAccessTab = () => {
 
   return (
     <div className='flex flex-col gap-4'>
-        <button className='flex text-[14px]  items-center gap-2 bg-primary text-white py-2 px-4 rounded-md self-start btn-hover'>
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className='flex text-[14px]  items-center gap-2 bg-primary text-white py-2 px-4 rounded-md self-start btn-hover'
+        >
             <PlusIcon size={17}/>
             <p className=''>Create Account</p>
         </button>
@@ -92,6 +97,13 @@ const MobileAccessTab = () => {
             <AccessCard key={person.id} person={person} />
           ))}
         </div>
+
+        {/* Create Account Modal */}
+        <CreateAccountModal
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          accountType="mobile"
+        />
     </div>
   )
 }
