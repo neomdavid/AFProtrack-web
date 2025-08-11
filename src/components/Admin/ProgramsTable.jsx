@@ -53,7 +53,7 @@ const ProgramsTable = ({ programs = [], onViewDetails }) => {
   ]);
 
   // Use programs prop if provided, otherwise use local state
-  const displayPrograms = programs.length > 0 ? programs : localPrograms;
+  const displayPrograms = programs; // Always use the programs prop, no fallback
 
   const handleAddProgram = (newProgram) => {
     const programWithId = {
@@ -105,48 +105,56 @@ const ProgramsTable = ({ programs = [], onViewDetails }) => {
 
       {/* Programs Table */}
       <div className="overflow-x-auto">
-        <table className="table table-zebra w-full">
-          <thead>
-            <tr>
-              <th>Program</th>
-              <th>Duration</th>
-              <th>Instructor</th>
-              <th className="text-center">Number of Participants</th>
-              <th className="text-center">Status</th>
-              <th className="text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {displayPrograms.map((program) => (
-              <tr key={program.id}>
-                <td className="font-medium">{program.name}</td>
-                <td className="">{program.duration}</td>
-                <td>{program.instructor}</td>
-                <td className="text-center">{program.participants}</td>
-                <td className="text-center">
-                  <span className={`px-2 py-1 rounded-full text-xs font-bold border ${
-                    program.status === 'Ongoing' ? 'bg-info text-info-content border-info-content' :
-                    program.status === 'Scheduled' ? 'bg-warning text-warning-content border-warning-content' :
-                    program.status === 'Completed' ? 'bg-base-success text-success-content border-success-content' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {program.status}
-                  </span>
-                </td>
-                <td className="flex justify-center items-center">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleViewDetails(program)}
-                      className="bg-primary  min-w-24.5 text-[12px] text-white py-1 px-3 rounded-sm hover:bg-primary/80 hover:cursor-pointer transition-all duration-300"
-                    >
-                      View Details
-                    </button>
-                  </div>
-                </td>
+        
+        {displayPrograms.length > 0 ? (
+          <table className="table table-zebra w-full">
+            <thead>
+              <tr>
+                <th>Program</th>
+                <th>Duration</th>
+                <th>Instructor</th>
+                <th className="text-center">Number of Participants</th>
+                <th className="text-center">Status</th>
+                <th className="text-center">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {displayPrograms.map((program) => (
+                <tr key={program.id}>
+                  <td className="font-medium">{program.name}</td>
+                  <td className="">{program.duration}</td>
+                  <td>{program.instructor}</td>
+                  <td className="text-center">{program.participants}</td>
+                  <td className="text-center">
+                    <span className={`px-2 py-1 rounded-full text-xs font-bold border ${
+                      program.status === 'Ongoing' ? 'bg-info text-info-content border-info-content' :
+                      program.status === 'Scheduled' ? 'bg-warning text-warning-content border-warning-content' :
+                      program.status === 'Completed' ? 'bg-base-success text-success-content border-success-content' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {program.status}
+                    </span>
+                  </td>
+                  <td className="flex justify-center items-center">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleViewDetails(program)}
+                        className="bg-primary  min-w-24.5 text-[12px] text-white py-1 px-3 rounded-sm hover:bg-primary/80 hover:cursor-pointer transition-all duration-300"
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <p className="text-lg">No programs found matching your criteria.</p>
+            <p className="text-sm mt-2">Try adjusting your search or filters.</p>
+          </div>
+        )}
       </div>
 
       {/* Add Program Modal */}

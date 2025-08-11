@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { MagnifyingGlassIcon, EyeIcon, CaretDownIcon, CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react';
 import AccountRequestModal from '../../components/Admin/AccountRequestModal';
 
@@ -62,8 +62,7 @@ const AdAccountConfirmation = () => {
     }
   ];
 
-  const itemsPerPage = 5;
-  const totalPages = Math.ceil(accountRequests.length / itemsPerPage);
+  const itemsPerPage = 3; // Reduced to show pagination with current data
 
   // Filter and search logic
   const filteredRequests = useMemo(() => {
@@ -78,10 +77,15 @@ const AdAccountConfirmation = () => {
   }, [searchTerm, roleFilter, statusFilter]);
 
   // Pagination logic
-  const paginatedRequests = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredRequests.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredRequests, currentPage]);
+  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedRequests = filteredRequests.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, roleFilter, statusFilter]);
 
   const handleViewRequest = (request) => {
     setSelectedRequest(request);
@@ -104,6 +108,22 @@ const AdAccountConfirmation = () => {
     setRoleFilter('');
     setStatusFilter('');
     setCurrentPage(1);
+  };
+
+  const goToPage = (page) => {
+    setCurrentPage(page);
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
   };
 
   const formatDateTime = (dateTimeString) => {
@@ -204,64 +224,89 @@ const AdAccountConfirmation = () => {
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="table table-zebra w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="font-semibold text-gray-700">Request ID</th>
-                <th className="font-semibold text-gray-700">Service ID</th>
-                <th className="font-semibold text-gray-700">Name</th>
-                <th className="font-semibold text-gray-700">Created Date</th>
-                <th className="font-semibold text-gray-700 ">Status</th>
-                <th className="font-semibold text-gray-700 ">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedRequests.map((request) => (
-                <tr key={request.id} className="hover:bg-gray-50">
-                  <td className="font-medium text-gray-900">{request.id}</td>
-                  <td className="text-gray-700">{request.serviceId}</td>
-                  <td className="text-gray-700">{request.name}</td>
-                  <td className="text-gray-700">{formatDateTime(request.createdDate)}</td>
-                  <td className=''>{getStatusBadge(request.status)}</td>
-                  <td className=' '>
-                    <button
-                      onClick={() => handleViewRequest(request)}
-                      className="bg-primary min-w-22.5 text-[12px] text-white py-1 px-3 rounded-sm hover:bg-primary/80 hover:cursor-pointer transition-all duration-300 flex items-center gap-2"
-                    >
-                      {/* <EyeIcon size={16} /> */}
-                      View Request
-                    </button>
-                  </td>
+          {paginatedRequests.length > 0 ? (
+            <table className="table table-zebra w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="font-semibold text-gray-700">Request ID</th>
+                  <th className="font-semibold text-gray-700">Service ID</th>
+                  <th className="font-semibold text-gray-700">Name</th>
+                  <th className="font-semibold text-gray-700">Created Date</th>
+                  <th className="font-semibold text-gray-700 ">Status</th>
+                  <th className="font-semibold text-gray-700 ">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {paginatedRequests.map((request) => (
+                  <tr key={request.id} className="hover:bg-gray-50">
+                    <td className="font-medium text-gray-900">{request.id}</td>
+                    <td className="text-gray-700">{request.serviceId}</td>
+                    <td className="text-gray-700">{request.name}</td>
+                    <td className="text-gray-700">{formatDateTime(request.createdDate)}</td>
+                    <td className=''>{getStatusBadge(request.status)}</td>
+                    <td className=' '>
+                      <button
+                        onClick={() => handleViewRequest(request)}
+                        className="bg-primary min-w-22.5 text-[12px] text-white py-1 px-3 rounded-sm hover:bg-primary/80 hover:cursor-pointer transition-all duration-300 flex items-center gap-2"
+                      >
+                        {/* <EyeIcon size={16} /> */}
+                        View Request
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p className="text-lg">No account requests found matching your criteria.</p>
+              <p className="text-sm mt-2">Try adjusting your search or filters.</p>
+            </div>
+          )}
         </div>
 
                  {/* Pagination */}
          <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50">
            <div className="text-sm text-gray-600">
-             Showing page {currentPage} of {totalPages} ({filteredRequests.length} records)
+             {filteredRequests.length > 0 ? (
+               `Showing page ${currentPage} of ${totalPages} (${filteredRequests.length} records)`
+             ) : (
+               `No record found`
+             )}
            </div>
-           <div className="flex items-center gap-2">
-                           <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="btn btn-sm btn-outline disabled:opacity-50"
-              >
-                <CaretLeftIcon size={16} />
-              </button>
-              <span className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded">
-                {currentPage}
-              </span>
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                className="btn btn-sm btn-outline disabled:opacity-50"
-              >
-                <CaretRightIcon size={16} />
-              </button>
-           </div>
+           {totalPages > 1 && (
+             <div className="join">
+               <button
+                 onClick={goToPreviousPage}
+                 disabled={currentPage === 1}
+                 className="join-item btn btn-sm btn-outline"
+               >
+                 Previous
+               </button>
+               
+               {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                 <button
+                   key={page}
+                   onClick={() => goToPage(page)}
+                   className={`join-item btn btn-sm ${
+                     currentPage === page
+                       ? "btn-primary"
+                       : "btn-outline"
+                   }`}
+                 >
+                   {page}
+                 </button>
+               ))}
+               
+               <button
+                 onClick={goToNextPage}
+                 disabled={currentPage === totalPages}
+                 className="join-item btn btn-sm btn-outline"
+               >
+                 Next
+               </button>
+             </div>
+           )}
          </div>
       </div>
 

@@ -75,12 +75,19 @@ const ProgramsTab = () => {
 
   // Filter data based on search, filter, and date
   const filteredPrograms = useMemo(() => {
+    console.log('Filtering with:', { searchTerm, filterStatus, filterDate });
+    
     return programsData.filter(program => {
       // Search filter - search in name, instructor, and status
-      const searchMatch = searchTerm === "" || 
-        program.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        program.instructor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        program.status.toLowerCase().includes(searchTerm.toLowerCase());
+      let searchMatch = false;
+      if (searchTerm === "") {
+        searchMatch = true; // No search term means show all
+      } else {
+        searchMatch = 
+          program.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          program.instructor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          program.status.toLowerCase().includes(searchTerm.toLowerCase());
+      }
 
       // Status filter
       const statusMatch = filterStatus === "" || program.status === filterStatus;
@@ -89,7 +96,12 @@ const ProgramsTab = () => {
       // In a real app, you'd have actual program dates
       const dateMatch = filterDate === "" || true; // Placeholder for date filtering
 
-      return searchMatch && statusMatch && dateMatch;
+      // ALL conditions must be true for the record to show
+      const shouldShow = searchMatch && statusMatch && dateMatch;
+      
+      console.log(`Program "${program.name}": searchMatch=${searchMatch}, statusMatch=${statusMatch}, dateMatch=${dateMatch}, shouldShow=${shouldShow}`);
+      
+      return shouldShow;
     });
   }, [searchTerm, filterStatus, filterDate]);
 
@@ -229,45 +241,44 @@ const ProgramsTab = () => {
 
        {/* Results Summary and Pagination */}
        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
-         {/* Pagination Controls */}
+         {/* Page Indicator - Always show */}
+         <div className="text-sm text-gray-600">
+          {filteredPrograms.length >0 ? `Showing page ${currentPage} of ${totalPages} (${filteredPrograms.length} records)` : `No record found`}
+         
+         </div>
+
+         {/* Pagination Controls - Only show when multiple pages */}
          {totalPages > 1 && (
-           <div className="flex justify-between items-center w-full">
-             {/* Page Indicator */}
-             <div className="text-sm text-gray-600">
-                Showing page {currentPage} of {totalPages} ({filteredPrograms.length} records)
-              </div>
+           <div className="join">
+             <button
+               onClick={goToPreviousPage}
+               disabled={currentPage === 1}
+               className="join-item btn btn-sm btn-outline"
+             >
+               Previous
+             </button>
              
-             <div className="join">
+             {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
                <button
-                 onClick={goToPreviousPage}
-                 disabled={currentPage === 1}
-                 className="join-item btn btn-sm btn-outline"
+                 key={page}
+                 onClick={() => goToPage(page)}
+                 className={`join-item btn btn-sm ${
+                   currentPage === page
+                     ? "btn-primary"
+                     : "btn-outline"
+                 }`}
                >
-                 Previous
+                 {page}
                </button>
-               
-               {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-                 <button
-                   key={page}
-                   onClick={() => goToPage(page)}
-                   className={`join-item btn btn-sm ${
-                     currentPage === page
-                       ? "btn-primary"
-                       : "btn-outline"
-                   }`}
-                 >
-                   {page}
-                 </button>
-               ))}
-               
-               <button
-                 onClick={goToNextPage}
-                 disabled={currentPage === totalPages}
-                 className="join-item btn btn-sm btn-outline"
-               >
-                 Next
-               </button>
-             </div>
+             ))}
+             
+             <button
+               onClick={goToNextPage}
+               disabled={currentPage === totalPages}
+               className="join-item btn btn-sm btn-outline"
+             >
+               Next
+             </button>
            </div>
          )}
        </div>
