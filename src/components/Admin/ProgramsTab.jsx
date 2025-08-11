@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import DashboardCard from "./DashboardCard";
 import {
   CaretDownIcon,
@@ -20,6 +20,8 @@ const ProgramsTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterDate, setFilterDate] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(3);
 
   // Sample programs data - in a real app, this would come from props or API
   const programsData = [
@@ -28,7 +30,7 @@ const ProgramsTab = () => {
       name: "Basic Military Training",
       duration: "12 weeks",
       instructor: "MAJ. Rodriguez",
-      participants: "48",
+      participants: "47/50",
       status: "Ongoing",
     },
     {
@@ -36,7 +38,7 @@ const ProgramsTab = () => {
       name: "Advanced Leadership Course",
       duration: "8 weeks",
       instructor: "CAPT. Smith",
-      participants: "30",
+      participants: "30/35",
       status: "Ongoing",
     },
     {
@@ -44,7 +46,7 @@ const ProgramsTab = () => {
       name: "Tactical Operations Training",
       duration: "6 weeks",
       instructor: "LT. Johnson",
-      participants: "25",
+      participants: "25/30",
       status: "Completed",
     },
     {
@@ -52,7 +54,7 @@ const ProgramsTab = () => {
       name: "Strategic Planning Workshop",
       duration: "4 weeks",
       instructor: "COL. Davis",
-      participants: "20",
+      participants: "20/25",
       status: "Scheduled",
     },
     {
@@ -60,7 +62,7 @@ const ProgramsTab = () => {
       name: "Combat Skills Enhancement",
       duration: "10 weeks",
       instructor: "MAJ. Wilson",
-      participants: "40",
+      participants: "40/45",
       status: "Ongoing",
     },
   ];
@@ -91,6 +93,17 @@ const ProgramsTab = () => {
     });
   }, [searchTerm, filterStatus, filterDate]);
 
+  // Pagination logic
+  const totalPages = Math.ceil(filteredPrograms.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentPrograms = filteredPrograms.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus, filterDate]);
+
   const handleViewDetails = (program) => {
     setSelectedProgram(program);
     setModalOpen(true);
@@ -112,6 +125,22 @@ const ProgramsTab = () => {
     setSearchTerm("");
     setFilterStatus("");
     setFilterDate("");
+  };
+
+  const goToPage = (page) => {
+    setCurrentPage(page);
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
   };
 
   const handleAddProgram = (newProgram) => {
@@ -192,23 +221,56 @@ const ProgramsTab = () => {
         </div>
       </div>
 
-             {/* Results Summary */}
-       <div className="px-1 mb-[-2px]">
-         <p className="text-sm text-gray-600">
-           Showing {filteredPrograms.length} of {programsData.length} programs
-           {(searchTerm || filterStatus || filterDate) && (
-             <span className="text-primary font-medium">
-               {" "}(filtered)
-             </span>
-           )}
-         </p>
-       </div>
-       
        {/* Programs Table */}
        <ProgramsTable 
-         programs={filteredPrograms} 
+         programs={currentPrograms} 
          onViewDetails={handleViewDetails}
        />
+
+       {/* Results Summary and Pagination */}
+       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
+         {/* Pagination Controls */}
+         {totalPages > 1 && (
+           <div className="flex justify-between items-center w-full">
+             {/* Page Indicator */}
+             <div className="text-sm text-gray-600">
+                Showing page {currentPage} of {totalPages} ({filteredPrograms.length} records)
+              </div>
+             
+             <div className="join">
+               <button
+                 onClick={goToPreviousPage}
+                 disabled={currentPage === 1}
+                 className="join-item btn btn-sm btn-outline"
+               >
+                 Previous
+               </button>
+               
+               {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                 <button
+                   key={page}
+                   onClick={() => goToPage(page)}
+                   className={`join-item btn btn-sm ${
+                     currentPage === page
+                       ? "btn-primary"
+                       : "btn-outline"
+                   }`}
+                 >
+                   {page}
+                 </button>
+               ))}
+               
+               <button
+                 onClick={goToNextPage}
+                 disabled={currentPage === totalPages}
+                 className="join-item btn btn-sm btn-outline"
+               >
+                 Next
+               </button>
+             </div>
+           </div>
+         )}
+       </div>
       <ProgramModal open={modalOpen} onClose={() => setModalOpen(false)} program={selectedProgram} />
       <AddProgramModal 
         open={addModalOpen} 
