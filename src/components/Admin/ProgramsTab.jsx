@@ -28,7 +28,7 @@ const ProgramsTab = () => {
       name: "Basic Military Training",
       duration: "12 weeks",
       instructor: "MAJ. Rodriguez",
-      participants: "48/50",
+      participants: "48",
       status: "Ongoing",
     },
     {
@@ -36,7 +36,7 @@ const ProgramsTab = () => {
       name: "Advanced Leadership Course",
       duration: "8 weeks",
       instructor: "CAPT. Smith",
-      participants: "30/35",
+      participants: "30",
       status: "Ongoing",
     },
     {
@@ -44,7 +44,7 @@ const ProgramsTab = () => {
       name: "Tactical Operations Training",
       duration: "6 weeks",
       instructor: "LT. Johnson",
-      participants: "25/30",
+      participants: "25",
       status: "Completed",
     },
     {
@@ -52,15 +52,15 @@ const ProgramsTab = () => {
       name: "Strategic Planning Workshop",
       duration: "4 weeks",
       instructor: "COL. Davis",
-      participants: "20/25",
-      status: "Upcoming",
+      participants: "20",
+      status: "Scheduled",
     },
     {
       id: "PRG-005",
       name: "Combat Skills Enhancement",
       duration: "10 weeks",
       instructor: "MAJ. Wilson",
-      participants: "40/45",
+      participants: "40",
       status: "Ongoing",
     },
   ];
