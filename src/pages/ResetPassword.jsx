@@ -107,7 +107,7 @@ const ResetPassword = () => {
         <p className="mb-4 self-center text-center text-gray italic text-sm w-[80%]">
           Training Management System for Armed Forces of the Philippines
         </p>
-        <p className="mb-6 text-2xl font-semibold self-center">Set New Password</p>
+        <p className="mb-6 text-2xl font-semibold self-center">Reset Password</p>
         
         {!isSuccess ? (
           <>

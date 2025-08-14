@@ -23,55 +23,14 @@ const ProgramsTab = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(3);
 
-  // Sample programs data - in a real app, this would come from props or API
-  const programsData = [
-    {
-      id: "PRG-001",
-      name: "Basic Military Training",
-      duration: "12 weeks",
-      instructor: "MAJ. Rodriguez",
-      participants: "47/50",
-      status: "Ongoing",
-    },
-    {
-      id: "PRG-002",
-      name: "Advanced Leadership Course",
-      duration: "8 weeks",
-      instructor: "CAPT. Smith",
-      participants: "30/35",
-      status: "Ongoing",
-    },
-    {
-      id: "PRG-003",
-      name: "Tactical Operations Training",
-      duration: "6 weeks",
-      instructor: "LT. Johnson",
-      participants: "25/30",
-      status: "Completed",
-    },
-    {
-      id: "PRG-004",
-      name: "Strategic Planning Workshop",
-      duration: "4 weeks",
-      instructor: "COL. Davis",
-      participants: "20/25",
-      status: "Scheduled",
-    },
-    {
-      id: "PRG-005",
-      name: "Combat Skills Enhancement",
-      duration: "10 weeks",
-      instructor: "MAJ. Wilson",
-      participants: "40/45",
-      status: "Ongoing",
-    },
-  ];
+  // RTK Query hook for programs data
+  const { data: programsData = [], isLoading, error, refetch } = useGetProgramsQuery();
 
   // Get unique statuses for filter dropdown
   const uniqueStatuses = useMemo(() => {
     const statuses = [...new Set(programsData.map(program => program.status))];
     return statuses.sort();
-  }, []);
+  }, [programsData]);
 
   // Filter data based on search, filter, and date
   const filteredPrograms = useMemo(() => {
@@ -103,7 +62,7 @@ const ProgramsTab = () => {
       
       return shouldShow;
     });
-  }, [searchTerm, filterStatus, filterDate]);
+  }, [searchTerm, filterStatus, filterDate, programsData]);
 
   // Pagination logic
   const totalPages = Math.ceil(filteredPrograms.length / itemsPerPage);
@@ -164,131 +123,153 @@ const ProgramsTab = () => {
 
   return (
     <div className="flex flex-col gap-8 pb-6">
-      <div className="flex flex-wrap gap-4">
-        <DashboardCard
-          title="Total Trainings"
-          number="67"
-          icon={<PersonSimpleRunIcon size={31} weight="fill" color="white" />}
-          iconBgColor={"bg-[#272262]"}
-        />
-        <DashboardCard
-          title="Total Schools"
-          number="8"
-          icon={<WarehouseIcon size={31} color="white" />}
-          iconBgColor={"bg-[#E5B700]"}
-        />
-      </div>
-      <div className="flex flex-col gap-4">  
-         {/* Add New Program Button */}
-       <div className="flex justify-start items-center">
-        
-       </div>
-      {/* Filter Controls */}
-      <div className="flex flex-wrap gap-2 text-[14px] ">
-        <div className="flex flex-col gap-1">
-          <p className="font-semibold text-gray">Search</p>
-          <input
-            placeholder="Search program name, instructor, or status"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            className="bg-white/90 border w-70 rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-          />
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex justify-center items-center py-8">
+          <div className="loading loading-spinner loading-lg"></div>
+          <span className="ml-3 text-lg">Loading programs...</span>
         </div>
-        <div className="flex flex-col gap-1">
-          <p className="font-semibold text-gray">Filter by Status</p>
-          <div className="relative">
-            <select 
-              value={filterStatus}
-              onChange={handleFilterChange}
-              className="bg-white/90 border w-70 appearance-none rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            >
-              <option value="">All Statuses</option>
-              {uniqueStatuses.map((status) => (
-                <option key={status} value={status}>{status}</option>
-              ))}
-            </select>
-            <CaretDownIcon
-              weight="bold"
-              className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="alert alert-error">
+          <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Error loading programs: {error.message || 'Unknown error occurred'}</span>
+          <button className="btn btn-sm" onClick={refetch}>Retry</button>
+        </div>
+      )}
+
+      {/* Content - Only show when not loading and no errors */}
+      {!isLoading && !error && (
+        <>
+          <div className="flex flex-wrap gap-4">
+            <DashboardCard
+              title="Total Trainings"
+              number="67"
+              icon={<PersonSimpleRunIcon size={31} weight="fill" color="white" />}
+              iconBgColor={"bg-[#272262]"}
+            />
+            <DashboardCard
+              title="Total Schools"
+              number="8"
+              icon={<WarehouseIcon size={31} color="white" />}
+              iconBgColor={"bg-[#E5B700]"}
             />
           </div>
-        </div>
-        <div className="flex flex-col gap-1">
-          <p className="font-semibold text-gray">Date</p>
-          <input
-            type="date"
-            value={filterDate}
-            onChange={handleDateChange}
-            className="bg-white/90 border w-70 rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <p className="font-semibold text-gray opacity-0">Clear</p>
-          <button
-            onClick={clearFilters}
-            className="bg-gray-100 text-gray-700 border w-70 rounded-md border-gray-300 p-2 hover:bg-gray-200 transition-colors duration-200"
-          >
-            Clear Filters
-          </button>
-        </div>
-      </div>
-
-       {/* Programs Table */}
-       <ProgramsTable 
-         programs={currentPrograms} 
-         onViewDetails={handleViewDetails}
-       />
-
-       {/* Results Summary and Pagination */}
-       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
-         {/* Page Indicator - Always show */}
-         <div className="text-sm text-gray-600">
-          {filteredPrograms.length >0 ? `Showing page ${currentPage} of ${totalPages} (${filteredPrograms.length} records)` : `No record found`}
-         
-         </div>
-
-         {/* Pagination Controls - Only show when multiple pages */}
-         {totalPages > 1 && (
-           <div className="join">
-             <button
-               onClick={goToPreviousPage}
-               disabled={currentPage === 1}
-               className="join-item btn btn-sm btn-outline"
-             >
-               Previous
-             </button>
-             
-             {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-               <button
-                 key={page}
-                 onClick={() => goToPage(page)}
-                 className={`join-item btn btn-sm ${
-                   currentPage === page
-                     ? "btn-primary"
-                     : "btn-outline"
-                 }`}
-               >
-                 {page}
-               </button>
-             ))}
-             
-             <button
-               onClick={goToNextPage}
-               disabled={currentPage === totalPages}
-               className="join-item btn btn-sm btn-outline"
-             >
-               Next
-             </button>
+          <div className="flex flex-col gap-4">  
+             {/* Add New Program Button */}
+           <div className="flex justify-start items-center">
+            
            </div>
-         )}
-       </div>
-      <ProgramModal open={modalOpen} onClose={() => setModalOpen(false)} program={selectedProgram} />
-      <AddProgramModal 
-        open={addModalOpen} 
-        onClose={() => setAddModalOpen(false)} 
-        onAdd={handleAddProgram}
-      /></div>
-          
+          {/* Filter Controls */}
+          <div className="flex flex-wrap gap-2 text-[14px] ">
+            <div className="flex flex-col gap-1">
+              <p className="font-semibold text-gray">Search</p>
+              <input
+                placeholder="Search program name, instructor, or status"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="bg-white/90 border w-70 rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <p className="font-semibold text-gray">Filter by Status</p>
+              <div className="relative">
+                <select 
+                  value={filterStatus}
+                  onChange={handleFilterChange}
+                  className="bg-white/90 border w-70 appearance-none rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                >
+                  <option value="">All Statuses</option>
+                  {uniqueStatuses.map((status) => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+                <CaretDownIcon
+                  weight="bold"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <p className="font-semibold text-gray">Date</p>
+              <input
+                type="date"
+                value={filterDate}
+                onChange={handleDateChange}
+                className="bg-white/90 border w-70 rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <p className="font-semibold text-gray opacity-0">Clear</p>
+              <button
+                onClick={clearFilters}
+                className="bg-gray-100 text-gray-700 border w-70 rounded-md border-gray-300 p-2 hover:bg-gray-200 transition-colors duration-200"
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+
+           {/* Programs Table */}
+           <ProgramsTable 
+             programs={currentPrograms} 
+             onViewDetails={handleViewDetails}
+           />
+
+           {/* Results Summary and Pagination */}
+           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
+             {/* Page Indicator - Always show */}
+             <div className="text-sm text-gray-600">
+               Showing page {currentPage} of {totalPages} ({filteredPrograms.length} records)
+             </div>
+
+             {/* Pagination Controls - Only show when multiple pages */}
+             {totalPages > 1 && (
+               <div className="join">
+                 <button
+                   onClick={goToPreviousPage}
+                   disabled={currentPage === 1}
+                   className="join-item btn btn-sm btn-outline"
+                 >
+                   Previous
+                 </button>
+                 
+                 {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                   <button
+                     key={page}
+                     onClick={() => goToPage(page)}
+                     className={`join-item btn btn-sm ${
+                       currentPage === page
+                         ? "btn-primary"
+                         : "btn-outline"
+                     }`}
+                   >
+                     {page}
+                   </button>
+                 ))}
+                 
+                 <button
+                   onClick={goToNextPage}
+                   disabled={currentPage === totalPages}
+                   className="join-item btn btn-sm btn-outline"
+                 >
+                   Next
+                 </button>
+               </div>
+             )}
+           </div>
+          <ProgramModal open={modalOpen} onClose={() => setModalOpen(false)} program={selectedProgram} />
+          <AddProgramModal 
+            open={addModalOpen} 
+            onClose={() => setAddModalOpen(false)} 
+            onAdd={handleAddProgram}
+          /></div>
+        </>
+      )}
     </div>
   );
 };

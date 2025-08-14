@@ -1,7 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import logo from "../assets/AFProTrack_logo.png";
 import { useAuth } from "../context/AuthContext";
+import { useGetPendingUsersQuery } from '../features/api/adminEndpoints';
 
 const Login = () => {
   const [serviceId, setServiceId] = useState("");
@@ -11,24 +12,41 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  // RTK Query sample GET
+  const { data: pendingUsers, isLoading: isPendingLoading, error: pendingError } = useGetPendingUsersQuery();
+
+  useEffect(() => {
+    if (isPendingLoading) {
+      console.log("[Login] Loading pending users...");
+      return;
+    }
+    if (pendingError) {
+      console.warn("[Login] Failed to load pending users:", pendingError);
+      return;
+    }
+    if (pendingUsers) {
+      console.log("[Login] Pending users:", pendingUsers);
+    }
+  }, [isPendingLoading, pendingError, pendingUsers]);
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
     const result = await login(serviceId, password);
-    
+
     if (result.success) {
-      navigate('/admin/dashboard');
+      navigate("/admin/dashboard");
     } else {
       setError(result.error || "Login failed. Please try again.");
     }
-    
+
     setIsLoading(false);
   };
   return (
-    <main className="bg-base h-screen w-screen flex justify-around items-center bg-primary">
-      <section className="flex flex-col px-10 gap-2 py-8 rounded-xl bg-base-400 text-primary min-w-130 max-w-130">
+    <main className="bg-base h-screen w-screen flex justify-around items-center bg-primary overflow-hidden">
+      <section className="flex flex-col  px-10 gap-2 py-8 rounded-xl bg-base-400 text-primary mx-4 sm:min-w-130 max-w-130">
         <div className="self-center shadow-sm mb-1 bg-primary flex items-center justify-around p-1 rounded-full">
           <img src={logo} className="h-22 w-22" />
         </div>
@@ -70,8 +88,8 @@ const Login = () => {
               className="bg-white border-2 border-primary/60 rounded-xl p-2 focus:outline-primary focus:outline-2"
             />
           </div>
-          <Link 
-            to="/forgot-password" 
+          <Link
+            to="/forgot-password"
             className="self-end italic mt-[-7px] mb-7 hover:cursor-pointer hover:underline transition duration-100"
           >
             Forgot Password?
