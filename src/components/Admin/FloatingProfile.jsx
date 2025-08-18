@@ -1,10 +1,18 @@
-import { ShieldIcon, UserCircleIcon, SignOutIcon, UserIcon, CaretDownIcon } from "@phosphor-icons/react";
+import {
+  ShieldIcon,
+  UserCircleIcon,
+  SignOutIcon,
+  UserIcon,
+  CaretDownIcon,
+} from "@phosphor-icons/react";
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import ProfileModal from "./ProfileModal";
 
 const FloatingProfile = ({ isSticky }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const dropdownRef = useRef(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -17,21 +25,22 @@ const FloatingProfile = ({ isSticky }) => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
     setIsDropdownOpen(false);
   };
 
   const handleViewProfile = () => {
-    // TODO: Navigate to profile page when implemented
-    console.log('View Profile clicked');
+    console.log("View Profile clicked!");
+    console.log("Setting modal to open, current state:", isProfileModalOpen);
+    setIsProfileModalOpen(true);
     setIsDropdownOpen(false);
   };
 
@@ -42,7 +51,11 @@ const FloatingProfile = ({ isSticky }) => {
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className={`
 transition-all duration-300 ease-in-out px-4 py-3 flex items-center gap-1.5 rounded-3xl cursor-pointer hover:bg-white/10
-${isSticky || isDropdownOpen ? "backdrop-blur-lg shadow bg-white/20" : "bg-transparent"}
+${
+  isSticky || isDropdownOpen
+    ? "backdrop-blur-lg shadow bg-white/20"
+    : "bg-transparent"
+}
 `}
         >
           <UserCircleIcon size={39} />
@@ -54,9 +67,11 @@ ${isSticky || isDropdownOpen ? "backdrop-blur-lg shadow bg-white/20" : "bg-trans
               <p className="mb-[-2px] text-[11px]">Admin Access</p>
             </div>
           </div>
-          <CaretDownIcon 
-            size={16} 
-            className={`transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`}
+          <CaretDownIcon
+            size={16}
+            className={`transition-transform duration-200 ${
+              isDropdownOpen ? "rotate-180" : ""
+            }`}
           />
         </div>
 
@@ -81,6 +96,15 @@ ${isSticky || isDropdownOpen ? "backdrop-blur-lg shadow bg-white/20" : "bg-trans
           </div>
         )}
       </div>
+
+      {/* Profile Modal */}
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
+
+      {/* Debug: Show modal state */}
+      {console.log("FloatingProfile render - modal state:", isProfileModalOpen)}
     </>
   );
 };
