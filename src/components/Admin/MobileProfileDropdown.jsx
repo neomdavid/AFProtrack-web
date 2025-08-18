@@ -1,9 +1,14 @@
-import { UserCircleIcon, SignOutIcon, UserIcon, CaretDownIcon } from "@phosphor-icons/react";
+import {
+  UserCircleIcon,
+  SignOutIcon,
+  UserIcon,
+  CaretDownIcon,
+} from "@phosphor-icons/react";
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
-const MobileProfileDropdown = () => {
+const MobileProfileDropdown = ({ onOpenProfileModal }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const { user, logout } = useAuth();
@@ -17,21 +22,20 @@ const MobileProfileDropdown = () => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
     setIsDropdownOpen(false);
   };
 
   const handleViewProfile = () => {
-    // TODO: Navigate to profile page when implemented
-    console.log('View Profile clicked');
+    onOpenProfileModal();
     setIsDropdownOpen(false);
   };
 
@@ -42,9 +46,11 @@ const MobileProfileDropdown = () => {
         className="flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors duration-200"
       >
         <UserCircleIcon size={32} className="text-gray-700" />
-        <CaretDownIcon 
-          size={16} 
-          className={`transition-transform duration-200 text-gray-600 ${isDropdownOpen ? 'rotate-180' : ''}`}
+        <CaretDownIcon
+          size={16}
+          className={`transition-transform duration-200 text-gray-600 ${
+            isDropdownOpen ? "rotate-180" : ""
+          }`}
         />
       </div>
 
@@ -55,7 +61,9 @@ const MobileProfileDropdown = () => {
             <div className="flex items-center gap-2">
               <UserCircleIcon size={24} className="text-gray-600" />
               <div>
-                <p className="text-sm font-medium text-gray-900">Lt. Surname, FN</p>
+                <p className="text-sm font-medium text-gray-900">
+                  Lt. Surname, FN
+                </p>
                 <p className="text-xs text-gray-500">Admin Access</p>
               </div>
             </div>
@@ -81,4 +89,4 @@ const MobileProfileDropdown = () => {
   );
 };
 
-export default MobileProfileDropdown; 
+export default MobileProfileDropdown;

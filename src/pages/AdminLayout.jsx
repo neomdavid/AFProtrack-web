@@ -5,11 +5,13 @@ import logo from "../assets/AFProTrack_logo.png";
 import FloatingProfile from "../components/Admin/FloatingProfile";
 import TopNavigation from "../components/Admin/TopNavigation";
 import Sidebar from "../components/Admin/Sidebar";
+import ProfileModal from "../components/Admin/ProfileModal";
 import { useAuth } from "../context/AuthContext";
 
 const AdminLayout = () => {
   const [isSticky, setIsSticky] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const sectionRef = useRef();
   const navigate = useNavigate();
   useEffect(() => {
@@ -17,47 +19,50 @@ const AdminLayout = () => {
       ([entry]) => {
         const newStickyState = !entry.isIntersecting;
         setIsSticky(newStickyState);
-        console.log('isSticky changed:', newStickyState);
+        console.log("isSticky changed:", newStickyState);
       },
       { threshold: 1.0 }
     );
 
     if (sectionRef.current) {
       observer.observe(sectionRef.current);
-      console.log('Observer set up for sectionRef');
+      console.log("Observer set up for sectionRef");
     }
-    
+
     return () => {
       if (sectionRef.current) observer.unobserve(sectionRef.current);
     };
   }, []);
   const location = useLocation();
   console.log(location);
-  
+
   return (
     <div className="drawer lg:drawer-open">
-      <input 
-        id="admin-drawer" 
-        type="checkbox" 
+      <input
+        id="admin-drawer"
+        type="checkbox"
         className="drawer-toggle"
         checked={drawerOpen}
         onChange={(e) => setDrawerOpen(e.target.checked)}
       />
-      
+
       <div className="drawer-content flex flex-col">
         {/* Mobile Top Navigation */}
-        <TopNavigation />
+        <TopNavigation onOpenProfileModal={() => setIsProfileModalOpen(true)} />
 
         {/* Main Content - keeping original design */}
         <div className="flex-1 p-8 bg-base-400 relative min-h-screen lg:pt-8 pt-20">
           {/* Observer element - this should be at the top of the content */}
           <div ref={sectionRef} className="h-1" />
-          
+
           {/* Desktop Floating Profile */}
           <div className="hidden lg:block">
-            <FloatingProfile isSticky={isSticky} />
+            <FloatingProfile
+              isSticky={isSticky}
+              onOpenProfileModal={() => setIsProfileModalOpen(true)}
+            />
           </div>
-          
+
           <div className="flex flex-col gap-1 mb-10">
             <h1 className="font-bold text-3xl">System Administration</h1>
             <p className="text-sm text-gray-600">
@@ -71,6 +76,12 @@ const AdminLayout = () => {
 
       {/* Sidebar Drawer */}
       <Sidebar drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
+
+      {/* Profile Modal - Outside drawer system */}
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
     </div>
   );
 };

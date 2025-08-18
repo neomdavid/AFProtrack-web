@@ -55,20 +55,43 @@ const ProfileModal = ({ isOpen, onClose }) => {
   useEffect(() => {
     const handleResize = () => {
       // Prevent the modal from closing on resize
-      if (modalRef.current && isOpen) {
-        // Force the modal to stay open
-        modalRef.current.showModal?.();
-      }
+      // No need to call showModal() since dialog is controlled by open prop
+    };
+
+    const handleDrawerToggle = () => {
+      // Prevent modal from closing when drawer state changes
+      // No need to call showModal() since dialog is controlled by open prop
     };
 
     if (isOpen) {
       window.addEventListener("resize", handleResize);
+      // Listen for drawer toggle events
+      const drawerToggle = document.getElementById("admin-drawer");
+      if (drawerToggle) {
+        drawerToggle.addEventListener("change", handleDrawerToggle);
+      }
       // Prevent body scroll when modal is open
       document.body.style.overflow = "hidden";
+      // Ensure modal stays on top of drawer
+      if (modalRef.current) {
+        modalRef.current.style.position = "fixed";
+        modalRef.current.style.zIndex = "99999";
+        modalRef.current.style.top = "0";
+        modalRef.current.style.left = "0";
+        modalRef.current.style.right = "0";
+        modalRef.current.style.bottom = "0";
+        modalRef.current.style.display = "flex";
+        modalRef.current.style.alignItems = "center";
+        modalRef.current.style.justifyContent = "center";
+      }
     }
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      const drawerToggle = document.getElementById("admin-drawer");
+      if (drawerToggle) {
+        drawerToggle.removeEventListener("change", handleDrawerToggle);
+      }
       document.body.style.overflow = "unset";
     };
   }, [isOpen]);
@@ -134,7 +157,22 @@ const ProfileModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <dialog ref={modalRef} open={isOpen} className="modal z-[10000]">
+    <dialog
+      ref={modalRef}
+      open={isOpen}
+      className="modal z-[99999] !fixed !inset-0 !pointer-events-auto"
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 99999,
+        display: isOpen ? "flex" : "none",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <div className="modal-box w-11/12 max-w-2xl lg:max-w-4xl relative bg-white p-3 sm:p-4 md:p-6 lg:p-8 max-h-[90vh] overflow-y-auto">
         {/* X Close Button */}
         <form method="dialog" className="absolute top-4 right-4">

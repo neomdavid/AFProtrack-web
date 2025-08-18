@@ -2,13 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { canEditField, ROLES } from "../../utils/rolePermissions";
 
-const AddProgramModal = ({ 
-  open, 
-  onClose, 
-  onAdd, 
-  onEdit, 
+const AddProgramModal = ({
+  open,
+  onClose,
+  onAdd,
+  onEdit,
   mode = "add", // "add" or "edit"
-  programData = null // For edit mode
+  programData = null, // For edit mode
 }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === ROLES.ADMIN;
@@ -22,7 +22,7 @@ const AddProgramModal = ({
     instructor: "",
     venue: "",
     participants: "",
-    additionalDetails: ""
+    additionalDetails: "",
   });
 
   // Load program data when in edit mode
@@ -34,15 +34,22 @@ const AddProgramModal = ({
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (formData.name && formData.startDate && formData.endDate && formData.instructor && formData.time && formData.venue) {
+    if (
+      formData.name &&
+      formData.startDate &&
+      formData.endDate &&
+      formData.instructor &&
+      formData.time &&
+      formData.venue
+    ) {
       if (mode === "edit") {
         onEdit(formData);
       } else {
@@ -56,7 +63,7 @@ const AddProgramModal = ({
         instructor: "",
         venue: "",
         participants: "",
-        additionalDetails: ""
+        additionalDetails: "",
       });
       onClose();
     }
@@ -71,7 +78,7 @@ const AddProgramModal = ({
       instructor: "",
       venue: "",
       participants: "",
-      additionalDetails: ""
+      additionalDetails: "",
     });
     onClose();
   };
@@ -83,7 +90,8 @@ const AddProgramModal = ({
 
   if (!open) return null;
 
-  const modalTitle = mode === "edit" ? "Edit Training Program" : "Add New Training Program";
+  const modalTitle =
+    mode === "edit" ? "Edit Training Program" : "Add New Training Program";
   const submitButtonText = mode === "edit" ? "Update Program" : "Add Program";
 
   return (
@@ -92,8 +100,19 @@ const AddProgramModal = ({
         {/* X Close Button*/}
         <form method="dialog" className="absolute top-4 right-4">
           <button className="btn btn-sm btn-circle btn-ghost" onClick={onClose}>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </form>
@@ -104,13 +123,11 @@ const AddProgramModal = ({
         {mode === "edit" && (
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-700">
-              {isAdmin ? (
-                "You have full editing permissions as an administrator."
-              ) : isTrainingStaff ? (
-                "As training staff, you can only edit instructor, venue, time, and additional details."
-              ) : (
-                "You have limited editing permissions."
-              )}
+              {isAdmin
+                ? "You have full editing permissions as an administrator."
+                : isTrainingStaff
+                ? "As training staff, you can only edit instructor, venue, time, and additional details."
+                : "You have limited editing permissions."}
             </p>
           </div>
         )}
@@ -120,7 +137,9 @@ const AddProgramModal = ({
             {/* Program Name*/}
             <div className="md:col-span-2">
               <label className="label">
-                <span className="label-text font-semibold">Training Program Name*</span>
+                <span className="label-text font-semibold">
+                  Training Program Name*
+                </span>
               </label>
               <input
                 type="text"
@@ -128,9 +147,13 @@ const AddProgramModal = ({
                 value={formData.name}
                 onChange={handleInputChange}
                 placeholder="Enter program name"
-                className={`input input-bordered w-full ${!isFieldEditable('name') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                className={`input input-bordered w-full ${
+                  !isFieldEditable("name")
+                    ? "bg-gray-100 cursor-not-allowed"
+                    : ""
+                }`}
                 required
-                disabled={!isFieldEditable('name')}
+                disabled={!isFieldEditable("name")}
               />
             </div>
 
@@ -144,9 +167,13 @@ const AddProgramModal = ({
                 name="startDate"
                 value={formData.startDate}
                 onChange={handleInputChange}
-                className={`input input-bordered w-full ${!isFieldEditable('startDate') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                className={`input input-bordered w-full ${
+                  !isFieldEditable("startDate")
+                    ? "bg-gray-100 cursor-not-allowed"
+                    : ""
+                }`}
                 required
-                disabled={!isFieldEditable('startDate')}
+                disabled={!isFieldEditable("startDate")}
               />
             </div>
 
@@ -160,9 +187,13 @@ const AddProgramModal = ({
                 name="endDate"
                 value={formData.endDate}
                 onChange={handleInputChange}
-                className={`input input-bordered w-full ${!isFieldEditable('endDate') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                className={`input input-bordered w-full ${
+                  !isFieldEditable("endDate")
+                    ? "bg-gray-100 cursor-not-allowed"
+                    : ""
+                }`}
                 required
-                disabled={!isFieldEditable('endDate')}
+                disabled={!isFieldEditable("endDate")}
               />
             </div>
 
@@ -176,9 +207,13 @@ const AddProgramModal = ({
                 name="time"
                 value={formData.time}
                 onChange={handleInputChange}
-                className={`input input-bordered w-full ${!isFieldEditable('time') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                className={`input input-bordered w-full ${
+                  !isFieldEditable("time")
+                    ? "bg-gray-100 cursor-not-allowed"
+                    : ""
+                }`}
                 required
-                disabled={!isFieldEditable('time')}
+                disabled={!isFieldEditable("time")}
               />
             </div>
 
@@ -193,9 +228,13 @@ const AddProgramModal = ({
                 value={formData.instructor}
                 onChange={handleInputChange}
                 placeholder="Enter instructor name"
-                className={`input input-bordered w-full ${!isFieldEditable('instructor') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                className={`input input-bordered w-full ${
+                  !isFieldEditable("instructor")
+                    ? "bg-gray-100 cursor-not-allowed"
+                    : ""
+                }`}
                 required
-                disabled={!isFieldEditable('instructor')}
+                disabled={!isFieldEditable("instructor")}
               />
             </div>
 
@@ -210,16 +249,22 @@ const AddProgramModal = ({
                 value={formData.venue}
                 onChange={handleInputChange}
                 placeholder="Enter venue"
-                className={`input input-bordered w-full ${!isFieldEditable('venue') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                className={`input input-bordered w-full ${
+                  !isFieldEditable("venue")
+                    ? "bg-gray-100 cursor-not-allowed"
+                    : ""
+                }`}
                 required
-                disabled={!isFieldEditable('venue')}
+                disabled={!isFieldEditable("venue")}
               />
             </div>
 
             {/* Number of Participants*/}
             <div>
               <label className="label">
-                <span className="label-text font-semibold">Number of Participants*</span>
+                <span className="label-text font-semibold">
+                  Number of Participants*
+                </span>
               </label>
               <input
                 type="number"
@@ -228,9 +273,13 @@ const AddProgramModal = ({
                 onChange={handleInputChange}
                 placeholder="Enter max participants"
                 min="1"
-                className={`input input-bordered w-full ${!isFieldEditable('participants') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                className={`input input-bordered w-full ${
+                  !isFieldEditable("participants")
+                    ? "bg-gray-100 cursor-not-allowed"
+                    : ""
+                }`}
                 required
-                disabled={!isFieldEditable('participants')}
+                disabled={!isFieldEditable("participants")}
               />
             </div>
           </div>
@@ -238,15 +287,21 @@ const AddProgramModal = ({
           {/* Additional Details*/}
           <div>
             <label className="label">
-              <span className="label-text font-semibold">Additional Details (Optional)</span>
+              <span className="label-text font-semibold">
+                Additional Details (Optional)
+              </span>
             </label>
             <textarea
               name="additionalDetails"
               value={formData.additionalDetails}
               onChange={handleInputChange}
               placeholder="Enter any additional details about the program"
-              className={`textarea textarea-bordered w-full h-24 ${!isFieldEditable('additionalDetails') ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-              disabled={!isFieldEditable('additionalDetails')}
+              className={`textarea textarea-bordered w-full h-24 ${
+                !isFieldEditable("additionalDetails")
+                  ? "bg-gray-100 cursor-not-allowed"
+                  : ""
+              }`}
+              disabled={!isFieldEditable("additionalDetails")}
             />
           </div>
 
@@ -260,10 +315,7 @@ const AddProgramModal = ({
               Cancel
             </button>
             {(isAdmin || isTrainingStaff) && (
-              <button
-                type="submit"
-                className="btn btn-primary"
-              >
+              <button type="submit" className="btn btn-primary">
                 {submitButtonText}
               </button>
             )}
@@ -274,4 +326,4 @@ const AddProgramModal = ({
   );
 };
 
-export default AddProgramModal; 
+export default AddProgramModal;
