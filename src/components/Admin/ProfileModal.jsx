@@ -16,37 +16,43 @@ import {
 import { useAuth } from "../../hooks/useAuth";
 
 const ProfileModal = ({ isOpen, onClose }) => {
-  const { user, setUser } = useAuth();
+  const { user } = useAuth();
   const modalRef = useRef(null);
   const [formData, setFormData] = useState({
-    name: "",
+    fullName: "",
     email: "",
     serviceId: "",
     role: "",
-    rank: "",
-    dateEnlisted: "",
+    firstName: "",
+    lastName: "",
     unit: "",
-    branch: "",
-    currentBase: "",
-    phoneNumber: "",
+    branchOfService: "",
+    division: "",
+    avatar: "",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Debug: Log user data
+  useEffect(() => {
+    console.log("ProfileModal - User data:", user);
+  }, [user]);
+
   // Initialize form data when user data is available
   useEffect(() => {
     if (user) {
+      console.log("ProfileModal - Setting form data with user:", user);
       setFormData({
-        name: user.name || "",
+        fullName: user.fullName || "",
         email: user.email || "",
         serviceId: user.serviceId || "",
         role: user.role || "",
-        rank: user.rank || "Sergeant (SGT)",
-        dateEnlisted: user.dateEnlisted || "February 15, 2020",
-        unit: user.unit || "Special Forces Regiment",
-        branch: user.branch || "Philippine Army",
-        currentBase: user.currentBase || "Fort Bonifacio, Taguig",
-        phoneNumber: user.phoneNumber || "(+63) 912-345-6789",
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        unit: user.unit || "",
+        branchOfService: user.branchOfService || "",
+        division: user.division || "",
+        avatar: user.avatar || "",
       });
     }
   }, [user]);
@@ -55,24 +61,19 @@ const ProfileModal = ({ isOpen, onClose }) => {
   useEffect(() => {
     const handleResize = () => {
       // Prevent the modal from closing on resize
-      // No need to call showModal() since dialog is controlled by open prop
     };
 
     const handleDrawerToggle = () => {
       // Prevent modal from closing when drawer state changes
-      // No need to call showModal() since dialog is controlled by open prop
     };
 
     if (isOpen) {
       window.addEventListener("resize", handleResize);
-      // Listen for drawer toggle events
       const drawerToggle = document.getElementById("admin-drawer");
       if (drawerToggle) {
         drawerToggle.addEventListener("change", handleDrawerToggle);
       }
-      // Prevent body scroll when modal is open
       document.body.style.overflow = "hidden";
-      // Ensure modal stays on top of drawer
       if (modalRef.current) {
         modalRef.current.style.position = "fixed";
         modalRef.current.style.zIndex = "99999";
@@ -109,17 +110,9 @@ const ProfileModal = ({ isOpen, onClose }) => {
     try {
       // Simulate API call to update user profile
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Update user data in context and localStorage
-      const updatedUser = { ...user, ...formData };
-      setUser(updatedUser);
-      localStorage.setItem("afprotrack_user", JSON.stringify(updatedUser));
-
       setIsEditing(false);
-      // You could add a toast notification here for success
     } catch (error) {
       console.error("Error updating profile:", error);
-      // You could add a toast notification here for error
     } finally {
       setIsLoading(false);
     }
@@ -129,16 +122,16 @@ const ProfileModal = ({ isOpen, onClose }) => {
     // Reset form data to original user data
     if (user) {
       setFormData({
-        name: user.name || "",
+        fullName: user.fullName || "",
         email: user.email || "",
         serviceId: user.serviceId || "",
         role: user.role || "",
-        rank: user.rank || "Sergeant (SGT)",
-        dateEnlisted: user.dateEnlisted || "February 15, 2020",
-        unit: user.unit || "Special Forces Regiment",
-        branch: user.branch || "Philippine Army",
-        currentBase: user.currentBase || "Fort Bonifacio, Taguig",
-        phoneNumber: user.phoneNumber || "(+63) 912-345-6789",
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        unit: user.unit || "",
+        branchOfService: user.branchOfService || "",
+        division: user.division || "",
+        avatar: user.avatar || "",
       });
     }
     setIsEditing(false);
@@ -153,7 +146,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
     return roleMap[role] || role;
   };
 
-  console.log("ProfileModal render - isOpen:", isOpen, "User:", user);
+  console.log("ProfileModal render - isOpen:", isOpen, "User:", user, "FormData:", formData);
   if (!isOpen) return null;
 
   return (
@@ -173,50 +166,34 @@ const ProfileModal = ({ isOpen, onClose }) => {
         justifyContent: "center",
       }}
     >
-      <div className="modal-box w-11/12 max-w-2xl lg:max-w-4xl relative bg-white p-3 sm:p-4 md:p-6 lg:p-8 max-h-[90vh] overflow-y-auto">
+      <div className="modal-box w-11/12 max-w-2xl lg:max-w-4xl relative bg-white p-0 max-h-[90vh] flex flex-col">
         {/* X Close Button */}
-        <form method="dialog" className="absolute top-4 right-4">
+        <form method="dialog" className="absolute top-4 right-4 z-20">
           <button className="btn btn-sm btn-circle btn-ghost" onClick={onClose}>
             <XIcon size={16} />
           </button>
         </form>
 
-        {/* Header */}
-        <div className="mb-4 sm:mb-6">
+        {/* Header - Sticky Top */}
+        <div className="sticky top-0 bg-white z-10 px-6 py-4 border-b border-gray-200">
           <h3 className="font-bold text-lg sm:text-xl lg:text-2xl text-black">
             Profile Information
           </h3>
         </div>
 
-        {/* Profile Content */}
-        <div className="space-y-4">
+        {/* Profile Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto px-6 py-4">
           {/* Profile Picture Section */}
           <div className="flex justify-center mb-6">
             <div className="avatar">
               <div className="w-20 h-20 rounded-full overflow-hidden">
-                <img
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format"
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Fallback to initials if image fails to load
-                    e.target.style.display = "none";
-                    e.target.nextSibling.style.display = "flex";
-                  }}
-                />
-                <div
-                  className="w-full h-full bg-primary text-primary-content rounded-full flex items-center justify-center text-2xl font-bold"
-                  style={{ display: "none" }}
-                >
-                  {user?.name
-                    ?.split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .toUpperCase() || "U"}
+                <div className="w-full h-full bg-primary text-primary-content rounded-full flex items-center justify-center text-2xl font-bold">
+                  {user?.avatar || user?.fullName?.split(" ").map((n) => n[0]).join("").toUpperCase() || "U"}
                 </div>
               </div>
             </div>
           </div>
+
 
           {/* Form Fields */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -234,8 +211,8 @@ const ProfileModal = ({ isOpen, onClose }) => {
                   {isEditing ? (
                     <input
                       type="text"
-                      name="name"
-                      value={formData.name}
+                      name="fullName"
+                      value={formData.fullName}
                       onChange={handleInputChange}
                       className="input input-bordered w-full"
                       placeholder="Enter your full name"
@@ -243,31 +220,31 @@ const ProfileModal = ({ isOpen, onClose }) => {
                   ) : (
                     <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
                       <UserIcon size={16} />
-                      {formData.name || "Not specified"}
+                      {formData.fullName || "undefined"}
                     </div>
                   )}
                 </div>
 
-                {/* Rank Field */}
+                {/* First Name Field */}
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-semibold">Rank</span>
+                    <span className="label-text font-semibold">First Name</span>
                   </label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      name="rank"
-                      value={formData.rank}
-                      onChange={handleInputChange}
-                      className="input input-bordered w-full"
-                      placeholder="Enter your rank"
-                    />
-                  ) : (
-                    <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
-                      <StarIcon size={16} />
-                      {formData.rank || "Not specified"}
-                    </div>
-                  )}
+                  <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
+                    <UserIcon size={16} />
+                    {formData.firstName || "undefined"}
+                  </div>
+                </div>
+
+                {/* Last Name Field */}
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text font-semibold">Last Name</span>
+                  </label>
+                  <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
+                    <UserIcon size={16} />
+                    {formData.lastName || "undefined"}
+                  </div>
                 </div>
 
                 {/* Service ID Field */}
@@ -287,32 +264,20 @@ const ProfileModal = ({ isOpen, onClose }) => {
                   ) : (
                     <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
                       <BriefcaseIcon size={16} />
-                      {formData.serviceId || "Not specified"}
+                      {formData.serviceId || "undefined"}
                     </div>
                   )}
                 </div>
 
-                {/* Date Enlisted Field */}
+                {/* Avatar Field */}
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-semibold">
-                      Date Enlisted
-                    </span>
+                    <span className="label-text font-semibold">Avatar</span>
                   </label>
-                  {isEditing ? (
-                    <input
-                      type="date"
-                      name="dateEnlisted"
-                      value={formData.dateEnlisted}
-                      onChange={handleInputChange}
-                      className="input input-bordered w-full"
-                    />
-                  ) : (
-                    <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
-                      <CalendarIcon size={16} />
-                      {formData.dateEnlisted || "Not specified"}
-                    </div>
-                  )}
+                  <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
+                    <UserIcon size={16} />
+                    {formData.avatar || "undefined"}
+                  </div>
                 </div>
               </div>
             </div>
@@ -340,55 +305,31 @@ const ProfileModal = ({ isOpen, onClose }) => {
                   ) : (
                     <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
                       <ShieldIcon size={16} />
-                      {formData.unit || "Not specified"}
+                      {formData.unit || "undefined"}
                     </div>
                   )}
                 </div>
 
-                {/* Branch Field */}
+                {/* Branch of Service Field */}
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-semibold">Branch</span>
+                    <span className="label-text font-semibold">Branch of Service</span>
                   </label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      name="branch"
-                      value={formData.branch}
-                      onChange={handleInputChange}
-                      className="input input-bordered w-full"
-                      placeholder="Enter your branch"
-                    />
-                  ) : (
-                    <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
-                      <FlagIcon size={16} />
-                      {formData.branch || "Not specified"}
-                    </div>
-                  )}
+                  <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
+                    <FlagIcon size={16} />
+                    {formData.branchOfService || "undefined"}
+                  </div>
                 </div>
 
-                {/* Current Base Field */}
+                {/* Division Field */}
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-semibold">
-                      Current Base
-                    </span>
+                    <span className="label-text font-semibold">Division</span>
                   </label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      name="currentBase"
-                      value={formData.currentBase}
-                      onChange={handleInputChange}
-                      className="input input-bordered w-full"
-                      placeholder="Enter your current base"
-                    />
-                  ) : (
-                    <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
-                      <MapPinIcon size={16} />
-                      {formData.currentBase || "Not specified"}
-                    </div>
-                  )}
+                  <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
+                    <MapPinIcon size={16} />
+                    {formData.division || "undefined"}
+                  </div>
                 </div>
               </div>
             </div>
@@ -418,31 +359,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
                   ) : (
                     <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
                       <EnvelopeIcon size={16} />
-                      {formData.email || "Not specified"}
-                    </div>
-                  )}
-                </div>
-
-                {/* Phone Number Field */}
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-semibold">
-                      Phone Number
-                    </span>
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="tel"
-                      name="phoneNumber"
-                      value={formData.phoneNumber}
-                      onChange={handleInputChange}
-                      className="input input-bordered w-full"
-                      placeholder="Enter your phone number"
-                    />
-                  ) : (
-                    <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
-                      <PhoneIcon size={16} />
-                      {formData.phoneNumber || "Not specified"}
+                      {formData.email || "undefined"}
                     </div>
                   )}
                 </div>
@@ -466,16 +383,18 @@ const ProfileModal = ({ isOpen, onClose }) => {
                   ) : (
                     <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
                       <ShieldIcon size={16} />
-                      {getRoleDisplayName(formData.role) || "Not specified"}
+                      {getRoleDisplayName(formData.role) || "undefined"}
                     </div>
                   )}
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Action Buttons */}
-          <div className="modal-action">
+        {/* Action Buttons - Sticky Bottom */}
+        <div className="sticky bottom-0 bg-white z-10 px-6 py-4 border-t border-gray-200">
+          <div className="flex justify-end gap-2">
             {isEditing ? (
               <>
                 <button
