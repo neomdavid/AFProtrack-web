@@ -20,7 +20,7 @@ const MetricsList = () => {
   ];
 
   return (
-    <section className="flex max-w-6xl gap-5">
+    <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {metrics.map((group, index) => (
         <div
           key={index}
