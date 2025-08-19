@@ -31,7 +31,6 @@ const FloatingProfile = ({ isSticky, onOpenProfileModal }) => {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
     setIsDropdownOpen(false);
   };
 
@@ -39,6 +38,20 @@ const FloatingProfile = ({ isSticky, onOpenProfileModal }) => {
     console.log("View Profile clicked!");
     onOpenProfileModal();
     setIsDropdownOpen(false);
+  };
+
+  // Get user's rank/prefix from serviceId or use default
+  const getUserRank = () => {
+    if (user?.role === 'admin') return 'System';
+    if (user?.role === 'trainer') return 'Lt.';
+    return 'User';
+  };
+
+  // Get display name
+  const getDisplayName = () => {
+    if (user?.fullName) return user.fullName;
+    if (user?.firstName && user?.lastName) return `${user.firstName} ${user.lastName}`;
+    return 'User';
   };
 
   return (
@@ -57,11 +70,11 @@ ${
         >
           <UserCircleIcon size={39} />
           <div className="flex flex-col gap-1">
-            <p className="text-xs text-gray-700 mb-[-3px]">Lt.</p>
-            <p className="text-sm flex font-light">Surname, FN</p>
+            <p className="text-xs text-gray-700 mb-[-3px]">{getUserRank()}</p>
+            <p className="text-sm flex font-light">{getDisplayName()}</p>
             <div className="flex items-center gap-0.5 text-success-content text-xs bg-base-success px-2 py-1 ml-[-3px] border border-success-content rounded-2xl">
               <ShieldIcon size={13} weight="bold" />
-              <p className="mb-[-2px] text-[11px]">Admin Access</p>
+              <p className="mb-[-2px] text-[11px]">{user?.role || 'User'} Access</p>
             </div>
           </div>
           <CaretDownIcon

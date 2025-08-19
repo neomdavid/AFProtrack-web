@@ -5,26 +5,50 @@ export const loginUser = createAsyncThunk(
   'auth/login',
   async ({ serviceId, password }, { rejectWithValue }) => {
     try {
-      // Simulate API call - replace with actual API endpoint
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch('http://localhost:5000/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ serviceId, password }),
+      });
 
-      if (serviceId && password) {
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || 'Login failed');
+      }
+
+      if (data.success && data.data) {
         const userData = {
-          id: "1",
-          serviceId: serviceId,
-          name: "Lt. Surname, FN",
-          role: "admin",
-          email: `${serviceId}@afp.mil.ph`,
+          id: data.data.user._id,
+          serviceId: data.data.user.serviceId,
+          firstName: data.data.user.firstName,
+          lastName: data.data.user.lastName,
+          fullName: data.data.user.fullName,
+          email: data.data.user.email,
+          role: data.data.user.role,
+          accountType: data.data.user.accountType,
+          unit: data.data.user.unit,
+          branchOfService: data.data.user.branchOfService,
+          division: data.data.user.division,
+          accountStatus: data.data.user.accountStatus,
+          isActive: data.data.user.isActive,
+          isVerified: data.data.user.isVerified,
+          lastLogin: data.data.user.lastLogin,
+          avatar: data.data.user.avatar,
         };
 
-        // Store in localStorage
+        // Store user data and token in localStorage
         localStorage.setItem("afprotrack_user", JSON.stringify(userData));
+        localStorage.setItem("afprotrack_token", data.data.token);
+
         return userData;
       } else {
-        throw new Error("Invalid credentials");
+        return rejectWithValue(data.message || 'Login failed');
       }
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || 'Network error');
     }
   }
 );
@@ -33,6 +57,7 @@ export const logoutUser = createAsyncThunk(
   'auth/logout',
   async () => {
     localStorage.removeItem("afprotrack_user");
+    localStorage.removeItem("afprotrack_token");
     return null;
   }
 );
@@ -42,13 +67,16 @@ export const checkAuthStatus = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const storedUser = localStorage.getItem("afprotrack_user");
-      if (storedUser) {
+      const token = localStorage.getItem("afprotrack_token");
+      
+      if (storedUser && token) {
         const userData = JSON.parse(storedUser);
         return userData;
       }
       return null;
     } catch (error) {
       localStorage.removeItem("afprotrack_user");
+      localStorage.removeItem("afprotrack_token");
       return rejectWithValue("Invalid stored user data");
     }
   }
