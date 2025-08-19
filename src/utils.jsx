@@ -27,11 +27,6 @@ const adminLinks = [
     path: "account_confirmation",
     icon: <CheckCircleIcon size={17} />,
   },
-  {
-    name: "Profile",
-    path: "profile",
-    icon: <UsersIcon size={17} />,
-  },
 ];
 
 const fullLabels = [

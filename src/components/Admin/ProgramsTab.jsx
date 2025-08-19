@@ -129,7 +129,7 @@ const ProgramsTab = () => {
 
   return (
     <div className="flex flex-col gap-8 pb-6">
-      <div className="flex flex-wrap gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 mb-[-26px]">
         <DashboardCard
           title="Total Trainings"
           number="67"
@@ -143,20 +143,20 @@ const ProgramsTab = () => {
           iconBgColor={"bg-[#E5B700]"}
         />
       </div>
-      <div className="flex flex-col gap-4">  
+      <div className="flex flex-col gap-6 ">  
         {/* Add New Program Button */}
         <div className="flex justify-start items-center">
           
         </div>
         {/* Filter Controls */}
-        <div className="flex flex-wrap gap-2 text-[14px] ">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-x-2.5 gap-y-3 text-[14px] ">
           <div className="flex flex-col gap-1">
             <p className="font-semibold text-gray">Search</p>
             <input
               placeholder="Search program name, instructor, or status"
               value={searchTerm}
               onChange={handleSearchChange}
-              className="bg-white/90 border w-70 rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="bg-white/90 border w-full sm:w-70 rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
           <div className="flex flex-col gap-1">
@@ -165,7 +165,7 @@ const ProgramsTab = () => {
               <select 
                 value={filterStatus}
                 onChange={handleFilterChange}
-                className="bg-white/90 border w-70 appearance-none rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className="bg-white/90 border w-full sm:w-70 appearance-none rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               >
                 <option value="">All Statuses</option>
                 {uniqueStatuses.map((status) => (
@@ -184,14 +184,14 @@ const ProgramsTab = () => {
               type="date"
               value={filterDate}
               onChange={handleDateChange}
-              className="bg-white/90 border w-70 rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="bg-white/90 border w-full sm:w-70 rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
           <div className="flex flex-col gap-1">
             <p className="font-semibold text-gray opacity-0">Clear</p>
             <button
               onClick={clearFilters}
-              className="bg-gray-100 text-gray-700 border w-70 rounded-md border-gray-300 p-2 hover:bg-gray-200 transition-colors duration-200"
+              className="bg-gray-100 text-gray-700 border w-full sm:w-70 rounded-md border-gray-300 p-2 hover:bg-gray-200 transition-colors duration-200"
             >
               Clear Filters
             </button>

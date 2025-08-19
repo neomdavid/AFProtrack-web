@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { MagnifyingGlassIcon, EyeIcon, CaretDownIcon, CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react';
 import AccountRequestModal from '../../components/Admin/AccountRequestModal';
+import { useGetAllUsersQuery } from '../../features/api/adminEndpoints';
+import { useAuth } from '../../hooks/useAuth';
 
 const AdAccountConfirmation = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -10,59 +12,28 @@ const AdAccountConfirmation = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
 
-  // Sample data for account requests
-  const accountRequests = [
-    {
-      id: "REQ-001",
-      serviceId: "AFP-2024-001",
-      name: "John Doe",
-      role: "Staff",
-      unit: "1st Infantry Division",
-      branchOfService: "Army",
-      division: "Infantry",
-      dateEnlisted: "2020-03-15",
-      createdDate: "2024-01-15T09:30:00",
-      status: "Pending"
-    },
-    {
-      id: "REQ-002",
-      serviceId: "AFP-2024-002",
-      name: "Jane Smith",
-      role: "Trainer",
-      unit: "2nd Infantry Division",
-      branchOfService: "Air Force",
-      division: "Medical",
-      dateEnlisted: "2019-07-22",
-      createdDate: "2024-01-14T14:15:00",
-      status: "Approved"
-    },
-    {
-      id: "REQ-003",
-      serviceId: "AFP-2024-003",
-      name: "Mike Johnson",
-      role: "Staff",
-      unit: "3rd Infantry Division",
-      branchOfService: "Navy",
-      division: "Logistics",
-      dateEnlisted: "2021-11-08",
-      createdDate: "2024-01-13T11:45:00",
-      status: "Declined"
-    },
-    {
-      id: "REQ-004",
-      serviceId: "AFP-2024-004",
-      name: "Sarah Wilson",
-      role: "Admin",
-      unit: "4th Infantry Division",
-      branchOfService: "Marine Corps",
-      division: "Intelligence",
-      dateEnlisted: "2022-05-12",
-      createdDate: "2024-01-12T16:20:00",
-      status: "Pending"
-    }
-  ];
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 10;
+  const { data, isLoading, isError } = useGetAllUsersQuery({ page, limit: itemsPerPage, search: searchTerm, role: roleFilter, status: statusFilter }, { skip: !isAdmin });
+  const accountRequests = useMemo(() => {
+    const list = data?.data?.users || [];
+    return list.map(u => ({
+      id: u.id,
+      serviceId: u.serviceId,
+      name: u.fullName || `${u.firstName} ${u.lastName}`,
+      role: u.role,
+      unit: u.unit,
+      branchOfService: u.branchOfService,
+      division: u.division,
+      createdDate: u.createdAt,
+      status: (u.accountStatus || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+      raw: u,
+    }));
+  }, [data]);
 
-  const itemsPerPage = 3; // Reduced to show pagination with current data
+  // itemsPerPage moved above to match server pagination
 
   // Filter and search logic
   const filteredRequests = useMemo(() => {
@@ -77,14 +48,13 @@ const AdAccountConfirmation = () => {
   }, [searchTerm, roleFilter, statusFilter]);
 
   // Pagination logic
-  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedRequests = filteredRequests.slice(startIndex, endIndex);
+  const totalPages = data?.data?.pagination?.totalPages || 1;
+  const paginatedRequests = filteredRequests; // server paginated already
 
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
+    setPage(1);
   }, [searchTerm, roleFilter, statusFilter]);
 
   const handleViewRequest = (request) => {
@@ -110,8 +80,9 @@ const AdAccountConfirmation = () => {
     setCurrentPage(1);
   };
 
-  const goToPage = (page) => {
-    setCurrentPage(page);
+  const goToPage = (p) => {
+    setCurrentPage(p);
+    setPage(p);
   };
 
   const goToNextPage = () => {
@@ -148,11 +119,7 @@ const AdAccountConfirmation = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-800">Account Confirmation</h1>
-        <p className="text-gray-600 mt-2">Review and manage account creation requests</p>
-      </div>
+   
 
                      {/* Filters */}
         <div className="flex flex-wrap gap-2 mb-1 text-[14px]">
@@ -224,7 +191,13 @@ const AdAccountConfirmation = () => {
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
-          {paginatedRequests.length > 0 ? (
+          {!isAdmin ? (
+            <div className="text-center py-8 text-red-500">Only admins can view this page.</div>
+          ) : isLoading ? (
+            <div className="text-center py-8 text-gray-500">Loading...</div>
+          ) : isError ? (
+            <div className="text-center py-8 text-red-500">Failed to load users.</div>
+          ) : paginatedRequests.length > 0 ? (
             <table className="table table-zebra w-full">
               <thead className="bg-gray-50">
                 <tr>

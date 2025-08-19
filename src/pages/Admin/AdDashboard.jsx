@@ -16,7 +16,7 @@ const AdDashboard = () => {
   const [activeTab, setActiveTab] = useState("programs");
   return (
     <div className="flex flex-col">
-      <div className="flex flex-wrap gap-4 mb-14">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 mb-14">
         <DashboardCard
           title={"Total Personnel"}
           number={"3,000"}
@@ -50,10 +50,10 @@ const AdDashboard = () => {
           icon={<ClockUserIcon size={25} weight="fill" color="white" />}
         />
       </div>
-      <div className="flex flex-wrap mb-8">
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center  gap-x-2 gap-y-2 mb-8">
         <button
           onClick={() => setActiveTab("programs")}
-          className={` w-70 flex justify-center border-3 shadow-sm rounded-md bg-white py-2 px-2  border-gray-200 ${
+          className={` sm:w-70 flex justify-center border-3 shadow-sm rounded-md bg-white py-2 px-2  border-gray-200 ${
             activeTab === "programs"
               ? "border-[3px] border-primary text-primary z-1 font-bold"
               : "hover:bg-gray-100 transition-all duration-100 hover:cursor-pointer"
@@ -63,7 +63,7 @@ const AdDashboard = () => {
         </button>
         <button
           onClick={() => setActiveTab("completion")}
-          className={` w-70 flex justify-center border-3 shadow-sm rounded-md bg-white py-2 px-2  border-gray-200 ml-[-4px] ${
+          className={` sm:w-70 flex justify-center border-3 shadow-sm rounded-md bg-white py-2 px-2  border-gray-200 ${
             activeTab !== "programs"
               ? "border-primary text-primary z-1  font-bold"
               : "hover:bg-gray-100 transition-all duration-100 hover:cursor-pointer"

@@ -31,13 +31,13 @@ const MobileAccessTab = () => {
 
   return (
     <div className='flex flex-col gap-4'>
-        <button 
+        {/* <button 
           onClick={() => setIsModalOpen(true)}
           className='flex text-[14px]  items-center gap-2 bg-primary text-white py-2 px-4 rounded-md self-start btn-hover'
         >
             <PlusIcon size={17}/>
             <p className=''>Create Account</p>
-        </button>
+        </button> */}
         <section className='flex flex-col'>
         <div className="flex flex-wrap gap-2 mb-6 text-[14px]">
         <div className="flex flex-col gap-1">
@@ -98,12 +98,12 @@ const MobileAccessTab = () => {
           ))}
         </div>
 
-        {/* Create Account Modal */}
+        {/* Create Account Modal
         <CreateAccountModal
           open={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           accountType="mobile"
-        />
+        /> */}
     </div>
   )
 }

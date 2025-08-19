@@ -1,0 +1,32 @@
+﻿feat(admin): implement program attendance, refine account creation, and polish admin UI
+
+Program Attendance
+- Add attendance page and Programs link
+- Day pills with Today/Completed/Cancelled indicators
+- Start/End Time flow: Adjust Time enables inputs; Announce saves and sets as defaults, then locks
+- Day Status control (Active/Cancelled)
+- Cancellation: inline Reason with right-aligned Announce; toggles to Revert to Active after announcing; shows badge
+- Mark Day Completed modal with reason; locks inputs
+- Present/Absent only with summary and filled-entries progress
+- Toolbar search, status filter, and results count
+- Quick mark Present/Absent (applies to filtered), right-aligned on small screens
+- Editable Status/Time In/Time Out/Notes; small input heights; autosave indicator
+
+Account Creation (Web Access)
+- RTK Query createPendingUser with Bearer token
+- Remove password input (temporary backend pass)
+- Frontend validation and backend error mapping to fields
+- Role options restricted by current user role
+- Custom toast for success/error outside modal
+
+Profile Modal and UI Polish
+- Restore 3-column; remove Full Name and Role Description
+- Fix sidebar overlay; add rounded corners
+- Dashboard tab buttons consistent height/active ring
+- MixedChart responsive sizing and container width
+
+Routing/Breadcrumbs
+- Safe breadcrumb name access and fallback for attendance route
+
+Fixes
+- Resolve JSX structure issues and duplicate isLoading in CreateAccountModal

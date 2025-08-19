@@ -23,6 +23,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AdAccounts from "./pages/Admin/AdAccounts";
 import AdAccountConfirmation from "./pages/Admin/AdAccountConfirmation";
+import ProgramAttendance from "./pages/Admin/ProgramAttendance";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -45,6 +46,7 @@ function App() {
             />
             <Route index path="accounts" element={<AdAccounts />} />
             <Route index path="account_confirmation" element={<AdAccountConfirmation />} />
+            <Route path="programs/:programId/attendance" element={<ProgramAttendance />} />
           </Route>
           <Route path="/trainer" element={<StaffLayout />} />
         </Routes>

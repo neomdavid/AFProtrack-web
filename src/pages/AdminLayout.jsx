@@ -35,6 +35,8 @@ const AdminLayout = () => {
   }, []);
   const location = useLocation();
   console.log(location);
+  const current = getCurrentPage(location);
+  const breadcrumbName = current?.name || (location.pathname.includes('/attendance') ? 'Attendance' : '');
 
   return (
     <div className="drawer lg:drawer-open">
@@ -67,7 +69,7 @@ const AdminLayout = () => {
             <h1 className="font-bold text-3xl">System Administration</h1>
             <p className="text-sm text-gray-600">
               AFProTrack Training Management System &nbsp;{">>"} &nbsp;
-              {getCurrentPage(location).name}
+              {breadcrumbName || 'Admin'}
             </p>
           </div>
           <Outlet />
