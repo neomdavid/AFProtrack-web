@@ -148,11 +148,7 @@ const AdAccountConfirmation = () => {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-800">Account Confirmation</h1>
-        <p className="text-gray-600 mt-2">Review and manage account creation requests</p>
-      </div>
+   
 
                      {/* Filters */}
         <div className="flex flex-wrap gap-2 mb-1 text-[14px]">
