@@ -8,11 +8,9 @@ import {
 import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import ProfileModal from "./ProfileModal";
 
-const FloatingProfile = ({ isSticky }) => {
+const FloatingProfile = ({ isSticky, onOpenProfileModal }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const dropdownRef = useRef(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -39,8 +37,7 @@ const FloatingProfile = ({ isSticky }) => {
 
   const handleViewProfile = () => {
     console.log("View Profile clicked!");
-    console.log("Setting modal to open, current state:", isProfileModalOpen);
-    setIsProfileModalOpen(true);
+    onOpenProfileModal();
     setIsDropdownOpen(false);
   };
 
@@ -96,15 +93,6 @@ ${
           </div>
         )}
       </div>
-
-      {/* Profile Modal */}
-      <ProfileModal
-        isOpen={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
-      />
-
-      {/* Debug: Show modal state */}
-      {console.log("FloatingProfile render - modal state:", isProfileModalOpen)}
     </>
   );
 };
