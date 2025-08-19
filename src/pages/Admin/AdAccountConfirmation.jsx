@@ -16,14 +16,19 @@ const AdAccountConfirmation = () => {
   const isAdmin = user?.role === 'admin';
   const [page, setPage] = useState(1);
   const itemsPerPage = 10;
-  const { data, isLoading, isError } = useGetAllUsersQuery({ page, limit: itemsPerPage, search: searchTerm, role: roleFilter, status: statusFilter }, { skip: !isAdmin });
+  const { data, isLoading, isError, error } = useGetAllUsersQuery({ page, limit: itemsPerPage, search: searchTerm, role: roleFilter, status: statusFilter }, { skip: !isAdmin });
+  
+  // Debug logging
+  console.log('Account Confirmation Debug:', { user, isAdmin, data, isLoading, isError, error });
+  
   const accountRequests = useMemo(() => {
     const list = data?.data?.users || [];
+    console.log('Raw users data:', list);
     return list.map(u => ({
       id: u.id,
       serviceId: u.serviceId,
       name: u.fullName || `${u.firstName} ${u.lastName}`,
-      role: u.role,
+      role: (u.role || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
       unit: u.unit,
       branchOfService: u.branchOfService,
       division: u.division,
@@ -35,21 +40,21 @@ const AdAccountConfirmation = () => {
 
   // itemsPerPage moved above to match server pagination
 
-  // Filter and search logic
-  const filteredRequests = useMemo(() => {
-    return accountRequests.filter(request => {
-      const matchesSearch = request.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           request.serviceId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           request.status.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesRole = roleFilter === '' || request.role === roleFilter;
-      const matchesStatus = statusFilter === '' || request.status === statusFilter;
-      return matchesSearch && matchesRole && matchesStatus;
-    });
-  }, [searchTerm, roleFilter, statusFilter]);
+  // Filter and search logic - REMOVED: Using server-side filtering instead
+  // const filteredRequests = useMemo(() => {
+  //   return accountRequests.filter(request => {
+  //     const matchesSearch = request.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //                          request.raw?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //                          request.role.toLowerCase().includes(searchTerm.toLowerCase());
+  //     const matchesRole = roleFilter === '' || request.role === roleFilter;
+  //     const matchesStatus = statusFilter === '' || request.status.toLowerCase().includes(statusFilter.toLowerCase());
+  //     return matchesSearch && matchesRole && matchesStatus;
+  //   });
+  // }, [accountRequests, searchTerm, roleFilter, statusFilter]);
 
-  // Pagination logic
+  // Pagination logic - Use server-side pagination
   const totalPages = data?.data?.pagination?.totalPages || 1;
-  const paginatedRequests = filteredRequests; // server paginated already
+  const paginatedRequests = accountRequests; // Use API data directly since server handles filtering
 
   // Reset to first page when filters change
   useEffect(() => {
@@ -88,12 +93,14 @@ const AdAccountConfirmation = () => {
   const goToNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
+      setPage(currentPage + 1);
     }
   };
 
   const goToPreviousPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
+      setPage(currentPage - 1);
     }
   };
 
@@ -108,13 +115,43 @@ const AdAccountConfirmation = () => {
     });
   };
 
-  const getStatusBadge = (status) => {
-    const statusClasses = {
-      'Pending': 'px-4 py-1 text-[12px] font-bold rounded-full bg-warning-content text-white',
-      'Approved': ' px-4 py-1 text-[12px] font-bold rounded-full bg-success-content text-white',
-      'Declined': ' px-4 py-1 text-[12px] font-bold rounded-full bg-error text-white'
-    };
-    return <span className={statusClasses[status] || 'badge badge-neutral'}>{status}</span>;
+  const getStatusBadge = (user) => {
+    const { isActive, isVerified, accountStatus } = user.raw || {};
+    
+    // Determine the primary status to display
+    let statusText = '';
+    let statusClass = '';
+    
+    if (accountStatus === 'pending') {
+      statusText = 'Pending Approval';
+      statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-warning text-warning-content';
+    } else if (accountStatus === 'email_verification') {
+      statusText = 'Unverified Email';
+      statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-gray-300 text-neutral';
+    } else if (accountStatus === 'approved') {
+      statusText = 'Approved';
+      statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-info text-info-content';
+    } else if (accountStatus === 'active') {
+      if (isActive && isVerified) {
+        statusText = 'Active';
+        statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-success text-success-content';
+      } else if (isActive && !isVerified) {
+        statusText = 'Active (Unverified)';
+        statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-warning text-warning-content';
+      } else if (!isActive && isVerified) {
+        statusText = 'Verified (Inactive)';
+        statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-info text-info-content';
+      } else {
+        statusText = 'Inactive';
+        statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-error text-error-content';
+      }
+    } else {
+      // Fallback for unknown statuses
+      statusText = accountStatus || 'Unknown';
+      statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-neutral text-neutral-content';
+    }
+    
+    return <span className={statusClass}>{statusText}</span>;
   };
 
   return (
@@ -196,27 +233,29 @@ const AdAccountConfirmation = () => {
           ) : isLoading ? (
             <div className="text-center py-8 text-gray-500">Loading...</div>
           ) : isError ? (
-            <div className="text-center py-8 text-red-500">Failed to load users.</div>
+            <div className="text-center py-8 text-red-500">
+              Failed to load users. {error?.data?.message || error?.message || ''}
+            </div>
           ) : paginatedRequests.length > 0 ? (
             <table className="table table-zebra w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="font-semibold text-gray-700">Request ID</th>
-                  <th className="font-semibold text-gray-700">Service ID</th>
-                  <th className="font-semibold text-gray-700">Name</th>
-                  <th className="font-semibold text-gray-700">Created Date</th>
-                  <th className="font-semibold text-gray-700 ">Status</th>
-                  <th className="font-semibold text-gray-700 ">Action</th>
+                  <th className="font-semibold text-gray-700">Full Name</th>
+                  <th className="font-semibold text-gray-700">Email</th>
+                  <th className="font-semibold text-gray-700">Role</th>
+                  <th className="font-semibold text-gray-700">Status</th>
+                  <th className="font-semibold text-gray-700">Request Date</th>
+                  <th className="font-semibold text-gray-700">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedRequests.map((request) => (
                   <tr key={request.id} className="hover:bg-gray-50">
-                    <td className="font-medium text-gray-900">{request.id}</td>
-                    <td className="text-gray-700">{request.serviceId}</td>
-                    <td className="text-gray-700">{request.name}</td>
+                    <td className="font-medium text-gray-900">{request.name}</td>
+                    <td className="text-gray-700">{request.raw?.email || 'N/A'}</td>
+                    <td className="text-gray-700">{request.role}</td>
+                    <td className=''>{getStatusBadge(request)}</td>
                     <td className="text-gray-700">{formatDateTime(request.createdDate)}</td>
-                    <td className=''>{getStatusBadge(request.status)}</td>
                     <td className=' '>
                       <button
                         onClick={() => handleViewRequest(request)}
@@ -241,8 +280,8 @@ const AdAccountConfirmation = () => {
                  {/* Pagination */}
          <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50">
            <div className="text-sm text-gray-600">
-             {filteredRequests.length > 0 ? (
-               `Showing page ${currentPage} of ${totalPages} (${filteredRequests.length} records)`
+             {paginatedRequests.length > 0 ? (
+               `Showing page ${currentPage} of ${totalPages} (${data?.data?.pagination?.totalItems || paginatedRequests.length} total records)`
              ) : (
                `No record found`
              )}
