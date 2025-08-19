@@ -57,42 +57,13 @@ const ProfileModal = ({ isOpen, onClose }) => {
     }
   }, [user]);
 
-  // Handle resize events and prevent modal from closing
+  // Handle body overflow when modal is open
   useEffect(() => {
-    const handleResize = () => {
-      // Prevent the modal from closing on resize
-    };
-
-    const handleDrawerToggle = () => {
-      // Prevent modal from closing when drawer state changes
-    };
-
     if (isOpen) {
-      window.addEventListener("resize", handleResize);
-      const drawerToggle = document.getElementById("admin-drawer");
-      if (drawerToggle) {
-        drawerToggle.addEventListener("change", handleDrawerToggle);
-      }
       document.body.style.overflow = "hidden";
-      if (modalRef.current) {
-        modalRef.current.style.position = "fixed";
-        modalRef.current.style.zIndex = "99999";
-        modalRef.current.style.top = "0";
-        modalRef.current.style.left = "0";
-        modalRef.current.style.right = "0";
-        modalRef.current.style.bottom = "0";
-        modalRef.current.style.display = "flex";
-        modalRef.current.style.alignItems = "center";
-        modalRef.current.style.justifyContent = "center";
-      }
     }
 
     return () => {
-      window.removeEventListener("resize", handleResize);
-      const drawerToggle = document.getElementById("admin-drawer");
-      if (drawerToggle) {
-        drawerToggle.removeEventListener("change", handleDrawerToggle);
-      }
       document.body.style.overflow = "unset";
     };
   }, [isOpen]);
@@ -150,29 +121,27 @@ const ProfileModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <dialog
+    <div
       ref={modalRef}
-      open={isOpen}
-      className="modal z-[99999] !fixed !inset-0 !pointer-events-auto"
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 99999,
-        display: isOpen ? "flex" : "none",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
+      className={`fixed inset-0 z-100000 flex items-center justify-center ${
+        isOpen ? "block" : "hidden"
+      }`}
     >
-      <div className="modal-box w-11/12 max-w-2xl lg:max-w-4xl relative bg-white p-0 max-h-[90vh] flex flex-col">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-black/40"
+        onClick={onClose}
+      />
+      
+      {/* Modal Content */}
+      <div className="relative w-11/12 max-w-2xl lg:max-w-4xl bg-white rounded-lg shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
         {/* X Close Button */}
-        <form method="dialog" className="absolute top-4 right-4 z-20">
-          <button className="btn btn-sm btn-circle btn-ghost" onClick={onClose}>
-            <XIcon size={16} />
-          </button>
-        </form>
+        <button 
+          className="absolute top-4 right-4 z-20 btn btn-sm btn-circle btn-ghost" 
+          onClick={onClose}
+        >
+          <XIcon size={16} />
+        </button>
 
         {/* Header - Sticky Top */}
         <div className="sticky top-0 bg-white z-10 px-6 py-4 border-b border-gray-200">
@@ -199,51 +168,31 @@ const ProfileModal = ({ isOpen, onClose }) => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Personal Information Section */}
             <div>
-              <h4 className="font-semibold text-lg mb-4 text-black">
+              <h4 className="font-semibold text-lg mb-4 text-black flex items-center gap-2">
+                <UserIcon size={20} />
                 Personal Information
               </h4>
               <div className="space-y-4">
-                {/* Full Name Field */}
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-semibold">Full Name</span>
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      name="fullName"
-                      value={formData.fullName}
-                      onChange={handleInputChange}
-                      className="input input-bordered w-full"
-                      placeholder="Enter your full name"
-                    />
-                  ) : (
+                {/* First Name & Last Name Row */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text font-semibold">First Name</span>
+                    </label>
                     <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
                       <UserIcon size={16} />
-                      {formData.fullName || "undefined"}
+                      {formData.firstName || "undefined"}
                     </div>
-                  )}
-                </div>
-
-                {/* First Name Field */}
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-semibold">First Name</span>
-                  </label>
-                  <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
-                    <UserIcon size={16} />
-                    {formData.firstName || "undefined"}
                   </div>
-                </div>
 
-                {/* Last Name Field */}
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-semibold">Last Name</span>
-                  </label>
-                  <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
-                    <UserIcon size={16} />
-                    {formData.lastName || "undefined"}
+                  <div className="form-control">
+                    <label className="label">
+                      <span className="label-text font-semibold">Last Name</span>
+                    </label>
+                    <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
+                      <UserIcon size={16} />
+                      {formData.lastName || "undefined"}
+                    </div>
                   </div>
                 </div>
 
@@ -284,7 +233,8 @@ const ProfileModal = ({ isOpen, onClose }) => {
 
             {/* Service Information Section */}
             <div>
-              <h4 className="font-semibold text-lg mb-4 text-black">
+              <h4 className="font-semibold text-lg mb-4 text-black flex items-center gap-2">
+                <ShieldIcon size={20} />
                 Service Information
               </h4>
               <div className="space-y-4">
@@ -336,7 +286,8 @@ const ProfileModal = ({ isOpen, onClose }) => {
 
             {/* Contact Information Section */}
             <div>
-              <h4 className="font-semibold text-lg mb-4 text-black">
+              <h4 className="font-semibold text-lg mb-4 text-black flex items-center gap-2">
+                <EnvelopeIcon size={20} />
                 Contact Information
               </h4>
               <div className="space-y-4">
@@ -435,7 +386,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
           </div>
         </div>
       </div>
-    </dialog>
+    </div>
   );
 };
 
