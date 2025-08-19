@@ -204,7 +204,10 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
 
       if (result.success) {
         showToast("Account created successfully and is pending approval!", "success");
-     
+        // Reset form after successful creation
+        setTimeout(() => {
+          handleClose();
+        }, 1000);
       } else {
         const errorMsg = result.message || "Failed to create account";
         setError(errorMsg);
