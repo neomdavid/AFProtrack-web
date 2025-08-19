@@ -5,9 +5,18 @@ import {
   XCircleIcon,
   XIcon,
 } from "@phosphor-icons/react";
+import { useApproveUserMutation, useRejectUserMutation } from "../../features/api/adminEndpoints";
 
 const AccountRequestModal = ({ open, onClose, request, onStatusUpdate }) => {
+  const [approveUser, { isLoading: isApproving }] = useApproveUserMutation();
+  const [rejectUser, { isLoading: isRejecting }] = useRejectUserMutation();
+
   if (!open || !request) return null;
+
+  // Debug logging to see what we're receiving
+  console.log('Modal request data:', request);
+  console.log('Modal request status:', request.status);
+  console.log('Modal request raw:', request.raw);
 
   const formatDateTime = (dateTimeString) => {
     const date = new Date(dateTimeString);
@@ -30,24 +39,61 @@ const AccountRequestModal = ({ open, onClose, request, onStatusUpdate }) => {
   };
 
   const getStatusBadge = (status) => {
+    // Handle both formatted status and raw backend status
+    const statusValue = status || request.raw?.accountStatus || 'unknown';
+    
     const statusClasses = {
-      Pending: "badge badge-warning badge-lg",
-      Approved: "badge badge-success badge-lg",
-      Declined: "badge badge-error badge-lg",
+      'Pending': "badge badge-warning badge-lg",
+      'Pending Approval': "badge badge-warning badge-lg",
+      'pending': "badge badge-warning badge-lg",
+      'Approved': "badge badge-success badge-lg",
+      'approved': "badge badge-success badge-lg",
+      'Declined': "badge badge-error badge-lg",
+      'declined': "badge badge-error badge-lg",
+      'rejected': "badge badge-error badge-lg",
+      'Rejected': "badge badge-error badge-lg",
     };
+    
+    // Find the matching class or use a default
+    const statusClass = statusClasses[statusValue] || "badge badge-neutral badge-lg";
+    
+    // Format the display text
+    let displayText = statusValue;
+    if (statusValue === 'pending') displayText = 'Pending Approval';
+    if (statusValue === 'approved') displayText = 'Approved';
+    if (statusValue === 'declined' || statusValue === 'rejected') displayText = 'Declined';
+    
     return (
-      <span className={statusClasses[status] || "badge badge-neutral badge-lg"}>
-        {status}
+      <span className={statusClass}>
+        {displayText}
       </span>
     );
   };
 
-  const handleApprove = () => {
-    onStatusUpdate(request.id, "Approved");
+  const handleApprove = async () => {
+    try {
+      await approveUser(request.raw._id || request.id).unwrap();
+      // Small delay to ensure cache is updated
+      setTimeout(() => {
+        onStatusUpdate(request.id, "Approved");
+      }, 100);
+    } catch (error) {
+      console.error("Error approving user:", error);
+      // You could add a toast notification here
+    }
   };
 
-  const handleDecline = () => {
-    onStatusUpdate(request.id, "Declined");
+  const handleDecline = async () => {
+    try {
+      await rejectUser(request.raw._id || request.id).unwrap();
+      // Small delay to ensure cache is updated
+      setTimeout(() => {
+        onStatusUpdate(request.id, "Declined");
+      }, 100);
+    } catch (error) {
+      console.error("Error rejecting user:", error);
+      // You could add a toast notification here
+    }
   };
 
   return (
@@ -194,7 +240,7 @@ const AccountRequestModal = ({ open, onClose, request, onStatusUpdate }) => {
             </div>
 
             {/* Action Buttons */}
-            {request.status === "Pending" && (
+            {(request.status === "Pending" || request.status === "Pending Approval" || request.raw?.accountStatus === "pending") && (
               <div className="p-3 flex flex-col">
                 <h4 className="font-semibold mb-3 text-base">
                   Review Decision
@@ -202,24 +248,44 @@ const AccountRequestModal = ({ open, onClose, request, onStatusUpdate }) => {
                 <div className="flex gap-3">
                   <button
                     onClick={handleApprove}
-                    className=" px-4 py-2 text-[13px] font-bold rounded-md flex items-center gap-2 bg-success-content text-white btn-hover"
+                    disabled={isApproving || isRejecting}
+                    className=" px-4 py-2 text-[13px] font-bold rounded-md flex items-center gap-2 bg-success-content text-white btn-hover disabled:opacity-50"
                   >
-                    <CheckIcon size={18} weight="bold" />
-                    Approve Request
+                    {isApproving ? (
+                      <>
+                        <span className="loading loading-spinner loading-xs"></span>
+                        Approving...
+                      </>
+                    ) : (
+                      <>
+                        <CheckIcon size={18} weight="bold" />
+                        Approve Request
+                      </>
+                    )}
                   </button>
                   <button
                     onClick={handleDecline}
-                    className="px-4 py-2 text-[13px] font-bold rounded-md flex items-center gap-2 bg-error text-white btn-hover"
+                    disabled={isApproving || isRejecting}
+                    className="px-4 py-2 text-[13px] font-bold rounded-md flex items-center gap-2 bg-error text-white btn-hover disabled:opacity-50"
                   >
-                    <XIcon weight="bold" size={18} />
-                    Decline Request
+                    {isRejecting ? (
+                      <>
+                        <span className="loading loading-spinner loading-xs"></span>
+                        Rejecting...
+                      </>
+                    ) : (
+                      <>
+                        <XIcon weight="bold" size={18} />
+                        Decline Request
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
             )}
 
             {/* Status-specific messages */}
-            {request.status === "Approved" && (
+            {(request.status === "Approved" || request.raw?.accountStatus === "approved") && (
               <div className="p-3">
                 <div className="flex items-center gap-2 text-green-600">
                   <CheckCircleIcon size={20} />
@@ -230,9 +296,9 @@ const AccountRequestModal = ({ open, onClose, request, onStatusUpdate }) => {
               </div>
             )}
 
-            {request.status === "Declined" && (
+            {(request.status === "Declined" || request.raw?.accountStatus === "declined" || request.raw?.accountStatus === "rejected") && (
               <div className="p-3">
-                <div className="flex items-center gap-2 text-red-600">
+                <div className="flex items-center gap-2 text-error">
                   <XCircleIcon size={20} />
                   <span className="font-medium">
                     This request has been declined.

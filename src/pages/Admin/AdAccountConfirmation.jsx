@@ -7,7 +7,9 @@ import { useAuth } from '../../hooks/useAuth';
 const AdAccountConfirmation = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [accountStatusFilter, setAccountStatusFilter] = useState('');
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState('desc');
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -16,7 +18,15 @@ const AdAccountConfirmation = () => {
   const isAdmin = user?.role === 'admin';
   const [page, setPage] = useState(1);
   const itemsPerPage = 10;
-  const { data, isLoading, isError, error } = useGetAllUsersQuery({ page, limit: itemsPerPage, search: searchTerm, role: roleFilter, status: statusFilter }, { skip: !isAdmin });
+  const { data, isLoading, isError, error, refetch } = useGetAllUsersQuery({ 
+    page, 
+    limit: itemsPerPage, 
+    search: searchTerm, 
+    role: roleFilter, 
+    accountStatus: accountStatusFilter,
+    sortBy,
+    sortOrder
+  }, { skip: !isAdmin });
   
   // Debug logging
   console.log('Account Confirmation Debug:', { user, isAdmin, data, isLoading, isError, error });
@@ -60,7 +70,7 @@ const AdAccountConfirmation = () => {
   useEffect(() => {
     setCurrentPage(1);
     setPage(1);
-  }, [searchTerm, roleFilter, statusFilter]);
+  }, [searchTerm, roleFilter, accountStatusFilter, sortBy, sortOrder]);
 
   const handleViewRequest = (request) => {
     setSelectedRequest(request);
@@ -75,13 +85,17 @@ const AdAccountConfirmation = () => {
   const handleStatusUpdate = (requestId, newStatus) => {
     // Here you would typically update the status in your backend
     console.log(`Updating request ${requestId} to status: ${newStatus}`);
+    // Trigger a refetch to get updated data
+    refetch();
     handleCloseModal();
   };
 
   const handleClearFilters = () => {
     setSearchTerm('');
     setRoleFilter('');
-    setStatusFilter('');
+    setAccountStatusFilter('');
+    setSortBy('createdAt');
+    setSortOrder('desc');
     setCurrentPage(1);
   };
 
@@ -123,28 +137,23 @@ const AdAccountConfirmation = () => {
     let statusClass = '';
     
     if (accountStatus === 'pending') {
-      statusText = 'Pending Approval';
+      statusText = 'Pending';
       statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-warning text-warning-content';
     } else if (accountStatus === 'email_verification') {
-      statusText = 'Unverified Email';
+      statusText = 'Email Verification';
       statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-gray-300 text-neutral';
     } else if (accountStatus === 'approved') {
       statusText = 'Approved';
       statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-info text-info-content';
+    } else if (accountStatus === 'declined') {
+      statusText = 'Declined';
+      statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-error text-error-content';
     } else if (accountStatus === 'active') {
-      if (isActive && isVerified) {
-        statusText = 'Active';
-        statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-success text-success-content';
-      } else if (isActive && !isVerified) {
-        statusText = 'Active (Unverified)';
-        statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-warning text-warning-content';
-      } else if (!isActive && isVerified) {
-        statusText = 'Verified (Inactive)';
-        statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-info text-info-content';
-      } else {
-        statusText = 'Inactive';
-        statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-error text-error-content';
-      }
+      statusText = 'Active';
+      statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-success text-success-content';
+    } else if (accountStatus === 'inactive') {
+      statusText = 'Inactive';
+      statusClass = 'px-4 py-1 text-[12px] font-bold rounded-full bg-neutral text-neutral-content';
     } else {
       // Fallback for unknown statuses
       statusText = accountStatus || 'Unknown';
@@ -181,9 +190,9 @@ const AdAccountConfirmation = () => {
                 onChange={(e) => setRoleFilter(e.target.value)}
               >
                 <option value="">All Roles</option>
-                <option value="Staff">Staff</option>
-                <option value="Trainer">Trainer</option>
-                <option value="Admin">Admin</option>
+                <option value="admin">Admin</option>
+                <option value="training_staff">Training Staff</option>
+                <option value="staff">Staff</option>
               </select>
               <CaretDownIcon
                 weight="bold"
@@ -198,13 +207,56 @@ const AdAccountConfirmation = () => {
             <div className="relative">
               <select
                 className="bg-white/90 border w-70 appearance-none rounded-md border-gray-300 p-2"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                value={accountStatusFilter}
+                onChange={(e) => setAccountStatusFilter(e.target.value)}
               >
                 <option value="">All Statuses</option>
-                <option value="Pending">Pending</option>
-                <option value="Approved">Approved</option>
-                <option value="Declined">Declined</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="declined">Declined</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="email_verification">Email Verification</option>
+              </select>
+              <CaretDownIcon
+                weight="bold"
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+              />
+            </div>
+          </div>
+
+          {/* Sort By */}
+          <div className="flex flex-col gap-1">
+            <p className="font-semibold text-gray">Sort By</p>
+            <div className="relative">
+              <select
+                className="bg-white/90 border w-70 appearance-none rounded-md border-gray-300 p-2"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value="createdAt">Request Date</option>
+                <option value="fullName">Full Name</option>
+                <option value="role">Role</option>
+                <option value="unit">Unit</option>
+              </select>
+              <CaretDownIcon
+                weight="bold"
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+              />
+            </div>
+          </div>
+
+          {/* Sort Order */}
+          <div className="flex flex-col gap-1">
+            <p className="font-semibold text-gray">Order</p>
+            <div className="relative">
+              <select
+                className="bg-white/90 border w-70 appearance-none rounded-md border-gray-300 p-2"
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+              >
+                <option value="desc">Descending</option>
+                <option value="asc">Ascending</option>
               </select>
               <CaretDownIcon
                 weight="bold"
