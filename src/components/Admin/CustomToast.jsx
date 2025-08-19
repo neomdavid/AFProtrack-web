@@ -37,7 +37,7 @@ const CustomToast = ({ message, type = 'info', duration = 4000, onClose }) => {
   };
 
   return (
-    <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[9999] flex items-center gap-3 p-4 rounded-lg border shadow-lg max-w-sm ${getToastStyles()}`}>
+    <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-[10000000000] flex items-center gap-3 p-4 rounded-lg border shadow-lg max-w-sm ${getToastStyles()}`}>
       {getIcon()}
       <p className="flex-1 text-sm font-medium">{message}</p>
       <button

@@ -15,7 +15,7 @@
 }
 
 @plugin "daisyui/theme" {
-  name: "afprotrack";
+  name: "base";
   default: true;
   prefersdark: false;
   color-scheme: light;

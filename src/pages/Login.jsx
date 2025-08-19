@@ -1,8 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import logo from "../assets/AFProTrack_logo.png";
 import { useAuth } from "../hooks/useAuth";
-import { useGetPendingUsersQuery } from '../features/api/adminEndpoints';
 
 const Login = () => {
   const [serviceId, setServiceId] = useState("");
@@ -11,23 +10,6 @@ const Login = () => {
   const [error, setError] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
-
-  // RTK Query sample GET
-  const { data: pendingUsers, isLoading: isPendingLoading, error: pendingError } = useGetPendingUsersQuery();
-
-  useEffect(() => {
-    if (isPendingLoading) {
-      console.log("[Login] Loading pending users...");
-      return;
-    }
-    if (pendingError) {
-      console.warn("[Login] Failed to load pending users:", pendingError);
-      return;
-    }
-    if (pendingUsers) {
-      console.log("[Login] Pending users:", pendingUsers);
-    }
-  }, [isPendingLoading, pendingError, pendingUsers]);
   
   const handleSubmit = async (e) => {
     e.preventDefault();

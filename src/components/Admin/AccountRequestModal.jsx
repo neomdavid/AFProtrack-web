@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   CheckCircleIcon,
   CheckIcon,
@@ -6,10 +6,12 @@ import {
   XIcon,
 } from "@phosphor-icons/react";
 import { useApproveUserMutation, useRejectUserMutation } from "../../features/api/adminEndpoints";
+import CustomToast from "./CustomToast";
 
 const AccountRequestModal = ({ open, onClose, request, onStatusUpdate }) => {
   const [approveUser, { isLoading: isApproving }] = useApproveUserMutation();
   const [rejectUser, { isLoading: isRejecting }] = useRejectUserMutation();
+  const [toast, setToast] = useState(null);
 
   if (!open || !request) return null;
 
@@ -17,6 +19,11 @@ const AccountRequestModal = ({ open, onClose, request, onStatusUpdate }) => {
   console.log('Modal request data:', request);
   console.log('Modal request status:', request.status);
   console.log('Modal request raw:', request.raw);
+
+  // Helper function to show toasts
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+  };
 
   const formatDateTime = (dateTimeString) => {
     const date = new Date(dateTimeString);
@@ -43,17 +50,17 @@ const AccountRequestModal = ({ open, onClose, request, onStatusUpdate }) => {
     const statusValue = status || request.raw?.accountStatus || 'unknown';
     
     const statusClasses = {
-      'Pending': "bg-warning text-warning-content border-warning-content px-4 py-1 rounded-xl border font-semibold border-warning-content",
-      'Pending Approval': "bg-warning text-warning-content border-warning-content px-4 py-1 rounded-xl border font-semibold border-warning-content",
-      'pending': "bg-warning text-warning-content border-warning-content px-4 py-1 rounded-xl border font-semibold border-warning-content ",
-      'Approved': "bg-info text-info-content border border-info-content px-4 py-1 rounded-xl border font-semibold",
-      'approved': "bg-info text-info-content border border-info-content px-4 py-1 rounded-xl border font-semibold",
-      'Declined': "bg-error text-error-content border border-error-content px-4 py-1 rounded-xl border font-semibold ",
-      'declined': "bg-error text-error-content border border-error-content px-4 py-1 rounded-xl border font-semibold",
-      'rejected': "bg-error text-error-content border border-error-content px-4 py-1 rounded-xl border font-semibold",
-      'Rejected': "bg-error text-error-content border border-error-content px-4 py-1 rounded-xl border font-semibold",
-      'Email Verification': "bg-gray-300 text-content border border-gray-300 px-4 py-1 rounded-xl border font-semibold",
-      'Active': "bg-success text-success-content border border-success-content px-4 py-1 rounded-xl border font-semibold",
+      'Pending': "bg-warning text-warning-content border-warning-content px-4 py-1.5 rounded-lg border font-semibold border-warning-content",
+      'Pending Approval': "bg-warning text-warning-content border-warning-content px-4 py-1.5 rounded-lg border font-semibold border-warning-content",
+      'pending': "bg-warning text-warning-content border-warning-content px-4 py-1.5 rounded-lg border font-semibold border-warning-content ",
+      'Approved': "bg-info text-info-content border border-info-content px-4 py-1.5 rounded-lg border font-semibold",
+      'approved': "bg-info text-info-content border border-info-content px-4 py-1.5 rounded-lg border font-semibold",
+      'Declined': "bg-error text-error-content border border-error-content px-4 py-1.5 rounded-lg border font-semibold ",
+      'declined': "bg-error text-error-content border border-error-content px-4 py-1.5 rounded-lg border font-semibold",
+      'rejected': "bg-error text-error-content border border-error-content px-4 py-1.5 rounded-lg border font-semibold",
+      'Rejected': "bg-error text-error-content border border-error-content px-4 py-1.5 rounded-lg border font-semibold",
+      'Email Verification': "bg-gray-300 text-content border border-gray-300 px-4 py-1.5 rounded-lg border font-semibold",
+      'Active': "bg-success text-success-content border border-success-content px-4 py-1.5 rounded-lg border font-semibold",
 
 
     };
@@ -77,30 +84,33 @@ const AccountRequestModal = ({ open, onClose, request, onStatusUpdate }) => {
   const handleApprove = async () => {
     try {
       await approveUser(request.raw._id || request.id).unwrap();
+      showToast("User approved successfully!", "success");
       // Small delay to ensure cache is updated
       setTimeout(() => {
         onStatusUpdate(request.id, "Approved");
       }, 100);
     } catch (error) {
       console.error("Error approving user:", error);
-      // You could add a toast notification here
+      showToast("Failed to approve user. Please try again.", "error");
     }
   };
 
   const handleDecline = async () => {
     try {
       await rejectUser(request.raw._id || request.id).unwrap();
+      showToast("User declined successfully!", "success");
       // Small delay to ensure cache is updated
       setTimeout(() => {
         onStatusUpdate(request.id, "Declined");
       }, 100);
     } catch (error) {
       console.error("Error rejecting user:", error);
-      // You could add a toast notification here
+      showToast("Failed to decline user. Please try again.", "error");
     }
   };
 
   return (
+    <>
     <dialog open={open} className="modal z-[10000]">
       <div className="modal-box w-11/12 max-w-4xl relative bg-white p-6 max-h-[90vh] flex flex-col">
         {/* X Close Button */}
@@ -128,7 +138,7 @@ const AccountRequestModal = ({ open, onClose, request, onStatusUpdate }) => {
           <div>
             <h3 className="font-bold text-xl mb-1">Account Request Details</h3>
             <div className="flex items-center gap-2 text-[12px]">
-              <span className="text-sm text-gray-600">Status:</span>
+              {/* <span className="text-sm text-gray-600">Status:</span> */}
               {getStatusBadge(request.status)}
             </div>
           </div>
@@ -308,6 +318,16 @@ const AccountRequestModal = ({ open, onClose, request, onStatusUpdate }) => {
         </div>
       </div>
     </dialog>
+
+    {/* Toast container - OUTSIDE the modal */}
+    {toast && (
+      <CustomToast
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast(null)}
+      />
+    )}
+  </>
   );
 };
 

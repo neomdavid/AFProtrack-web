@@ -68,6 +68,19 @@ export const adminApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: [{ type: 'User', id: 'ALL_USERS' }],
     }),
+    verifyEmailToken: builder.query({
+      query: (token) => ({
+        url: `/users/verify-token/${token}`,
+        method: 'GET',
+      }),
+    }),
+    verifyEmail: builder.mutation({
+      query: ({ token, password }) => ({
+        url: `/users/verify-email?token=${token}`,
+        method: 'POST',
+        body: { password },
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -75,10 +88,12 @@ export const adminApi = apiSlice.injectEndpoints({
 export const {
   useGetPendingUsersQuery,
   useCreatePendingUserMutation,
-  useCreateWebUserMutation,
   useGetOrgStructureQuery,
   useGetRanksQuery,
+  useCreateWebUserMutation,
   useGetAllUsersQuery,
   useApproveUserMutation,
   useRejectUserMutation,
+  useVerifyEmailTokenQuery,
+  useVerifyEmailMutation,
 } = adminApi;
