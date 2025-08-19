@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { canPerformAction, ROLES } from "../../utils/rolePermissions";
 import AddProgramModal from "./AddProgramModal";
 import ProgramModal from "./ProgramModal";

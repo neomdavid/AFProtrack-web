@@ -19,7 +19,6 @@ import {
 import AdDashboard from "./pages/Admin/AdDashboard";
 import AdTrainingOverview from "./pages/Admin/AdTrainingOverview";
 import ColorTest from "./components/ColorTest";
-import { AuthProvider } from "./context/AuthContext";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AdAccounts from "./pages/Admin/AdAccounts";
@@ -30,41 +29,39 @@ function App() {
 
   return (
     <div data-theme="afprotrack">
-      <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/test-colors" element={<ColorTest />} />
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index path="dashboard" element={<AdDashboard />} />
-              <Route
-                index
-                path="training_data_overview"
-                element={<AdTrainingOverview />}
-              />
-              <Route index path="accounts" element={<AdAccounts />} />
-              <Route index path="account_confirmation" element={<AdAccountConfirmation />} />
-            </Route>
-            <Route path="/trainer" element={<StaffLayout />} />
-          </Routes>
-        </BrowserRouter>
-        <ToastContainer
-          position="top-center"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-          toastClassName="text-[14px] p-2 !text-primary"
-        />
-      </AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/test-colors" element={<ColorTest />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index path="dashboard" element={<AdDashboard />} />
+            <Route
+              index
+              path="training_data_overview"
+              element={<AdTrainingOverview />}
+            />
+            <Route index path="accounts" element={<AdAccounts />} />
+            <Route index path="account_confirmation" element={<AdAccountConfirmation />} />
+          </Route>
+          <Route path="/trainer" element={<StaffLayout />} />
+        </Routes>
+      </BrowserRouter>
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        toastClassName="text-[14px] p-2 !text-primary"
+      />
     </div>
   );
 }

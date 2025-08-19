@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { canEditField, ROLES } from "../../utils/rolePermissions";
 
 const AddProgramModal = ({

@@ -5,7 +5,7 @@ import {
   CaretDownIcon,
 } from "@phosphor-icons/react";
 import React, { useState, useRef, useEffect } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
 const MobileProfileDropdown = ({ onOpenProfileModal }) => {
@@ -30,7 +30,6 @@ const MobileProfileDropdown = ({ onOpenProfileModal }) => {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
     setIsDropdownOpen(false);
   };
 
@@ -62,9 +61,9 @@ const MobileProfileDropdown = ({ onOpenProfileModal }) => {
               <UserCircleIcon size={24} className="text-gray-600" />
               <div>
                 <p className="text-sm font-medium text-gray-900">
-                  Lt. Surname, FN
+                  {user?.fullName || 'User'}
                 </p>
-                <p className="text-xs text-gray-500">Admin Access</p>
+                <p className="text-xs text-gray-500">{user?.role || 'User'} Access</p>
               </div>
             </div>
           </div>

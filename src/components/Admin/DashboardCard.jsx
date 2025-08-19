@@ -9,7 +9,7 @@ const DashboardCard = ({
   iconBgColor,
 }) => {
   return (
-    <div className="flex min-w-68 items-start bg-white rounded-md  border-3 shadow-sm  border-gray-200 p-4 px-6 gap-4 ">
+    <div className="flex min-w-68 items-start bg-white rounded-lg  border-3 shadow-sm  border-gray-200 p-4 px-6 gap-5 ">
       <div className={`${iconBgColor} p-2 rounded-sm mt-1.5`}>{icon}</div>
       <div className="flex flex-col gap-1">
         <h2 className="font-bold text-lg text-black/60">{title}</h2>
