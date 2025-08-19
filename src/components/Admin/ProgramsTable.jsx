@@ -143,6 +143,13 @@ const ProgramsTable = ({ programs = [], onViewDetails }) => {
                       >
                         View Details
                       </button>
+                      <a
+                        href={`/admin/programs/${program.id}/attendance`}
+                        className="btn btn-ghost btn-xs text-[12px]"
+                        title="Open Attendance Page"
+                      >
+                        Attendance
+                      </a>
                     </div>
                   </td>
                 </tr>
