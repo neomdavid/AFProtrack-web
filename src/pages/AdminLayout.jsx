@@ -6,7 +6,7 @@ import FloatingProfile from "../components/Admin/FloatingProfile";
 import TopNavigation from "../components/Admin/TopNavigation";
 import Sidebar from "../components/Admin/Sidebar";
 import ProfileModal from "../components/Admin/ProfileModal";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 
 const AdminLayout = () => {
   const [isSticky, setIsSticky] = useState(false);

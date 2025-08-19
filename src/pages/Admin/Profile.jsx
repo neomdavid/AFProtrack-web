@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 const Label = ({ children }) => (
   <label className="text-sm font-medium text-gray-700">{children}</label>

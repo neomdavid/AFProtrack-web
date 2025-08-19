@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import logo from "../assets/AFProTrack_logo.png";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { useGetPendingUsersQuery } from '../features/api/adminEndpoints';
 
 const Login = () => {
