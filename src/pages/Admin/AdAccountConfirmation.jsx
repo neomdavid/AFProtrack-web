@@ -192,7 +192,7 @@ const AdAccountConfirmation = () => {
                 <option value="">All Roles</option>
                 <option value="admin">Admin</option>
                 <option value="training_staff">Training Staff</option>
-                <option value="staff">Staff</option>
+                <option value="trainee">Trainee</option>
               </select>
               <CaretDownIcon
                 weight="bold"

@@ -43,15 +43,19 @@ const AccountRequestModal = ({ open, onClose, request, onStatusUpdate }) => {
     const statusValue = status || request.raw?.accountStatus || 'unknown';
     
     const statusClasses = {
-      'Pending': "badge badge-warning badge-lg",
-      'Pending Approval': "badge badge-warning badge-lg",
-      'pending': "badge badge-warning badge-lg",
-      'Approved': "badge badge-success badge-lg",
-      'approved': "badge badge-success badge-lg",
-      'Declined': "badge badge-error badge-lg",
-      'declined': "badge badge-error badge-lg",
-      'rejected': "badge badge-error badge-lg",
-      'Rejected': "badge badge-error badge-lg",
+      'Pending': "bg-warning text-warning-content border-warning-content px-4 py-1 rounded-xl border font-semibold border-warning-content",
+      'Pending Approval': "bg-warning text-warning-content border-warning-content px-4 py-1 rounded-xl border font-semibold border-warning-content",
+      'pending': "bg-warning text-warning-content border-warning-content px-4 py-1 rounded-xl border font-semibold border-warning-content ",
+      'Approved': "bg-info text-info-content border border-info-content px-4 py-1 rounded-xl border font-semibold",
+      'approved': "bg-info text-info-content border border-info-content px-4 py-1 rounded-xl border font-semibold",
+      'Declined': "bg-error text-error-content border border-error-content px-4 py-1 rounded-xl border font-semibold ",
+      'declined': "bg-error text-error-content border border-error-content px-4 py-1 rounded-xl border font-semibold",
+      'rejected': "bg-error text-error-content border border-error-content px-4 py-1 rounded-xl border font-semibold",
+      'Rejected': "bg-error text-error-content border border-error-content px-4 py-1 rounded-xl border font-semibold",
+      'Email Verification': "bg-gray-300 text-content border border-gray-300 px-4 py-1 rounded-xl border font-semibold",
+      'Active': "bg-success text-success-content border border-success-content px-4 py-1 rounded-xl border font-semibold",
+
+
     };
     
     // Find the matching class or use a default
@@ -123,10 +127,7 @@ const AccountRequestModal = ({ open, onClose, request, onStatusUpdate }) => {
         <div className="bg-white pt-2 pb-3 border-b border-gray-200 mb-4">
           <div>
             <h3 className="font-bold text-xl mb-1">Account Request Details</h3>
-            <p className="text-gray-600 text-sm mb-2">
-              Request ID: {request.id}
-            </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 text-[12px]">
               <span className="text-sm text-gray-600">Status:</span>
               {getStatusBadge(request.status)}
             </div>
@@ -142,16 +143,6 @@ const AccountRequestModal = ({ open, onClose, request, onStatusUpdate }) => {
                 Request Information
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <label className="label py-1">
-                    <span className="label-text font-medium text-sm">
-                      Request ID
-                    </span>
-                  </label>
-                  <div className="text-sm font-medium text-gray-900 bg-white px-3 py-2 rounded border border-gray-200">
-                    {request.id}
-                  </div>
-                </div>
                 <div>
                   <label className="label py-1">
                     <span className="label-text font-medium text-sm">
