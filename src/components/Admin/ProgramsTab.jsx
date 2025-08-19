@@ -23,8 +23,14 @@ const ProgramsTab = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(3);
 
-  // RTK Query hook for programs data
-  const { data: programsData = [], isLoading, error, refetch } = useGetProgramsQuery();
+  // Sample data (reverted from RTK Query)
+  const programsData = [
+    { id: 1, name: 'Advanced Combat Training', duration: '5 days', instructor: 'Col. Santos', participants: '25/30', status: 'Ongoing', startDate: '2024-01-15', endDate: '2024-01-20', time: '08:00', venue: 'Training Ground A', additionalDetails: 'Comprehensive combat training program for advanced personnel.' },
+    { id: 2, name: 'Leadership Development', duration: '1 week', instructor: 'Maj. Rodriguez', participants: '15/20', status: 'Scheduled', startDate: '2024-02-01', endDate: '2024-02-05', time: '09:00', venue: 'Conference Hall B', additionalDetails: 'Leadership skills development for senior officers.' },
+    { id: 3, name: 'Basic Training Course', duration: '12 weeks', instructor: 'Sgt. Johnson', participants: '40/50', status: 'Completed', startDate: '2023-10-01', endDate: '2023-12-20', time: '07:00', venue: 'Training Center', additionalDetails: 'Basic military training for new recruits.' },
+    { id: 4, name: 'Tactical Operations', duration: '2 weeks', instructor: 'Capt. Martinez', participants: '30/35', status: 'Scheduled', startDate: '2024-03-01', endDate: '2024-03-14', time: '06:00', venue: 'Field Training Area', additionalDetails: 'Advanced tactical operations training.' },
+    { id: 5, name: 'Communication Skills', duration: '3 days', instructor: 'Lt. Thompson', participants: '20/25', status: 'Ongoing', startDate: '2024-01-25', endDate: '2024-01-27', time: '10:00', venue: 'Classroom C', additionalDetails: 'Effective communication and reporting skills.' }
+  ];
 
   // Get unique statuses for filter dropdown
   const uniqueStatuses = useMemo(() => {
@@ -123,153 +129,130 @@ const ProgramsTab = () => {
 
   return (
     <div className="flex flex-col gap-8 pb-6">
-      {/* Loading State */}
-      {isLoading && (
-        <div className="flex justify-center items-center py-8">
-          <div className="loading loading-spinner loading-lg"></div>
-          <span className="ml-3 text-lg">Loading programs...</span>
+      <div className="flex flex-wrap gap-4">
+        <DashboardCard
+          title="Total Trainings"
+          number="67"
+          icon={<PersonSimpleRunIcon size={31} weight="fill" color="white" />}
+          iconBgColor={"bg-[#272262]"}
+        />
+        <DashboardCard
+          title="Total Schools"
+          number="8"
+          icon={<WarehouseIcon size={31} color="white" />}
+          iconBgColor={"bg-[#E5B700]"}
+        />
+      </div>
+      <div className="flex flex-col gap-4">  
+        {/* Add New Program Button */}
+        <div className="flex justify-start items-center">
+          
         </div>
-      )}
-
-      {/* Error State */}
-      {error && (
-        <div className="alert alert-error">
-          <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>Error loading programs: {error.message || 'Unknown error occurred'}</span>
-          <button className="btn btn-sm" onClick={refetch}>Retry</button>
-        </div>
-      )}
-
-      {/* Content - Only show when not loading and no errors */}
-      {!isLoading && !error && (
-        <>
-          <div className="flex flex-wrap gap-4">
-            <DashboardCard
-              title="Total Trainings"
-              number="67"
-              icon={<PersonSimpleRunIcon size={31} weight="fill" color="white" />}
-              iconBgColor={"bg-[#272262]"}
-            />
-            <DashboardCard
-              title="Total Schools"
-              number="8"
-              icon={<WarehouseIcon size={31} color="white" />}
-              iconBgColor={"bg-[#E5B700]"}
+        {/* Filter Controls */}
+        <div className="flex flex-wrap gap-2 text-[14px] ">
+          <div className="flex flex-col gap-1">
+            <p className="font-semibold text-gray">Search</p>
+            <input
+              placeholder="Search program name, instructor, or status"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="bg-white/90 border w-70 rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             />
           </div>
-          <div className="flex flex-col gap-4">  
-             {/* Add New Program Button */}
-           <div className="flex justify-start items-center">
-            
-           </div>
-          {/* Filter Controls */}
-          <div className="flex flex-wrap gap-2 text-[14px] ">
-            <div className="flex flex-col gap-1">
-              <p className="font-semibold text-gray">Search</p>
-              <input
-                placeholder="Search program name, instructor, or status"
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className="bg-white/90 border w-70 rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <p className="font-semibold text-gray">Filter by Status</p>
-              <div className="relative">
-                <select 
-                  value={filterStatus}
-                  onChange={handleFilterChange}
-                  className="bg-white/90 border w-70 appearance-none rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                >
-                  <option value="">All Statuses</option>
-                  {uniqueStatuses.map((status) => (
-                    <option key={status} value={status}>{status}</option>
-                  ))}
-                </select>
-                <CaretDownIcon
-                  weight="bold"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-                />
-              </div>
-            </div>
-            <div className="flex flex-col gap-1">
-              <p className="font-semibold text-gray">Date</p>
-              <input
-                type="date"
-                value={filterDate}
-                onChange={handleDateChange}
-                className="bg-white/90 border w-70 rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              />
-            </div>
-            <div className="flex flex-col gap-1">
-              <p className="font-semibold text-gray opacity-0">Clear</p>
-              <button
-                onClick={clearFilters}
-                className="bg-gray-100 text-gray-700 border w-70 rounded-md border-gray-300 p-2 hover:bg-gray-200 transition-colors duration-200"
+          <div className="flex flex-col gap-1">
+            <p className="font-semibold text-gray">Filter by Status</p>
+            <div className="relative">
+              <select 
+                value={filterStatus}
+                onChange={handleFilterChange}
+                className="bg-white/90 border w-70 appearance-none rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               >
-                Clear Filters
+                <option value="">All Statuses</option>
+                {uniqueStatuses.map((status) => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+              <CaretDownIcon
+                weight="bold"
+                className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              />
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <p className="font-semibold text-gray">Date</p>
+            <input
+              type="date"
+              value={filterDate}
+              onChange={handleDateChange}
+              className="bg-white/90 border w-70 rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <p className="font-semibold text-gray opacity-0">Clear</p>
+            <button
+              onClick={clearFilters}
+              className="bg-gray-100 text-gray-700 border w-70 rounded-md border-gray-300 p-2 hover:bg-gray-200 transition-colors duration-200"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </div>
+
+        {/* Programs Table */}
+        <ProgramsTable 
+          programs={currentPrograms} 
+          onViewDetails={handleViewDetails}
+        />
+
+        {/* Results Summary and Pagination */}
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
+          {/* Page Indicator - Always show */}
+          <div className="text-sm text-gray-600">
+            Showing page {currentPage} of {totalPages} ({filteredPrograms.length} records)
+          </div>
+
+          {/* Pagination Controls - Only show when multiple pages */}
+          {totalPages > 1 && (
+            <div className="join">
+              <button
+                onClick={goToPreviousPage}
+                disabled={currentPage === 1}
+                className="join-item btn btn-sm btn-outline"
+              >
+                Previous
+              </button>
+              
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => goToPage(page)}
+                  className={`join-item btn btn-sm ${
+                    currentPage === page
+                      ? "btn-primary"
+                      : "btn-outline"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+              
+              <button
+                onClick={goToNextPage}
+                disabled={currentPage === totalPages}
+                className="join-item btn btn-sm btn-outline"
+              >
+                Next
               </button>
             </div>
-          </div>
-
-           {/* Programs Table */}
-           <ProgramsTable 
-             programs={currentPrograms} 
-             onViewDetails={handleViewDetails}
-           />
-
-           {/* Results Summary and Pagination */}
-           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
-             {/* Page Indicator - Always show */}
-             <div className="text-sm text-gray-600">
-               Showing page {currentPage} of {totalPages} ({filteredPrograms.length} records)
-             </div>
-
-             {/* Pagination Controls - Only show when multiple pages */}
-             {totalPages > 1 && (
-               <div className="join">
-                 <button
-                   onClick={goToPreviousPage}
-                   disabled={currentPage === 1}
-                   className="join-item btn btn-sm btn-outline"
-                 >
-                   Previous
-                 </button>
-                 
-                 {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-                   <button
-                     key={page}
-                     onClick={() => goToPage(page)}
-                     className={`join-item btn btn-sm ${
-                       currentPage === page
-                         ? "btn-primary"
-                         : "btn-outline"
-                     }`}
-                   >
-                     {page}
-                   </button>
-                 ))}
-                 
-                 <button
-                   onClick={goToNextPage}
-                   disabled={currentPage === totalPages}
-                   className="join-item btn btn-sm btn-outline"
-                 >
-                   Next
-                 </button>
-               </div>
-             )}
-           </div>
-          <ProgramModal open={modalOpen} onClose={() => setModalOpen(false)} program={selectedProgram} />
-          <AddProgramModal 
-            open={addModalOpen} 
-            onClose={() => setAddModalOpen(false)} 
-            onAdd={handleAddProgram}
-          /></div>
-        </>
-      )}
+          )}
+        </div>
+        <ProgramModal open={modalOpen} onClose={() => setModalOpen(false)} program={selectedProgram} />
+        <AddProgramModal 
+          open={addModalOpen} 
+          onClose={() => setAddModalOpen(false)} 
+          onAdd={handleAddProgram}
+        />
+      </div>
     </div>
   );
 };
