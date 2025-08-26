@@ -16,7 +16,7 @@ const AdDashboard = () => {
   const [activeTab, setActiveTab] = useState("programs");
   return (
     <div className="flex flex-col">
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 mb-14">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4 mb-9 sm:mb-14">
         <DashboardCard
           title={"Total Personnel"}
           number={"3,000"}
@@ -50,7 +50,7 @@ const AdDashboard = () => {
           icon={<ClockUserIcon size={25} weight="fill" color="white" />}
         />
       </div>
-      <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center  gap-x-2 gap-y-2 mb-8">
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center text-sm sm:text-[16px]  gap-x-2 gap-y-2 mb-5 sm:mb-8">
         <button
           onClick={() => setActiveTab("programs")}
           className={` sm:w-70 flex justify-center border-3 shadow-sm rounded-md bg-white py-2 px-2  border-gray-200 ${

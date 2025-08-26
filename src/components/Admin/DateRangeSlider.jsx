@@ -6,18 +6,18 @@ const MIN = 0;
 const MAX = 11;
 
 const fullLabels = [
-  "2025-01-10",
-  "2025-02-14",
-  "2025-03-12",
-  "2025-04-09",
-  "2025-05-14",
-  "2025-06-11",
-  "2025-07-09",
-  "2025-08-13",
-  "2025-09-10",
-  "2025-10-15",
-  "2025-11-12",
-  "2025-12-10",
+  "Jan 10, 2025",
+  "Feb 14, 2025",
+  "Mar 12, 2025",
+  "Apr 9, 2025",
+  "May 14, 2025",
+  "Jun 11, 2025",
+  "Jul 9, 2025",
+  "Aug 13, 2025",
+  "Sep 10, 2025",
+  "Oct 15, 2025",
+  "Nov 12, 2025",
+  "Dec 10, 2025",
 ];
 
 export default function DateRangeSlider({ range, setRange }) {
@@ -34,23 +34,12 @@ export default function DateRangeSlider({ range, setRange }) {
           <div
             onMouseDown={props.onMouseDown}
             onTouchStart={props.onTouchStart}
-            style={{
-              ...props.style,
-              height: "40px",
-              backgroundColor: "white",
-              border: "solid 1px #00000038",
-              borderRadius: "6px",
-              padding: "20px",
-              display: "flex",
-              width: "100%",
-              alignItems: "center", // ✅ Align thumbs vertically
-            }}
+            className="h-10 bg-white border border-black/20 rounded-lg p-5 flex items-center"
           >
             <div
               ref={props.ref}
+              className="h-2 w-full rounded-md"
               style={{
-                height: "7px",
-                width: "100%",
                 background: `linear-gradient(
                   to right,
                   #d1d5db ${((range[0] / MAX) * 100).toFixed(2)}%,
@@ -58,7 +47,6 @@ export default function DateRangeSlider({ range, setRange }) {
                   #3e503a ${((range[1] / MAX) * 100).toFixed(2)}%,
                   #d1d5db ${((range[1] / MAX) * 100).toFixed(2)}%
                 )`,
-                borderRadius: "4px",
               }}
             >
               {children}
@@ -70,32 +58,9 @@ export default function DateRangeSlider({ range, setRange }) {
           return (
             <div
               {...props}
-              style={{
-                ...props.style,
-                height: "20px",
-                width: "20px",
-                backgroundColor: "#3e503a",
-                borderRadius: "50%",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                marginTop: "-1px",
-              }}
+              className="h-5 w-5 bg-[#3e503a] rounded-full flex justify-center items-center mt-[-0.5px]"
             >
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: "-30px",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  backgroundColor: "#3e503a",
-                  color: "#fff",
-                  padding: "3px 8px",
-                  borderRadius: "4px",
-                  fontSize: "12px",
-                  whiteSpace: "nowrap",
-                }}
-              >
+              <div className="absolute -bottom-6.5 left-1/2 transform -translate-x-1/2 bg-[#3e503a] text-white px-2 py-0.5 rounded text-xs sm:text-sm whitespace-nowrap">
                 {label}
               </div>
             </div>

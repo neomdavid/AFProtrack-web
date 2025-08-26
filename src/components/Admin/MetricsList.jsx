@@ -24,9 +24,9 @@ const MetricsList = () => {
       {metrics.map((group, index) => (
         <div
           key={index}
-          className="flex flex-1 flex-col  gap-6 bg-white p-6 border-3 shadow-sm border-gray-200 rounded-sm"
+          className="flex flex-1 flex-col  gap-4 sm:gap-6 bg-white p-3 sm:p-6 border-3 shadow-sm border-gray-200 rounded-sm"
         >
-          <p className="text-xl font-semibold mb-1">{group.title}</p>
+          <p className="text-lg sm:text-xl font-semibold mb-1">{group.title}</p>
           {group.items.map((item, i) => (
             <MetricItem
               key={i}

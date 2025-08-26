@@ -12,6 +12,7 @@ import MetricsList from "./MetricsList";
 import ProgramModal from "./ProgramModal";
 import AddProgramModal from "./AddProgramModal";
 import ProgramsTable from "./ProgramsTable";
+import SearchFilterBar from "./SearchFilterBar";
 
 const ProgramsTab = () => {
   const [selectedProgram, setSelectedProgram] = useState(null);
@@ -25,37 +26,101 @@ const ProgramsTab = () => {
 
   // Sample data (reverted from RTK Query)
   const programsData = [
-    { id: 1, name: 'Advanced Combat Training', duration: '5 days', instructor: 'Col. Santos', participants: '25/30', status: 'Ongoing', startDate: '2024-01-15', endDate: '2024-01-20', time: '08:00', venue: 'Training Ground A', additionalDetails: 'Comprehensive combat training program for advanced personnel.' },
-    { id: 2, name: 'Leadership Development', duration: '1 week', instructor: 'Maj. Rodriguez', participants: '15/20', status: 'Scheduled', startDate: '2024-02-01', endDate: '2024-02-05', time: '09:00', venue: 'Conference Hall B', additionalDetails: 'Leadership skills development for senior officers.' },
-    { id: 3, name: 'Basic Training Course', duration: '12 weeks', instructor: 'Sgt. Johnson', participants: '40/50', status: 'Completed', startDate: '2023-10-01', endDate: '2023-12-20', time: '07:00', venue: 'Training Center', additionalDetails: 'Basic military training for new recruits.' },
-    { id: 4, name: 'Tactical Operations', duration: '2 weeks', instructor: 'Capt. Martinez', participants: '30/35', status: 'Scheduled', startDate: '2024-03-01', endDate: '2024-03-14', time: '06:00', venue: 'Field Training Area', additionalDetails: 'Advanced tactical operations training.' },
-    { id: 5, name: 'Communication Skills', duration: '3 days', instructor: 'Lt. Thompson', participants: '20/25', status: 'Ongoing', startDate: '2024-01-25', endDate: '2024-01-27', time: '10:00', venue: 'Classroom C', additionalDetails: 'Effective communication and reporting skills.' }
+    {
+      id: 1,
+      name: "Advanced Combat Training",
+      duration: "5 days",
+      instructor: "Col. Santos",
+      participants: "25/30",
+      status: "Ongoing",
+      startDate: "2024-01-15",
+      endDate: "2024-01-20",
+      time: "08:00",
+      venue: "Training Ground A",
+      additionalDetails:
+        "Comprehensive combat training program for advanced personnel.",
+    },
+    {
+      id: 2,
+      name: "Leadership Development",
+      duration: "1 week",
+      instructor: "Maj. Rodriguez",
+      participants: "15/20",
+      status: "Scheduled",
+      startDate: "2024-02-01",
+      endDate: "2024-02-05",
+      time: "09:00",
+      venue: "Conference Hall B",
+      additionalDetails: "Leadership skills development for senior officers.",
+    },
+    {
+      id: 3,
+      name: "Basic Training Course",
+      duration: "12 weeks",
+      instructor: "Sgt. Johnson",
+      participants: "40/50",
+      status: "Completed",
+      startDate: "2023-10-01",
+      endDate: "2023-12-20",
+      time: "07:00",
+      venue: "Training Center",
+      additionalDetails: "Basic military training for new recruits.",
+    },
+    {
+      id: 4,
+      name: "Tactical Operations",
+      duration: "2 weeks",
+      instructor: "Capt. Martinez",
+      participants: "30/35",
+      status: "Scheduled",
+      startDate: "2024-03-01",
+      endDate: "2024-03-14",
+      time: "06:00",
+      venue: "Field Training Area",
+      additionalDetails: "Advanced tactical operations training.",
+    },
+    {
+      id: 5,
+      name: "Communication Skills",
+      duration: "3 days",
+      instructor: "Lt. Thompson",
+      participants: "20/25",
+      status: "Ongoing",
+      startDate: "2024-01-25",
+      endDate: "2024-01-27",
+      time: "10:00",
+      venue: "Classroom C",
+      additionalDetails: "Effective communication and reporting skills.",
+    },
   ];
 
   // Get unique statuses for filter dropdown
   const uniqueStatuses = useMemo(() => {
-    const statuses = [...new Set(programsData.map(program => program.status))];
+    const statuses = [
+      ...new Set(programsData.map((program) => program.status)),
+    ];
     return statuses.sort();
   }, [programsData]);
 
   // Filter data based on search, filter, and date
   const filteredPrograms = useMemo(() => {
-    console.log('Filtering with:', { searchTerm, filterStatus, filterDate });
-    
-    return programsData.filter(program => {
+    console.log("Filtering with:", { searchTerm, filterStatus, filterDate });
+
+    return programsData.filter((program) => {
       // Search filter - search in name, instructor, and status
       let searchMatch = false;
       if (searchTerm === "") {
         searchMatch = true; // No search term means show all
       } else {
-        searchMatch = 
+        searchMatch =
           program.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           program.instructor.toLowerCase().includes(searchTerm.toLowerCase()) ||
           program.status.toLowerCase().includes(searchTerm.toLowerCase());
       }
 
       // Status filter
-      const statusMatch = filterStatus === "" || program.status === filterStatus;
+      const statusMatch =
+        filterStatus === "" || program.status === filterStatus;
 
       // Date filter - for now, we'll filter by participants (as a proxy for activity)
       // In a real app, you'd have actual program dates
@@ -63,9 +128,11 @@ const ProgramsTab = () => {
 
       // ALL conditions must be true for the record to show
       const shouldShow = searchMatch && statusMatch && dateMatch;
-      
-      console.log(`Program "${program.name}": searchMatch=${searchMatch}, statusMatch=${statusMatch}, dateMatch=${dateMatch}, shouldShow=${shouldShow}`);
-      
+
+      console.log(
+        `Program "${program.name}": searchMatch=${searchMatch}, statusMatch=${statusMatch}, dateMatch=${dateMatch}, shouldShow=${shouldShow}`
+      );
+
       return shouldShow;
     });
   }, [searchTerm, filterStatus, filterDate, programsData]);
@@ -143,72 +210,34 @@ const ProgramsTab = () => {
           iconBgColor={"bg-[#E5B700]"}
         />
       </div>
-      <div className="flex flex-col gap-6 ">  
+      <div className="flex flex-col gap-6 ">
         {/* Add New Program Button */}
-        <div className="flex justify-start items-center">
-          
-        </div>
+        <div className="flex justify-start items-center"></div>
         {/* Filter Controls */}
-        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-x-2.5 gap-y-3 text-[14px] ">
-          <div className="flex flex-col gap-1">
-            <p className="font-semibold text-gray">Search</p>
-            <input
-              placeholder="Search program name, instructor, or status"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="bg-white/90 border w-full sm:w-70 rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <p className="font-semibold text-gray">Filter by Status</p>
-            <div className="relative">
-              <select 
-                value={filterStatus}
-                onChange={handleFilterChange}
-                className="bg-white/90 border w-full sm:w-70 appearance-none rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              >
-                <option value="">All Statuses</option>
-                {uniqueStatuses.map((status) => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
-              </select>
-              <CaretDownIcon
-                weight="bold"
-                className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-              />
-            </div>
-          </div>
-          <div className="flex flex-col gap-1">
-            <p className="font-semibold text-gray">Date</p>
-            <input
-              type="date"
-              value={filterDate}
-              onChange={handleDateChange}
-              className="bg-white/90 border w-full sm:w-70 rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <p className="font-semibold text-gray opacity-0">Clear</p>
-            <button
-              onClick={clearFilters}
-              className="bg-gray-100 text-gray-700 border w-full sm:w-70 rounded-md border-gray-300 p-2 hover:bg-gray-200 transition-colors duration-200"
-            >
-              Clear Filters
-            </button>
-          </div>
-        </div>
+        <SearchFilterBar
+          searchTerm={searchTerm}
+          filterStatus={filterStatus}
+          filterDate={filterDate}
+          onSearchChange={handleSearchChange}
+          onFilterChange={handleFilterChange}
+          onDateChange={handleDateChange}
+          onClearFilters={clearFilters}
+          statusOptions={uniqueStatuses}
+          searchPlaceholder="Search program name, instructor, or status"
+        />
 
         {/* Programs Table */}
-        <ProgramsTable 
-          programs={currentPrograms} 
+        <ProgramsTable
+          programs={currentPrograms}
           onViewDetails={handleViewDetails}
         />
 
         {/* Results Summary and Pagination */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 sm:mt-4">
           {/* Page Indicator - Always show */}
-          <div className="text-sm text-gray-600">
-            Showing page {currentPage} of {totalPages} ({filteredPrograms.length} records)
+          <div className="text-xs sm:text-sm text-gray-600">
+            Showing page {currentPage} of {totalPages} (
+            {filteredPrograms.length} records)
           </div>
 
           {/* Pagination Controls - Only show when multiple pages */}
@@ -221,21 +250,21 @@ const ProgramsTab = () => {
               >
                 Previous
               </button>
-              
-              {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => goToPage(page)}
-                  className={`join-item btn btn-sm ${
-                    currentPage === page
-                      ? "btn-primary"
-                      : "btn-outline"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-              
+
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    onClick={() => goToPage(page)}
+                    className={`join-item btn btn-sm ${
+                      currentPage === page ? "btn-primary" : "btn-outline"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
+
               <button
                 onClick={goToNextPage}
                 disabled={currentPage === totalPages}
@@ -246,10 +275,14 @@ const ProgramsTab = () => {
             </div>
           )}
         </div>
-        <ProgramModal open={modalOpen} onClose={() => setModalOpen(false)} program={selectedProgram} />
-        <AddProgramModal 
-          open={addModalOpen} 
-          onClose={() => setAddModalOpen(false)} 
+        <ProgramModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          program={selectedProgram}
+        />
+        <AddProgramModal
+          open={addModalOpen}
+          onClose={() => setAddModalOpen(false)}
           onAdd={handleAddProgram}
         />
       </div>

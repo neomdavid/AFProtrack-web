@@ -1,7 +1,7 @@
 const MetricItem = ({ label, value, color = "#3a77d2" }) => {
   return (
     <div className="flex flex-col gap-1">
-      <div className="flex justify-between">
+      <div className="flex text-sm sm:text-sm justify-between">
         <p>{label}</p>
         <p>{value}%</p>
       </div>
