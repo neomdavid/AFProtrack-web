@@ -33,6 +33,9 @@ export function validateCreateAccountForm(formData) {
   }
   if (!formData.contactNumber?.trim()) {
     errors.contactNumber = "Contact Number is required";
+  } else if (!/^9\d{9}$/.test(formData.contactNumber)) {
+    errors.contactNumber =
+      "Contact Number must be 10 digits starting with 9 (e.g., 9344324323)";
   }
   if (!formData.dateOfBirth) {
     errors.dateOfBirth = "Date of Birth is required";

@@ -153,21 +153,28 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
     const errors = validateCreateAccountForm(formData);
     const hasErrors = Object.keys(errors).length > 0;
     setFieldErrors(errors);
-    if (hasErrors) showToast("Please fix the validation errors below", "error");
+    if (hasErrors) {
+      // Show the first specific error message instead of generic message
+      const firstError = Object.values(errors)[0];
+      showToast(firstError, "error");
+    }
     return hasErrors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Form submission started");
 
     setError("");
     setSuccess("");
 
     // Frontend validation first
     if (validateForm()) {
+      console.log("Frontend validation failed, returning early");
       return;
     }
 
+    console.log("Frontend validation passed, making API call");
     try {
       // Prepare the request body according to the API specification
       const requestBody = {
@@ -186,11 +193,14 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
         createdBy: user?.id || user?._id,
       };
 
+      console.log("Making API call with:", requestBody);
       const result = await (accountType === "web"
         ? createWebUser
         : createPendingUser)(requestBody).unwrap();
 
+      console.log("API call completed with result:", result);
       if (result.success) {
+        console.log("Showing success toast");
         showToast(
           "Account created successfully and is pending approval!",
           "success"
@@ -200,6 +210,7 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
           handleClose();
         }, 1000);
       } else {
+        console.log("API returned error:", result.message);
         const errorMsg = result.message || "Failed to create account";
         setError(errorMsg);
         showToast(errorMsg, "error");
@@ -214,7 +225,9 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
         const backendErrors = mapBackendErrorsToFields(error);
         if (Object.keys(backendErrors).length > 0) {
           setFieldErrors(backendErrors);
-          showToast("Please fix the validation errors below", "error");
+          // Show the first specific error message instead of generic message
+          const firstError = Object.values(backendErrors)[0];
+          showToast(firstError, "error");
         } else {
           const msg = error?.data?.message || "Validation failed";
           setError(msg);
@@ -301,19 +314,6 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
                     : "Mobile Access Account"}
                 </p>
               </div>
-              {import.meta.env.MODE !== "production" && (
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-xs"
-                    onClick={() =>
-                      showToast("This is a success toast", "success")
-                    }
-                  >
-                    Test Toast
-                  </button>
-                </div>
-              )}
             </div>
           </div>
 
@@ -525,19 +525,45 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
                           Contact Number *
                         </span>
                       </label>
-                      <input
-                        type="tel"
-                        name="contactNumber"
-                        value={formData.contactNumber}
-                        onChange={handleInputChange}
-                        className={`input w-full h-9 text-sm ${
-                          fieldErrors.contactNumber
-                            ? "input-error"
-                            : "input-bordered"
-                        }`}
-                        placeholder="+63 XXX XXX XXXX"
-                        required
-                      />
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 select-none pointer-events-none z-10">
+                          +63
+                        </span>
+                        <input
+                          type="tel"
+                          name="contactNumber"
+                          value={(formData.contactNumber || "").replace(
+                            /(\d{3})(\d{3})(\d{0,4})/,
+                            (m, a, b, c) =>
+                              c ? `${a} ${b} ${c}` : b ? `${a} ${b}` : a
+                          )}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, ""); // digits only
+                            if (
+                              value.length <= 10 &&
+                              (value === "" || value.startsWith("9"))
+                            ) {
+                              setFormData((prev) => ({
+                                ...prev,
+                                contactNumber: value,
+                              }));
+                            }
+                            if (fieldErrors.contactNumber) {
+                              setFieldErrors((prev) => ({
+                                ...prev,
+                                contactNumber: "",
+                              }));
+                            }
+                          }}
+                          className={`input w-full h-9 text-sm pl-14 relative z-0 ${
+                            fieldErrors.contactNumber
+                              ? "input-error"
+                              : "input-bordered"
+                          }`}
+                          placeholder="9XX XXX XXXX"
+                          required
+                        />
+                      </div>
                       {fieldErrors.contactNumber && (
                         <p className="text-xs text-red-500 mt-1">
                           {fieldErrors.contactNumber}
@@ -562,13 +588,9 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
                         }`}
                         required
                       />
-                      {fieldErrors.dateOfBirth ? (
+                      {fieldErrors.dateOfBirth && (
                         <p className="text-xs text-red-500 mt-1">
                           {fieldErrors.dateOfBirth}
-                        </p>
-                      ) : (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Must be at least 18 years old
                         </p>
                       )}
                     </div>
