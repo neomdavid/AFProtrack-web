@@ -39,8 +39,11 @@ const SearchFilterBar = ({
           >
             <option value="">All Statuses</option>
             {statusOptions.map((status) => (
-              <option key={status} value={status}>
-                {status}
+              <option
+                key={typeof status === "object" ? status.value : status}
+                value={typeof status === "object" ? status.value : status}
+              >
+                {typeof status === "object" ? status.label : status}
               </option>
             ))}
           </select>

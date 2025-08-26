@@ -3,6 +3,7 @@ import React, { useState, useMemo } from "react";
 import TrainingTable from "../../components/Admin/TrainingTable";
 import { trainingData } from "../../utils";
 import PersonnelTable from "../../components/Admin/TrainingTable";
+import SearchFilterBar from "../../components/Admin/SearchFilterBar";
 
 const AdTrainingOverview = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -11,15 +12,16 @@ const AdTrainingOverview = () => {
 
   // Get unique ranks for filter dropdown
   const uniqueRanks = useMemo(() => {
-    const ranks = [...new Set(trainingData.map(person => person.rank))];
+    const ranks = [...new Set(trainingData.map((person) => person.rank))];
     return ranks.sort();
   }, []);
 
   // Filter data based on search, filter, and date
   const filteredData = useMemo(() => {
-    return trainingData.filter(person => {
+    return trainingData.filter((person) => {
       // Search filter - search in name, email, and rank
-      const searchMatch = searchTerm === "" || 
+      const searchMatch =
+        searchTerm === "" ||
         person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         person.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         person.rank.toLowerCase().includes(searchTerm.toLowerCase());
@@ -35,16 +37,16 @@ const AdTrainingOverview = () => {
     });
   }, [searchTerm, filterRank, filterDate]);
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
+  const handleSearchChange = (value) => {
+    setSearchTerm(value);
   };
 
-  const handleFilterChange = (e) => {
-    setFilterRank(e.target.value);
+  const handleRankChange = (value) => {
+    setFilterRank(value);
   };
 
-  const handleDateChange = (e) => {
-    setFilterDate(e.target.value);
+  const handleDateChange = (value) => {
+    setFilterDate(value);
   };
 
   const clearFilters = () => {
@@ -53,6 +55,12 @@ const AdTrainingOverview = () => {
     setFilterDate("");
   };
 
+  // Prepare filter options for SearchFilterBar
+  const rankOptions = [
+    { value: "", label: "All Ranks" },
+    ...uniqueRanks.map((rank) => ({ value: rank, label: rank })),
+  ];
+
   return (
     <div className="flex flex-col bg-base-400">
       <div className="flex flex-col bg-white p-4 border-3 shadow-sm border-gray-200 rounded-md">
@@ -60,65 +68,28 @@ const AdTrainingOverview = () => {
         <p className="text-sm text-gray-600 mb-8">
           View training history of AFP Personnel
         </p>
-        
+
         {/* Filter Controls */}
-        <div className="flex flex-wrap gap-2 mb-3 px-1">
-          <div className="flex flex-col gap-1">
-            <p className="font-semibold text-sm text-gray-700/90">Search</p>
-            <input
-              placeholder="Search name, email, or rank"
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="bg-white/90 text-[14px] border w-70 rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <p className="font-semibold text-sm text-gray-700/90">Filter by Rank</p>
-            <div className="relative">
-              <select 
-                value={filterRank}
-                onChange={handleFilterChange}
-                className="bg-white/90 text-[14px] border w-70 appearance-none rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              >
-                <option value="">All Ranks</option>
-                {uniqueRanks.map((rank) => (
-                  <option key={rank} value={rank}>{rank}</option>
-                ))}
-              </select>
-              <CaretDownIcon
-                weight="bold"
-                className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-              />
-            </div>
-          </div>
-          <div className="flex flex-col gap-1">
-            <p className="font-semibold text-sm text-gray-700/90">Date</p>
-            <input
-              type="date"
-              value={filterDate}
-              onChange={handleDateChange}
-              className="bg-white/90 text-[14px] border w-70 rounded-md border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <p className="font-semibold text-sm text-gray-700/90 opacity-0">Clear</p>
-            <button
-              onClick={clearFilters}
-              className="bg-gray-100 text-gray-700 text-[14px] border w-70 rounded-md border-gray-300 p-2 hover:bg-gray-200 transition-colors duration-200"
-            >
-              Clear Filters
-            </button>
-          </div>
-        </div>
+        <SearchFilterBar
+          searchTerm={searchTerm}
+          onSearchChange={(e) => handleSearchChange(e.target.value)}
+          searchPlaceholder="Search name, email, or rank"
+          filterStatus={filterRank}
+          onFilterChange={(e) => handleRankChange(e.target.value)}
+          statusOptions={rankOptions}
+          statusLabel="Filter by Rank"
+          filterDate={filterDate}
+          onDateChange={(e) => handleDateChange(e.target.value)}
+          onClearFilters={clearFilters}
+          showClearButton={true}
+        />
 
         {/* Results Summary */}
-        <div className="mb-4 px-1">
+        <div className="mb-4 mt-4 px-1">
           <p className="text-sm text-gray-600">
             Showing {filteredData.length} of {trainingData.length} personnel
             {(searchTerm || filterRank || filterDate) && (
-              <span className="text-primary font-medium">
-                {" "}(filtered)
-              </span>
+              <span className="text-primary font-medium"> (filtered)</span>
             )}
           </p>
         </div>
