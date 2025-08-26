@@ -7,7 +7,7 @@ import {
   useGetOrgStructureQuery,
   useGetRanksQuery,
 } from "../../features/api/adminEndpoints";
-import CustomToast from "./CustomToast";
+import { toast } from "react-toastify";
 import LabeledSelect from "./LabeledSelect";
 import LabeledInput from "./LabeledInput";
 import {
@@ -42,7 +42,6 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
-  const [toast, setToast] = useState(null);
   const isSubmitting = isCreatingPending || isCreatingWeb;
 
   // Fetch organization structure (branches -> divisions -> units)
@@ -87,9 +86,12 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
 
   const roles = getAvailableRoles();
 
-  // Helper function to show toasts
+  // Helper to show toast via react-toastify
   const showToast = (message, type = "info") => {
-    setToast({ message, type });
+    if (type === "success") return toast.success(message);
+    if (type === "error") return toast.error(message);
+    if (type === "warning") return toast.warn(message);
+    return toast.info(message);
   };
 
   const handleInputChange = (e) => {
@@ -157,10 +159,7 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    showToast(
-      "Account created successfully and is pending approval!",
-      "success"
-    );
+
     setError("");
     setSuccess("");
 
@@ -255,29 +254,12 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
     onClose();
   };
 
-  // Toast container - OUTSIDE the modal
-  const toastContainer = (
-    <>
-      {toast && (
-        <CustomToast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
-    </>
-  );
-
   if (!open) {
-    // Return only the toast when modal is closed
-    return toastContainer;
+    return null;
   }
 
   return (
     <>
-      {/* Toast container - OUTSIDE the modal */}
-      {toastContainer}
-
       {/* Modal */}
       <dialog open={open} className="modal z-10000000">
         <div className="modal-box w-11/12 max-w-4xl relative bg-white p-6 max-h-[90vh] overflow-hidden flex flex-col">

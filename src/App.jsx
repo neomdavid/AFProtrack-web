@@ -47,8 +47,15 @@ function App() {
               element={<AdTrainingOverview />}
             />
             <Route index path="accounts" element={<AdAccounts />} />
-            <Route index path="account_confirmation" element={<AdAccountConfirmation />} />
-            <Route path="programs/:programId/attendance" element={<ProgramAttendance />} />
+            <Route
+              index
+              path="account_confirmation"
+              element={<AdAccountConfirmation />}
+            />
+            <Route
+              path="programs/:programId/attendance"
+              element={<ProgramAttendance />}
+            />
           </Route>
           <Route path="/trainer" element={<StaffLayout />} />
         </Routes>
@@ -65,6 +72,7 @@ function App() {
         pauseOnHover
         theme="light"
         toastClassName="text-[14px] p-2 !text-primary"
+        style={{ zIndex: 2147483647 }}
       />
     </div>
   );
