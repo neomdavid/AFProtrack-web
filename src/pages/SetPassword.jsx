@@ -1,39 +1,50 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useVerifyEmailTokenQuery, useVerifyEmailMutation } from '../features/api/adminEndpoints';
-import { EyeIcon, EyeSlashIcon, CheckCircleIcon, XCircleIcon } from '@phosphor-icons/react';
-import CustomToast from '../components/Admin/CustomToast';
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import {
+  useVerifyEmailTokenQuery,
+  useVerifyEmailMutation,
+} from "../features/api/adminEndpoints";
+import {
+  EyeIcon,
+  EyeSlashIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+} from "@phosphor-icons/react";
+import { toast } from "react-toastify";
 
 const SetPassword = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const token = searchParams.get('token');
-  
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const token = searchParams.get("token");
+
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [toast, setToast] = useState(null);
 
   // Fetch user info based on token
-  const { data: userData, isLoading: isLoadingUser, isError: isUserError } = useVerifyEmailTokenQuery(token, {
-    skip: !token
+  const {
+    data: userData,
+    isLoading: isLoadingUser,
+    isError: isUserError,
+  } = useVerifyEmailTokenQuery(token, {
+    skip: !token,
   });
 
   const [verifyEmail, { isLoading: isVerifying }] = useVerifyEmailMutation();
 
   // Show toast helper function
-  const showToast = (message, type = 'info') => {
-    setToast({ message, type });
+  const showToast = (message, type = "info") => {
+    if (type === "success") return toast.success(message);
+    if (type === "error") return toast.error(message);
+    if (type === "warning") return toast.warn(message);
+    return toast.info(message);
   };
-
-  // Clear toast
-  const clearToast = () => setToast(null);
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       showToast("Passwords do not match!", "error");
       return;
@@ -47,14 +58,16 @@ const SetPassword = () => {
     try {
       await verifyEmail({ token, password }).unwrap();
       showToast("Password set successfully! You can now log in.", "success");
-      
+
       // Redirect to login after 2 seconds
       setTimeout(() => {
-        navigate('/login');
+        navigate("/login");
       }, 2000);
     } catch (error) {
-      console.error('Error setting password:', error);
-      showToast("Failed to set password. Please try again.", "error");
+      console.error("Error setting password:", error);
+      const apiMsg =
+        error?.data?.message || "Failed to set password. Please try again.";
+      showToast(apiMsg, "error");
     }
   };
 
@@ -65,10 +78,14 @@ const SetPassword = () => {
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
           <div className="text-center">
             <XCircleIcon size={64} className="mx-auto text-red-500 mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Invalid Link</h1>
-            <p className="text-gray-600 mb-6">This password reset link is invalid or has expired.</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Invalid Link
+            </h1>
+            <p className="text-gray-600 mb-6">
+              This password reset link is invalid or has expired.
+            </p>
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => navigate("/login")}
               className="btn btn-primary w-full"
             >
               Go to Login
@@ -100,10 +117,14 @@ const SetPassword = () => {
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
           <div className="text-center">
             <XCircleIcon size={64} className="mx-auto text-red-500 mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Link Expired</h1>
-            <p className="text-gray-600 mb-6">This password reset link has expired or is invalid.</p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Link Expired
+            </h1>
+            <p className="text-gray-600 mb-6">
+              This password reset link has expired or is invalid.
+            </p>
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => navigate("/login")}
               className="btn btn-primary w-full"
             >
               Go to Login
@@ -122,20 +143,43 @@ const SetPassword = () => {
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <CheckCircleIcon size={64} className="mx-auto text-green-500 mb-4" />
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Set Your Password</h1>
-            <p className="text-gray-600">Welcome back! Please set your password to complete your account setup.</p>
+            <CheckCircleIcon
+              size={64}
+              className="mx-auto text-green-500 mb-4"
+            />
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Set Your Password
+            </h1>
+            <p className="text-gray-600">
+              Welcome back! Please set your password to complete your account
+              setup.
+            </p>
           </div>
 
           {/* User Info */}
           {user && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-blue-900 mb-2">Account Information</h3>
+              <h3 className="font-semibold text-blue-900 mb-2">
+                Account Information
+              </h3>
               <div className="space-y-1 text-sm text-blue-800">
-                <p><span className="font-medium">Name:</span> {user.firstName} {user.lastName}</p>
-                <p><span className="font-medium">Email:</span> {user.email}</p>
-                <p><span className="font-medium">Service ID:</span> {user.serviceId}</p>
-                <p><span className="font-medium">Role:</span> {user.role.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</p>
+                <p>
+                  <span className="font-medium">Name:</span> {user.firstName}{" "}
+                  {user.lastName}
+                </p>
+                <p>
+                  <span className="font-medium">Email:</span> {user.email}
+                </p>
+                <p>
+                  <span className="font-medium">Service ID:</span>{" "}
+                  {user.serviceId}
+                </p>
+                <p>
+                  <span className="font-medium">Role:</span>{" "}
+                  {user.role
+                    .replace(/_/g, " ")
+                    .replace(/\b\w/g, (c) => c.toUpperCase())}
+                </p>
               </div>
             </div>
           )}
@@ -144,7 +188,10 @@ const SetPassword = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 New Password
               </label>
               <div className="relative">
@@ -170,12 +217,17 @@ const SetPassword = () => {
                   )}
                 </button>
               </div>
-              <p className="text-xs text-gray-500 mt-1">Password must be at least 8 characters long</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Password must be at least 8 characters long
+              </p>
             </div>
 
             {/* Confirm Password Field */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Confirm Password
               </label>
               <div className="relative">
@@ -214,7 +266,7 @@ const SetPassword = () => {
                   Setting Password...
                 </>
               ) : (
-                'Set Password'
+                "Set Password"
               )}
             </button>
           </form>
@@ -222,9 +274,9 @@ const SetPassword = () => {
           {/* Footer */}
           <div className="text-center mt-6">
             <p className="text-sm text-gray-600">
-              Remember your password?{' '}
+              Remember your password?{" "}
               <button
-                onClick={() => navigate('/login')}
+                onClick={() => navigate("/login")}
                 className="text-primary hover:text-primary-focus font-medium"
               >
                 Sign in here
@@ -233,15 +285,6 @@ const SetPassword = () => {
           </div>
         </div>
       </div>
-
-      {/* Toast Container */}
-      {toast && (
-        <CustomToast
-          message={toast.message}
-          type={toast.type}
-          onClose={clearToast}
-        />
-      )}
     </>
   );
 };
