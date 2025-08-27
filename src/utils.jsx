@@ -261,6 +261,18 @@ function getCurrentPage(location) {
   return adminLinks.find((link) => location.pathname.includes(link.path));
 }
 
+// Formats a date string (YYYY-MM-DD or ISO) to 'Aug 23, 2025'
+function formatDateShort(dateInput) {
+  if (!dateInput) return "";
+  const date = new Date(dateInput);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 export {
   adminLinks,
   fullLabels,
@@ -268,4 +280,5 @@ export {
   trainingData,
   personnelData,
   getCurrentPage,
+  formatDateShort,
 };

@@ -55,7 +55,7 @@ const AdminLayout = () => {
         <TopNavigation onOpenProfileModal={() => setIsProfileModalOpen(true)} />
 
         {/* Main Content - keeping original design */}
-        <div className="flex-1 p-4 sm:p-8 bg-base-400 relative min-h-screen lg:pt-8 pt-20">
+        <div className="flex-1 p-4 sm:p-8 bg-base-400 relative min-h-screen sm:pt-20 lg:pt-8 pt-20">
           {/* Observer element - this should be at the top of the content */}
           <div ref={sectionRef} className="h-1" />
 
