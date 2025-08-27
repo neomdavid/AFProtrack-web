@@ -36,7 +36,9 @@ const AdminLayout = () => {
   const location = useLocation();
   console.log(location);
   const current = getCurrentPage(location);
-  const breadcrumbName = current?.name || (location.pathname.includes('/attendance') ? 'Attendance' : '');
+  const breadcrumbName =
+    current?.name ||
+    (location.pathname.includes("/attendance") ? "Attendance" : "");
 
   return (
     <div className="drawer lg:drawer-open">
@@ -53,7 +55,7 @@ const AdminLayout = () => {
         <TopNavigation onOpenProfileModal={() => setIsProfileModalOpen(true)} />
 
         {/* Main Content - keeping original design */}
-        <div className="flex-1 p-8 bg-base-400 relative min-h-screen lg:pt-8 pt-20">
+        <div className="flex-1 p-4 sm:p-8 bg-base-400 relative min-h-screen sm:pt-20 lg:pt-8 pt-20">
           {/* Observer element - this should be at the top of the content */}
           <div ref={sectionRef} className="h-1" />
 
@@ -65,11 +67,13 @@ const AdminLayout = () => {
             />
           </div>
 
-          <div className="flex flex-col gap-1 mb-10">
-            <h1 className="font-bold text-3xl">System Administration</h1>
-            <p className="text-sm text-gray-600">
+          <div className="flex flex-col gap-1 mb-6 sm:mb-10">
+            <h1 className="font-bold text-xl sm:text-3xl">
+              System Administration
+            </h1>
+            <p className="text-xs  sm:text-sm text-gray-600">
               AFProTrack Training Management System &nbsp;{">>"} &nbsp;
-              {breadcrumbName || 'Admin'}
+              {breadcrumbName || "Admin"}
             </p>
           </div>
           <Outlet />

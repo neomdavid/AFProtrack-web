@@ -15,6 +15,7 @@ import {
   StaffLayout,
   ForgotPassword,
   ResetPassword,
+  SetPassword,
 } from "./pages";
 import AdDashboard from "./pages/Admin/AdDashboard";
 import AdTrainingOverview from "./pages/Admin/AdTrainingOverview";
@@ -29,13 +30,14 @@ function App() {
   const [count, setCount] = useState(0);
 
   return (
-    <div data-theme="afprotrack">
+    <div data-theme="base">
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/set-password" element={<SetPassword />} />
           <Route path="/test-colors" element={<ColorTest />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index path="dashboard" element={<AdDashboard />} />
@@ -45,8 +47,15 @@ function App() {
               element={<AdTrainingOverview />}
             />
             <Route index path="accounts" element={<AdAccounts />} />
-            <Route index path="account_confirmation" element={<AdAccountConfirmation />} />
-            <Route path="programs/:programId/attendance" element={<ProgramAttendance />} />
+            <Route
+              index
+              path="account_confirmation"
+              element={<AdAccountConfirmation />}
+            />
+            <Route
+              path="programs/:programId/attendance"
+              element={<ProgramAttendance />}
+            />
           </Route>
           <Route path="/trainer" element={<StaffLayout />} />
         </Routes>
@@ -63,6 +72,7 @@ function App() {
         pauseOnHover
         theme="light"
         toastClassName="text-[14px] p-2 !text-primary"
+        style={{ zIndex: 2147483647 }}
       />
     </div>
   );

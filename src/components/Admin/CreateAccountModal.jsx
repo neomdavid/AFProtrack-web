@@ -1,13 +1,27 @@
 import React, { useState } from "react";
 import { CaretDownIcon } from "@phosphor-icons/react";
 import { useAuth } from "../../hooks/useAuth";
-import { useCreatePendingUserMutation, useCreateWebUserMutation, useGetOrgStructureQuery, useGetRanksQuery } from "../../features/api/adminEndpoints";
-import CustomToast from "./CustomToast";
+import {
+  useCreatePendingUserMutation,
+  useCreateWebUserMutation,
+  useGetOrgStructureQuery,
+  useGetRanksQuery,
+} from "../../features/api/adminEndpoints";
+import { toast } from "react-toastify";
+import LabeledSelect from "./LabeledSelect";
+import LabeledInput from "./LabeledInput";
+import {
+  validateCreateAccountForm,
+  mapBackendErrorsToFields,
+  deriveServiceCodeFromBranch,
+} from "./createAccountUtils";
 
 const CreateAccountModal = ({ open, onClose, accountType }) => {
   const { user } = useAuth();
-  const [createPendingUser, { isLoading: isCreatingPending, error: apiError }] = useCreatePendingUserMutation();
-  const [createWebUser, { isLoading: isCreatingWeb }] = useCreateWebUserMutation();
+  const [createPendingUser, { isLoading: isCreatingPending, error: apiError }] =
+    useCreatePendingUserMutation();
+  const [createWebUser, { isLoading: isCreatingWeb }] =
+    useCreateWebUserMutation();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -28,7 +42,6 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
-  const [toast, setToast] = useState(null);
   const isSubmitting = isCreatingPending || isCreatingWeb;
 
   // Fetch organization structure (branches -> divisions -> units)
@@ -37,7 +50,9 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
 
   // Resolve selections from labels
   const selectedBranch = branches.find(
-    (b) => b.label === formData.branchOfService || b.code === formData.branchOfService
+    (b) =>
+      b.label === formData.branchOfService ||
+      b.code === formData.branchOfService
   );
   const divisions = selectedBranch?.divisions || [];
   const selectedDivision = divisions.find(
@@ -47,31 +62,36 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
 
   // Rank fetching
   const rankServiceCode = formData.rankService || ""; // expects 'ARMY' or 'NAVY'
-  const { data: ranksRes, isLoading: ranksLoading, isFetching: ranksFetching } = useGetRanksQuery(rankServiceCode, {
+  const {
+    data: ranksRes,
+    isLoading: ranksLoading,
+    isFetching: ranksFetching,
+  } = useGetRanksQuery(rankServiceCode, {
     skip: !rankServiceCode,
   });
   const ranks = ranksRes?.data || [];
 
   // Role options based on current user's role
   const getAvailableRoles = () => {
-    if (user?.role === 'admin') {
+    if (user?.role === "admin") {
       return [
         { value: "training_staff", label: "Training Staff" },
         { value: "admin", label: "Administrator" },
       ];
-    } else if (user?.role === 'training_staff') {
-      return [
-        { value: "training_staff", label: "Training Staff" },
-      ];
+    } else if (user?.role === "training_staff") {
+      return [{ value: "training_staff", label: "Training Staff" }];
     }
     return [];
   };
 
   const roles = getAvailableRoles();
 
-  // Helper function to show toasts
-  const showToast = (message, type = 'info') => {
-    setToast({ message, type });
+  // Helper to show toast via react-toastify
+  const showToast = (message, type = "info") => {
+    if (type === "success") return toast.success(message);
+    if (type === "error") return toast.error(message);
+    if (type === "warning") return toast.warn(message);
+    return toast.info(message);
   };
 
   const handleInputChange = (e) => {
@@ -82,138 +102,79 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
     }));
     // Clear field error when user starts typing
     if (fieldErrors[name]) {
-      setFieldErrors(prev => ({ ...prev, [name]: "" }));
+      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
-  const deriveServiceCodeFromBranch = (branchLabel) => {
-    const v = (branchLabel || '').toLowerCase();
-    if (v.includes('navy')) return 'NAVY';
-    if (v.includes('air')) return 'AIRFORCE';
-    if (v.includes('army')) return 'ARMY';
-    return '';
-  };
+  // deriveServiceCodeFromBranch moved to utils
 
   const handleBranchChange = (e) => {
     const branchLabel = e.target.value;
     const svc = deriveServiceCodeFromBranch(branchLabel);
-    setFormData((prev) => ({ ...prev, branchOfService: branchLabel, division: "", unit: "", rankService: svc, rank: "" }));
-    if (fieldErrors.branchOfService) setFieldErrors((prev)=>({ ...prev, branchOfService: "" }));
+    setFormData((prev) => ({
+      ...prev,
+      branchOfService: branchLabel,
+      division: "",
+      unit: "",
+      rankService: svc,
+      rank: "",
+    }));
+    if (fieldErrors.branchOfService)
+      setFieldErrors((prev) => ({ ...prev, branchOfService: "" }));
   };
 
   const handleDivisionChange = (e) => {
     const divisionLabel = e.target.value;
     setFormData((prev) => ({ ...prev, division: divisionLabel, unit: "" }));
-    if (fieldErrors.division) setFieldErrors((prev)=>({ ...prev, division: "" }));
+    if (fieldErrors.division)
+      setFieldErrors((prev) => ({ ...prev, division: "" }));
   };
 
   const handleUnitChange = (e) => {
     const unitLabel = e.target.value;
     setFormData((prev) => ({ ...prev, unit: unitLabel }));
-    if (fieldErrors.unit) setFieldErrors((prev)=>({ ...prev, unit: "" }));
+    if (fieldErrors.unit) setFieldErrors((prev) => ({ ...prev, unit: "" }));
   };
 
   const handleRankServiceChange = (e) => {
     const code = e.target.value; // 'ARMY' | 'NAVY'
     setFormData((prev) => ({ ...prev, rankService: code, rank: "" }));
-    if (fieldErrors.rank) setFieldErrors((prev)=>({ ...prev, rank: "" }));
+    if (fieldErrors.rank) setFieldErrors((prev) => ({ ...prev, rank: "" }));
   };
 
   const handleRankChange = (e) => {
     const label = e.target.value;
     setFormData((prev) => ({ ...prev, rank: label }));
-    if (fieldErrors.rank) setFieldErrors((prev)=>({ ...prev, rank: "" }));
+    if (fieldErrors.rank) setFieldErrors((prev) => ({ ...prev, rank: "" }));
   };
 
-  // Frontend validation - FIXED to show all errors at once
+  // Frontend validation via utils
   const validateForm = () => {
-    const errors = {};
-    let hasErrors = false;
-
-    // Service ID format validation
-    const serviceIdPattern = /^AFP-\d{4}-\d{3}$/;
-    if (!formData.serviceId.trim()) {
-      errors.serviceId = "Service ID is required";
-      hasErrors = true;
-    } else if (!serviceIdPattern.test(formData.serviceId)) {
-      errors.serviceId = "Service ID must be in format AFP-YYYY-XXX";
-      hasErrors = true;
-    }
-
-    // Age validation (must be at least 18)
-    if (!formData.dateOfBirth) {
-      errors.dateOfBirth = "Date of Birth is required";
-      hasErrors = true;
-    } else {
-      const today = new Date();
-      const birthDate = new Date(formData.dateOfBirth);
-      const age = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-      if (age < 18 || (age === 18 && monthDiff < 0)) {
-        errors.dateOfBirth = "Age must be at least 18 years old";
-        hasErrors = true;
-      }
-    }
-
-    // Required fields validation - ALL AT ONCE
-    if (!formData.firstName.trim()) {
-      errors.firstName = "First Name is required";
-      hasErrors = true;
-    }
-    if (!formData.lastName.trim()) {
-      errors.lastName = "Last Name is required";
-      hasErrors = true;
-    }
-    if (!formData.email.trim()) {
-      errors.email = "Email is required";
-      hasErrors = true;
-    }
-    if (!formData.unit) {
-      errors.unit = "Unit is required";
-      hasErrors = true;
-    }
-    if (!formData.branchOfService) {
-      errors.branchOfService = "Branch of Service is required";
-      hasErrors = true;
-    }
-    if (!formData.division) {
-      errors.division = "Division is required";
-      hasErrors = true;
-    }
-    if (!formData.address.trim()) {
-      errors.address = "Address is required";
-      hasErrors = true;
-    }
-    if (!formData.contactNumber.trim()) {
-      errors.contactNumber = "Contact Number is required";
-      hasErrors = true;
-    }
-    if (!formData.role) {
-      errors.role = "Role is required";
-      hasErrors = true;
-    }
-
-    // Set ALL errors at once
+    const errors = validateCreateAccountForm(formData);
+    const hasErrors = Object.keys(errors).length > 0;
     setFieldErrors(errors);
-    
-    // Show toast for validation errors
     if (hasErrors) {
-      showToast("Please fix the validation errors below", "error");
+      // Show the first specific error message instead of generic message
+      const firstError = Object.values(errors)[0];
+      showToast(firstError, "error");
     }
-    
     return hasErrors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Form submission started");
+
     setError("");
     setSuccess("");
 
     // Frontend validation first
     if (validateForm()) {
+      console.log("Frontend validation failed, returning early");
       return;
     }
 
+    console.log("Frontend validation passed, making API call");
     try {
       // Prepare the request body according to the API specification
       const requestBody = {
@@ -232,66 +193,49 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
         createdBy: user?.id || user?._id,
       };
 
-      const result = await (accountType === 'web' ? createWebUser : createPendingUser)(requestBody).unwrap();
+      console.log("Making API call with:", requestBody);
+      const result = await (accountType === "web"
+        ? createWebUser
+        : createPendingUser)(requestBody).unwrap();
 
+      console.log("API call completed with result:", result);
       if (result.success) {
-        showToast("Account created successfully and is pending approval!", "success");
+        console.log("Showing success toast");
+        showToast(
+          "Account created successfully and is pending approval!",
+          "success"
+        );
         // Reset form after successful creation
         setTimeout(() => {
           handleClose();
         }, 1000);
       } else {
+        console.log("API returned error:", result.message);
         const errorMsg = result.message || "Failed to create account";
         setError(errorMsg);
         showToast(errorMsg, "error");
       }
     } catch (error) {
       console.error("Error creating account:", error);
-    
-      if (error?.data?.message) {
-        const msg = error.data.message;
-        const backendErrors = {};
-    
-        if (msg.includes("Service ID already exists")) backendErrors.serviceId = "Service ID already exists";
-        else if (msg.includes("Email already exists")) backendErrors.email = "Email already exists";
-        else if (msg.includes("Service ID")) backendErrors.serviceId = msg;
-        else if (msg.includes("Email")) backendErrors.email = msg;
-        else if (msg.includes("Age")) backendErrors.dateOfBirth = msg;
-        else if (msg.includes("Role")) backendErrors.role = msg;
-        else if (msg.includes("First Name")) backendErrors.firstName = msg;
-        else if (msg.includes("Last Name")) backendErrors.lastName = msg;
-        else if (msg.includes("Unit")) backendErrors.unit = msg;
-        else if (msg.includes("Branch")) backendErrors.branchOfService = msg;
-        else if (msg.includes("Division")) backendErrors.division = msg;
-        else if (msg.includes("Address")) backendErrors.address = msg;
-        else if (msg.includes("Contact")) backendErrors.contactNumber = msg;
-    
+
+      if (
+        error?.data?.message ||
+        (error?.data?.errors && Array.isArray(error.data.errors))
+      ) {
+        const backendErrors = mapBackendErrorsToFields(error);
         if (Object.keys(backendErrors).length > 0) {
           setFieldErrors(backendErrors);
-          showToast("Please fix the validation errors below", "error");
+          // Show the first specific error message instead of generic message
+          const firstError = Object.values(backendErrors)[0];
+          showToast(firstError, "error");
         } else {
+          const msg = error?.data?.message || "Validation failed";
           setError(msg);
           showToast(msg, "error");
         }
-      } else if (error?.data?.errors && Array.isArray(error.data.errors)) {
-        const backendErrors = {};
-        error.data.errors.forEach(err => {
-          if (err.includes("Service ID")) backendErrors.serviceId = err;
-          else if (err.includes("Email")) backendErrors.email = err;
-          else if (err.includes("Age")) backendErrors.dateOfBirth = err;
-          else if (err.includes("Role")) backendErrors.role = err;
-          else if (err.includes("First Name")) backendErrors.firstName = err;
-          else if (err.includes("Last Name")) backendErrors.lastName = err;
-          else if (err.includes("Unit")) backendErrors.unit = err;
-          else if (err.includes("Branch")) backendErrors.branchOfService = err;
-          else if (err.includes("Division")) backendErrors.division = err;
-          else if (err.includes("Address")) backendErrors.address = err;
-          else if (err.includes("Contact")) backendErrors.contactNumber = err;
-        });
-        setFieldErrors(backendErrors);
-        showToast("Please fix the validation errors below", "error");
       } else {
-        const errorMsg = error?.data?.message || "Network error. Please try again.";
+        const errorMsg =
+          error?.data?.message || "Network error. Please try again.";
         setError(errorMsg);
         showToast(errorMsg, "error");
       }
@@ -318,34 +262,17 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
     setError("");
     setSuccess("");
     setFieldErrors({});
-    
+
     // Don't show toast when closing - let it stay if it exists
     onClose();
   };
 
-  // Toast container - OUTSIDE the modal
-  const toastContainer = (
-    <>
-      {toast && (
-        <CustomToast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
-    </>
-  );
-
   if (!open) {
-    // Return only the toast when modal is closed
-    return toastContainer;
+    return null;
   }
 
   return (
     <>
-      {/* Toast container - OUTSIDE the modal */}
-      {toastContainer}
-      
       {/* Modal */}
       <dialog open={open} className="modal z-10000000">
         <div className="modal-box w-11/12 max-w-4xl relative bg-white p-6 max-h-[90vh] overflow-hidden flex flex-col">
@@ -374,15 +301,20 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
 
           {/* Sticky Header */}
           <div className="sticky top-0 bg-white pt-2 pb-3 border-b border-gray-200 mb-4 z-5">
-            <h3 className="font-bold text-2xl mb-1">
-              Create {accountType === "web" ? "Training Staff" : "AFP Personnel"}{" "}
-              Account
-            </h3>
-            <p className="text-gray font-normal text-md">
-              {accountType === "web"
-                ? "Web Access Account"
-                : "Mobile Access Account"}
-            </p>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="font-bold text-2xl mb-1">
+                  Create{" "}
+                  {accountType === "web" ? "Training Staff" : "AFP Personnel"}{" "}
+                  Account
+                </h3>
+                <p className="text-gray font-normal text-md">
+                  {accountType === "web"
+                    ? "Web Access Account"
+                    : "Mobile Access Account"}
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Success/Error Messages */}
@@ -391,7 +323,7 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
               {success}
             </div>
           )}
-          
+
           {error && (
             <div className="mx-6 mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
               {error}
@@ -407,61 +339,29 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
                   Personal Information
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div>
-                    <label className="label py-1">
-                      <span className="label-text font-medium text-sm">
-                        First Name *
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      className={`input w-full h-9 text-sm ${
-                        fieldErrors.firstName ? 'input-error' : 'input-bordered'
-                      }`}
-                      required
-                    />
-                    {fieldErrors.firstName && (
-                      <p className="text-xs text-red-500 mt-1">{fieldErrors.firstName}</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="label py-1">
-                      <span className="label-text font-medium text-sm">
-                        Last Name *
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      className={`input w-full h-9 text-sm ${
-                        fieldErrors.lastName ? 'input-error' : 'input-bordered'
-                      }`}
-                      required
-                    />
-                    {fieldErrors.lastName && (
-                      <p className="text-xs text-red-500 mt-1">{fieldErrors.lastName}</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="label py-1">
-                      <span className="label-text font-medium text-sm">
-                        Suffix
-                      </span>
-                    </label>
-                    <input
-                      type="text"
-                      name="suffix"
-                      value={formData.suffix}
-                      onChange={handleInputChange}
-                      className="input input-bordered w-full h-9 text-sm"
-                      placeholder="Jr., Sr., III, etc."
-                    />
-                  </div>
+                  <LabeledInput
+                    label="First Name *"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleInputChange}
+                    error={fieldErrors.firstName}
+                    required
+                  />
+                  <LabeledInput
+                    label="Last Name *"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleInputChange}
+                    error={fieldErrors.lastName}
+                    required
+                  />
+                  <LabeledInput
+                    label="Suffix"
+                    name="suffix"
+                    value={formData.suffix}
+                    onChange={handleInputChange}
+                    placeholder="Jr., Sr., III, etc."
+                  />
                 </div>
               </div>
 
@@ -483,39 +383,30 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
                       value={formData.serviceId}
                       onChange={handleInputChange}
                       className={`input w-full h-9 text-sm ${
-                        fieldErrors.serviceId ? 'input-error' : 'input-bordered'
+                        fieldErrors.serviceId ? "input-error" : "input-bordered"
                       }`}
                       placeholder="AFP-2024-XXX"
                       required
                     />
                     {fieldErrors.serviceId ? (
-                      <p className="text-xs text-red-500 mt-1">{fieldErrors.serviceId}</p>
+                      <p className="text-xs text-red-500 mt-1">
+                        {fieldErrors.serviceId}
+                      </p>
                     ) : (
                       <p className="text-xs text-gray-500 mt-1">
                         Format: AFP-YYYY-XXX (e.g., AFP-2025-001)
                       </p>
                     )}
                   </div>
-                  <div>
-                    <label className="label py-1">
-                      <span className="label-text font-medium text-sm">
-                        Email *
-                      </span>
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className={`input w-full h-9 text-sm ${
-                        fieldErrors.email ? 'input-error' : 'input-bordered'
-                      }`}
-                      required
-                    />
-                    {fieldErrors.email && (
-                      <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>
-                    )}
-                  </div>
+                  <LabeledInput
+                    label="Email *"
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    error={fieldErrors.email}
+                    required
+                  />
                 </div>
               </div>
 
@@ -525,105 +416,51 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
                   Organizational Information
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div>
-                    <label className="label py-1">
-                      <span className="label-text font-medium text-sm">
-                        Branch of Service *
-                      </span>
-                    </label>
-                    <div className="relative">
-                      <select
-                        name="branchOfService"
-                        value={formData.branchOfService}
-                        onChange={handleBranchChange}
-                        disabled={orgLoading}
-                        className={`select w-full h-9 text-sm appearance-none ${
-                          fieldErrors.branchOfService ? 'select-error' : 'select-bordered'
-                        }`}
-                        required
-                      >
-                        <option value="">Select Branch</option>
-                        {branches.map((b) => (
-                          <option key={b.code} value={b.label}>
-                            {b.label}
-                          </option>
-                        ))}
-                      </select>
-                      <CaretDownIcon
-                        weight="bold"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none h-4 w-4"
-                      />
-                    </div>
-                    {fieldErrors.branchOfService && (
-                      <p className="text-xs text-red-500 mt-1">{fieldErrors.branchOfService}</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="label py-1">
-                      <span className="label-text font-medium text-sm">
-                        Division *
-                      </span>
-                    </label>
-                    <div className="relative">
-                      <select
-                        name="division"
-                        value={formData.division}
-                        onChange={handleDivisionChange}
-                        disabled={!selectedBranch || orgLoading}
-                        className={`select w-full h-9 text-sm appearance-none ${
-                          fieldErrors.division ? 'select-error' : 'select-bordered'
-                        }`}
-                        required
-                      >
-                        <option value="">Select Division</option>
-                        {divisions.map((d) => (
-                          <option key={d.code} value={d.label}>
-                            {d.label}
-                          </option>
-                        ))}
-                      </select>
-                      <CaretDownIcon
-                        weight="bold"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none h-4 w-4"
-                      />
-                    </div>
-                    {fieldErrors.division && (
-                      <p className="text-xs text-red-500 mt-1">{fieldErrors.division}</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="label py-1">
-                      <span className="label-text font-medium text-sm">
-                        Unit *
-                      </span>
-                    </label>
-                    <div className="relative">
-                      <select
-                        name="unit"
-                        value={formData.unit}
-                        onChange={handleUnitChange}
-                        disabled={!selectedDivision || orgLoading}
-                        className={`select w-full h-9 text-sm appearance-none ${
-                          fieldErrors.unit ? 'select-error' : 'select-bordered'
-                        }`}
-                        required
-                      >
-                        <option value="">Select Unit</option>
-                        {units.map((u) => (
-                          <option key={u.code} value={u.label}>
-                            {u.label}
-                          </option>
-                        ))}
-                      </select>
-                      <CaretDownIcon
-                        weight="bold"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none h-4 w-4"
-                      />
-                    </div>
-                    {fieldErrors.unit && (
-                      <p className="text-xs text-red-500 mt-1">{fieldErrors.unit}</p>
-                    )}
-                  </div>
+                  <LabeledSelect
+                    label="Branch of Service *"
+                    name="branchOfService"
+                    value={formData.branchOfService}
+                    onChange={handleBranchChange}
+                    disabled={orgLoading}
+                    options={branches.map((b) => ({
+                      label: b.label,
+                      value: b.label,
+                      code: b.code,
+                    }))}
+                    placeholder="Select Branch"
+                    error={fieldErrors.branchOfService}
+                    required
+                  />
+                  <LabeledSelect
+                    label="Division *"
+                    name="division"
+                    value={formData.division}
+                    onChange={handleDivisionChange}
+                    disabled={!selectedBranch || orgLoading}
+                    options={divisions.map((d) => ({
+                      label: d.label,
+                      value: d.label,
+                      code: d.code,
+                    }))}
+                    placeholder="Select Division"
+                    error={fieldErrors.division}
+                    required
+                  />
+                  <LabeledSelect
+                    label="Unit *"
+                    name="unit"
+                    value={formData.unit}
+                    onChange={handleUnitChange}
+                    disabled={!selectedDivision || orgLoading}
+                    options={units.map((u) => ({
+                      label: u.label,
+                      value: u.label,
+                      code: u.code,
+                    }))}
+                    placeholder="Select Unit"
+                    error={fieldErrors.unit}
+                    required
+                  />
                 </div>
               </div>
 
@@ -631,34 +468,22 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
               <div className="p-3 bg-gray-50 rounded-lg">
                 <h4 className="font-semibold mb-3 text-base">Rank</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div>
-                    <label className="label py-1">
-                      <span className="label-text font-medium text-sm">Rank</span>
-                    </label>
-                    <div className="relative">
-                      <select
-                        name="rank"
-                        value={formData.rank}
-                        onChange={handleRankChange}
-                        disabled={!formData.rankService || ranksLoading || ranksFetching}
-                        className={`select w-full h-9 text-sm appearance-none ${
-                          fieldErrors.rank ? 'select-error' : 'select-bordered'
-                        }`}
-                      >
-                        <option value="">Select Rank</option>
-                        {ranks.map((r)=> (
-                          <option key={r.code} value={r.label}>{r.label}</option>
-                        ))}
-                      </select>
-                      <CaretDownIcon
-                        weight="bold"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none h-4 w-4"
-                      />
-                    </div>
-                    {fieldErrors.rank && (
-                      <p className="text-xs text-red-500 mt-1">{fieldErrors.rank}</p>
-                    )}
-                  </div>
+                  <LabeledSelect
+                    label="Rank"
+                    name="rank"
+                    value={formData.rank}
+                    onChange={handleRankChange}
+                    disabled={
+                      !formData.rankService || ranksLoading || ranksFetching
+                    }
+                    options={ranks.map((r) => ({
+                      label: r.label,
+                      value: r.label,
+                      code: r.code,
+                    }))}
+                    placeholder="Select Rank"
+                    error={fieldErrors.rank}
+                  />
                 </div>
               </div>
 
@@ -679,14 +504,18 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
                       value={formData.address}
                       onChange={handleInputChange}
                       className={`textarea w-full h-full text-sm ${
-                        fieldErrors.address ? 'textarea-error' : 'textarea-bordered'
+                        fieldErrors.address
+                          ? "textarea-error"
+                          : "textarea-bordered"
                       }`}
                       rows="2"
                       placeholder="Enter complete address"
                       required
                     />
                     {fieldErrors.address && (
-                      <p className="text-xs text-red-500 mt-1">{fieldErrors.address}</p>
+                      <p className="text-xs text-red-500 mt-1">
+                        {fieldErrors.address}
+                      </p>
                     )}
                   </div>
                   <div className="space-y-3">
@@ -696,19 +525,49 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
                           Contact Number *
                         </span>
                       </label>
-                      <input
-                        type="tel"
-                        name="contactNumber"
-                        value={formData.contactNumber}
-                        onChange={handleInputChange}
-                        className={`input w-full h-9 text-sm ${
-                          fieldErrors.contactNumber ? 'input-error' : 'input-bordered'
-                        }`}
-                        placeholder="+63 XXX XXX XXXX"
-                        required
-                      />
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500 select-none pointer-events-none z-10">
+                          +63
+                        </span>
+                        <input
+                          type="tel"
+                          name="contactNumber"
+                          value={(formData.contactNumber || "").replace(
+                            /(\d{3})(\d{3})(\d{0,4})/,
+                            (m, a, b, c) =>
+                              c ? `${a} ${b} ${c}` : b ? `${a} ${b}` : a
+                          )}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, ""); // digits only
+                            if (
+                              value.length <= 10 &&
+                              (value === "" || value.startsWith("9"))
+                            ) {
+                              setFormData((prev) => ({
+                                ...prev,
+                                contactNumber: value,
+                              }));
+                            }
+                            if (fieldErrors.contactNumber) {
+                              setFieldErrors((prev) => ({
+                                ...prev,
+                                contactNumber: "",
+                              }));
+                            }
+                          }}
+                          className={`input w-full h-9 text-sm pl-14 relative z-0 ${
+                            fieldErrors.contactNumber
+                              ? "input-error"
+                              : "input-bordered"
+                          }`}
+                          placeholder="9XX XXX XXXX"
+                          required
+                        />
+                      </div>
                       {fieldErrors.contactNumber && (
-                        <p className="text-xs text-red-500 mt-1">{fieldErrors.contactNumber}</p>
+                        <p className="text-xs text-red-500 mt-1">
+                          {fieldErrors.contactNumber}
+                        </p>
                       )}
                     </div>
                     <div>
@@ -723,15 +582,15 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
                         value={formData.dateOfBirth}
                         onChange={handleInputChange}
                         className={`input w-full h-9 text-sm ${
-                          fieldErrors.dateOfBirth ? 'input-error' : 'input-bordered'
+                          fieldErrors.dateOfBirth
+                            ? "input-error"
+                            : "input-bordered"
                         }`}
                         required
                       />
-                      {fieldErrors.dateOfBirth ? (
-                        <p className="text-xs text-red-500 mt-1">{fieldErrors.dateOfBirth}</p>
-                      ) : (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Must be at least 18 years old
+                      {fieldErrors.dateOfBirth && (
+                        <p className="text-xs text-red-500 mt-1">
+                          {fieldErrors.dateOfBirth}
                         </p>
                       )}
                     </div>
@@ -757,7 +616,7 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
                         value={formData.role}
                         onChange={handleInputChange}
                         className={`select w-full h-9 text-sm appearance-none ${
-                          fieldErrors.role ? 'select-error' : 'select-bordered'
+                          fieldErrors.role ? "select-error" : "select-bordered"
                         }`}
                         required
                       >
@@ -773,7 +632,9 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
                       />
                     </div>
                     {fieldErrors.role && (
-                      <p className="text-xs text-red-500 mt-1">{fieldErrors.role}</p>
+                      <p className="text-xs text-red-500 mt-1">
+                        {fieldErrors.role}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -789,8 +650,8 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
                 >
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="btn btn-primary btn-sm"
                   disabled={isSubmitting}
                 >

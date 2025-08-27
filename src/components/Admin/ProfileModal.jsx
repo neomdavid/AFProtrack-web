@@ -117,7 +117,14 @@ const ProfileModal = ({ isOpen, onClose }) => {
     return roleMap[role] || role;
   };
 
-  console.log("ProfileModal render - isOpen:", isOpen, "User:", user, "FormData:", formData);
+  console.log(
+    "ProfileModal render - isOpen:",
+    isOpen,
+    "User:",
+    user,
+    "FormData:",
+    formData
+  );
   if (!isOpen) return null;
 
   return (
@@ -128,24 +135,21 @@ const ProfileModal = ({ isOpen, onClose }) => {
       }`}
     >
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-black/40"
-        onClick={onClose}
-      />
-      
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+
       {/* Modal Content */}
       <div className="relative w-11/12 max-w-2xl lg:max-w-4xl bg-white rounded-lg shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
         {/* X Close Button */}
-        <button 
-          className="absolute top-4 right-4 z-20 btn btn-sm btn-circle btn-ghost" 
+        <button
+          className="absolute top-3 sm:top-5 right-4 z-20 btn btn-sm btn-circle btn-ghost"
           onClick={onClose}
         >
-          <XIcon size={16} />
+          <XIcon size={20} weight="bold" className="text-black" />
         </button>
 
         {/* Header - Sticky Top */}
-        <div className="sticky top-0 bg-white z-10 px-6 py-4 border-b border-gray-200">
-          <h3 className="font-bold text-lg sm:text-xl lg:text-2xl text-black">
+        <div className="sticky top-0 bg-white z-10 px-6 py-4 sm:py-6 border-b border-gray-200">
+          <h3 className="font-bold text-md sm:text-lg sm:text-2xl lg:text-2xl text-black">
             Profile Information
           </h3>
         </div>
@@ -157,27 +161,34 @@ const ProfileModal = ({ isOpen, onClose }) => {
             <div className="avatar">
               <div className="w-20 h-20 rounded-full overflow-hidden">
                 <div className="w-full h-full bg-primary text-primary-content rounded-full flex items-center justify-center text-2xl font-bold">
-                  {user?.avatar || user?.fullName?.split(" ").map((n) => n[0]).join("").toUpperCase() || "U"}
+                  {user?.avatar ||
+                    user?.fullName
+                      ?.split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase() ||
+                    "U"}
                 </div>
               </div>
             </div>
           </div>
 
-
           {/* Form Fields */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Personal Information Section */}
             <div>
-              <h4 className="font-semibold text-lg mb-4 text-black flex items-center gap-2">
+              <h4 className="font-semibold text-md sm:text-lg mb-4 text-black flex items-center gap-2">
                 <UserIcon size={20} />
                 Personal Information
               </h4>
-              <div className="space-y-4">
+              <div className="space-y-4 text-sm sm:text-md">
                 {/* First Name & Last Name Row */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="form-control">
+                  <div className="form-control text-sm sm:text-md">
                     <label className="label">
-                      <span className="label-text font-semibold">First Name</span>
+                      <span className="label-text font-semibold">
+                        First Name
+                      </span>
                     </label>
                     <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
                       <UserIcon size={16} />
@@ -185,9 +196,11 @@ const ProfileModal = ({ isOpen, onClose }) => {
                     </div>
                   </div>
 
-                  <div className="form-control">
+                  <div className="form-control text-sm sm:text-md">
                     <label className="label">
-                      <span className="label-text font-semibold">Last Name</span>
+                      <span className="label-text font-semibold">
+                        Last Name
+                      </span>
                     </label>
                     <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
                       <UserIcon size={16} />
@@ -197,7 +210,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Service ID Field */}
-                <div className="form-control">
+                <div className="form-control text-sm sm:text-md">
                   <label className="label">
                     <span className="label-text font-semibold">Service ID</span>
                   </label>
@@ -219,7 +232,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Avatar Field */}
-                <div className="form-control">
+                <div className="form-control text-sm sm:text-md">
                   <label className="label">
                     <span className="label-text font-semibold">Avatar</span>
                   </label>
@@ -233,13 +246,13 @@ const ProfileModal = ({ isOpen, onClose }) => {
 
             {/* Service Information Section */}
             <div>
-              <h4 className="font-semibold text-lg mb-4 text-black flex items-center gap-2">
+              <h4 className="font-semibold text-md sm:text-lg mb-4 text-black flex items-center gap-2">
                 <ShieldIcon size={20} />
                 Service Information
               </h4>
               <div className="space-y-4">
                 {/* Unit Field */}
-                <div className="form-control">
+                <div className="form-control text-sm sm:text-md">
                   <label className="label">
                     <span className="label-text font-semibold">Unit</span>
                   </label>
@@ -261,9 +274,11 @@ const ProfileModal = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Branch of Service Field */}
-                <div className="form-control">
+                <div className="form-control text-sm sm:text-md">
                   <label className="label">
-                    <span className="label-text font-semibold">Branch of Service</span>
+                    <span className="label-text font-semibold">
+                      Branch of Service
+                    </span>
                   </label>
                   <div className="input input-bordered w-full bg-base-200 flex items-center gap-2">
                     <FlagIcon size={16} />
@@ -272,7 +287,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Division Field */}
-                <div className="form-control">
+                <div className="form-control text-sm sm:text-md">
                   <label className="label">
                     <span className="label-text font-semibold">Division</span>
                   </label>
@@ -286,13 +301,13 @@ const ProfileModal = ({ isOpen, onClose }) => {
 
             {/* Contact Information Section */}
             <div>
-              <h4 className="font-semibold text-lg mb-4 text-black flex items-center gap-2">
+              <h4 className="font-semibold text-md sm:text-lg mb-4 text-black flex items-center gap-2">
                 <EnvelopeIcon size={20} />
                 Contact Information
               </h4>
               <div className="space-y-4">
                 {/* Email Field */}
-                <div className="form-control">
+                <div className="form-control text-sm sm:text-md">
                   <label className="label">
                     <span className="label-text font-semibold">
                       Email Address
@@ -316,7 +331,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
                 </div>
 
                 {/* Role Field */}
-                <div className="form-control">
+                <div className="form-control text-sm sm:text-md">
                   <label className="label">
                     <span className="label-text font-semibold">Role</span>
                   </label>
@@ -371,12 +386,15 @@ const ProfileModal = ({ isOpen, onClose }) => {
               </>
             ) : (
               <>
-                <button onClick={onClose} className="btn btn-outline">
+                <button
+                  onClick={onClose}
+                  className="btn btn-sm sm:btn-md btn-outline"
+                >
                   Close
                 </button>
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="btn btn-primary"
+                  className="btn btn-sm sm:btn-md btn-primary"
                 >
                   <PencilIcon size={16} />
                   Edit Profile

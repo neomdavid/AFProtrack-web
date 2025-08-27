@@ -13,13 +13,15 @@ const ChartContainer = () => {
   }));
 
   return (
-    <div className="w-full bg-white border-3 shadow-sm border-gray-200 p-2 lg:py-5 lg:px-5 rounded-sm ">
-    <p className="text-xl font-semibold mb-3">Training Completion Overview</p>
-    <MixedChart labels={visibleLabels} datasets={visibleDatasets} />
-    <div style={{ width: "100%", maxWidth: 1150 }} className="mt-1">
-      <DateRangeSlider range={range} setRange={setRange} />
+    <div className="w-full bg-white border-3 shadow-sm border-gray-200 p-3 lg:py-5 lg:px-5 rounded-sm ">
+      <p className="text-lg sm:text-xl font-semibold mb-3">
+        Training Completion Overview
+      </p>
+      <MixedChart labels={visibleLabels} datasets={visibleDatasets} />
+      <div style={{ width: "100%", maxWidth: 1150 }} className="mt-1">
+        <DateRangeSlider range={range} setRange={setRange} />
+      </div>
     </div>
-  </div>
   );
 };
 

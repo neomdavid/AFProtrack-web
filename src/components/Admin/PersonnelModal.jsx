@@ -1,4 +1,5 @@
 import React from "react";
+import { formatDateShort } from "../../utils";
 
 const PersonnelModal = ({ person, isOpen, onClose }) => {
   // Mock training records data
@@ -59,7 +60,7 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
 
   return (
     <dialog id="person_modal" className="modal z-[10000]" open={isOpen}>
-      <div className="modal-box w-11/12 max-w-4xl relative bg-white">
+      <div className="modal-box w-11/12 max-w-4xl relative bg-white max-h-[90vh]">
         <form method="dialog" className="absolute top-4 right-4">
           <button className="btn btn-sm btn-circle btn-ghost" onClick={onClose}>
             <svg
@@ -79,12 +80,12 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
           </button>
         </form>
 
-        <div className="flex items-center gap-6 mb-6">
-          <div className="w-20 h-20 bg-primary text-white rounded-full flex items-center justify-center text-2xl font-bold flex-shrink-0">
+        <div className="flex flex-col sm:flex-row text-center sm:text-left items-center gap-3 sm:gap-6 mb-5 sm:mb-6">
+          <div className="w-20 h-20 text-center sm:text-left bg-primary text-white rounded-full flex items-center justify-center text-2xl font-bold flex-shrink-0">
             {person.avatar}
           </div>
           <div className="flex-1">
-            <h3 className="font-bold text-2xl text-black mb-0.5">
+            <h3 className="font-bold text-xl sm:text-2xl text-black mb-0.5">
               {person.name}
             </h3>
             <p className="text-gray-600 mb-1">{person.rank}</p>
@@ -97,7 +98,7 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
 
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <h4 className="font-semibold text-lg text-gray-700">
+            <h4 className="font-semibold text-md sm:text-lg text-gray-700 ">
               Training Records
             </h4>
             <button onClick={handleExport} className="btn btn-sm btn-primary">
@@ -120,7 +121,7 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="table table-zebra w-full text-black">
+            <table className="table table-zebra text-sm sm:text-md w-full text-black">
               <thead>
                 <tr>
                   <th>Date</th>
@@ -134,7 +135,9 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
               <tbody>
                 {getTrainingRecords(person.id).map((record) => (
                   <tr key={record.id}>
-                    <td className="font-medium">{record.date}</td>
+                    <td className="font-medium">
+                      {formatDateShort(record.date)}
+                    </td>
                     <td>{record.program}</td>
                     <td>{record.instructor}</td>
                     <td>
@@ -198,23 +201,27 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
             </table>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6 p-4 bg-base-200 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 sm:gap-4 mt-6 p-4 bg-base-200 rounded-lg">
             <div className="text-center">
-              <p className="text-2xl font-bold text-primary">
+              <p className="text-xl sm:text-2xl font-bold text-primary">
                 {getTrainingRecords(person.id).length}
               </p>
               <p className="text-sm text-gray-600">Total Programs</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-success-content">A+</p>
+              <p className="text-xl sm:text-2xl font-bold text-success-content">
+                A+
+              </p>
               <p className="text-sm text-gray-600">Average Grade</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-primary">97%</p>
+              <p className="text-xl sm:text-2xl font-bold text-primary">97%</p>
               <p className="text-sm text-gray-600">Attendance Rate</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-success-content">90%</p>
+              <p className="text-xl sm:text-2xl font-bold text-success-content">
+                90%
+              </p>
               <p className="text-sm text-gray-600">Average Progress</p>
             </div>
           </div>

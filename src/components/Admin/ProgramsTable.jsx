@@ -22,7 +22,8 @@ const ProgramsTable = ({ programs = [], onViewDetails }) => {
       endDate: "2024-01-20",
       time: "08:00",
       venue: "Training Ground A",
-      additionalDetails: "Comprehensive combat training program for advanced personnel."
+      additionalDetails:
+        "Comprehensive combat training program for advanced personnel.",
     },
     {
       id: 2,
@@ -35,7 +36,7 @@ const ProgramsTable = ({ programs = [], onViewDetails }) => {
       endDate: "2024-02-05",
       time: "09:00",
       venue: "Conference Hall B",
-      additionalDetails: "Leadership skills development for senior officers."
+      additionalDetails: "Leadership skills development for senior officers.",
     },
     {
       id: 3,
@@ -48,8 +49,8 @@ const ProgramsTable = ({ programs = [], onViewDetails }) => {
       endDate: "2023-12-20",
       time: "07:00",
       venue: "Training Center",
-      additionalDetails: "Basic military training for new recruits."
-    }
+      additionalDetails: "Basic military training for new recruits.",
+    },
   ]);
 
   // Use programs prop if provided, otherwise use local state
@@ -58,16 +59,18 @@ const ProgramsTable = ({ programs = [], onViewDetails }) => {
   const handleAddProgram = (newProgram) => {
     const programWithId = {
       ...newProgram,
-      id: Date.now()
+      id: Date.now(),
     };
-    setPrograms(prev => [...prev, programWithId]);
+    setPrograms((prev) => [...prev, programWithId]);
     setShowAddModal(false);
   };
 
   const handleEditProgram = (updatedProgram) => {
-    setPrograms(prev => 
-      prev.map(program => 
-        program.id === selectedProgram.id ? { ...updatedProgram, id: program.id } : program
+    setPrograms((prev) =>
+      prev.map((program) =>
+        program.id === selectedProgram.id
+          ? { ...updatedProgram, id: program.id }
+          : program
       )
     );
     setShowDetailsModal(false);
@@ -83,21 +86,23 @@ const ProgramsTable = ({ programs = [], onViewDetails }) => {
     }
   };
 
-  const canCreate = canPerformAction(user?.role, 'create_program');
-  const canEdit = canPerformAction(user?.role, 'edit_program');
-  const canDelete = canPerformAction(user?.role, 'delete_program');
+  const canCreate = canPerformAction(user?.role, "create_program");
+  const canEdit = canPerformAction(user?.role, "edit_program");
+  const canDelete = canPerformAction(user?.role, "delete_program");
 
   return (
     <div className="space-y-6">
       {/* Header with Add Button */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Training Programs</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+          Training Programs
+        </h2>
         {canCreate && (
           <button
             onClick={() => setShowAddModal(true)}
-            className="bg-primary text-white px-4 py-1.5 rounded-md  text-[14px] flex items-center gap-2 btn-hover"
+            className="bg-primary text-white px-4 py-1.5 rounded-md text-xs sm:text-[14px] flex items-center gap-2 btn-hover"
           >
-           <PlusIcon size={16}  weight="bold"/>
+            <PlusIcon weight="bold" />
             Add New Program
           </button>
         )}
@@ -105,10 +110,9 @@ const ProgramsTable = ({ programs = [], onViewDetails }) => {
 
       {/* Programs Table */}
       <div className="overflow-x-auto">
-        
         {displayPrograms.length > 0 ? (
           <table className="table table-zebra w-full">
-            <thead>
+            <thead className="text-[13px] m:text-md">
               <tr>
                 <th>Program</th>
                 <th>Duration</th>
@@ -118,7 +122,7 @@ const ProgramsTable = ({ programs = [], onViewDetails }) => {
                 <th className="text-center">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="text-[13px] sm:text-md">
               {displayPrograms.map((program) => (
                 <tr key={program.id}>
                   <td className="font-medium">{program.name}</td>
@@ -126,16 +130,21 @@ const ProgramsTable = ({ programs = [], onViewDetails }) => {
                   <td>{program.instructor}</td>
                   <td className="text-center">{program.participants}</td>
                   <td className="text-center">
-                    <span className={`px-2 py-1 rounded-full text-xs font-bold border ${
-                      program.status === 'Ongoing' ? 'bg-info text-info-content border-info-content' :
-                      program.status === 'Scheduled' ? 'bg-warning text-warning-content border-warning-content' :
-                      program.status === 'Completed' ? 'bg-base-success text-success-content border-success-content' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-bold border ${
+                        program.status === "Ongoing"
+                          ? "bg-info text-info-content border-info-content"
+                          : program.status === "Scheduled"
+                          ? "bg-warning text-warning-content border-warning-content"
+                          : program.status === "Completed"
+                          ? "bg-base-success text-success-content border-success-content"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
                       {program.status}
                     </span>
                   </td>
-                  <td className="flex justify-center items-center">
+                  <td className="flex justify-center items-center ">
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleViewDetails(program)}
@@ -159,7 +168,9 @@ const ProgramsTable = ({ programs = [], onViewDetails }) => {
         ) : (
           <div className="text-center py-8 text-gray-500">
             <p className="text-lg">No programs found matching your criteria.</p>
-            <p className="text-sm mt-2">Try adjusting your search or filters.</p>
+            <p className="text-sm mt-2">
+              Try adjusting your search or filters.
+            </p>
           </div>
         )}
       </div>
@@ -186,4 +197,4 @@ const ProgramsTable = ({ programs = [], onViewDetails }) => {
   );
 };
 
-export default ProgramsTable; 
+export default ProgramsTable;
