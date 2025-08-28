@@ -51,12 +51,12 @@ function App() {
                 requiredPermission={PERMISSIONS.CAN_APPROVE_USERS}
                 fallback={<AccountConfirmationAccessDenied />}
               >
-                <AdminLayout>
-                  <AdAccountConfirmation />
-                </AdminLayout>
+                <AdminLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<AdAccountConfirmation />} />
+          </Route>
 
           {/* Regular Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
