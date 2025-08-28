@@ -26,6 +26,7 @@ const adminLinks = [
     name: "Account Confirmation",
     path: "account_confirmation",
     icon: <CheckCircleIcon size={17} />,
+    requiredPermission: "canApproveUsers", // Add permission requirement
   },
 ];
 

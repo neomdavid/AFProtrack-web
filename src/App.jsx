@@ -25,6 +25,9 @@ import "react-toastify/dist/ReactToastify.css";
 import AdAccounts from "./pages/Admin/AdAccounts";
 import AdAccountConfirmation from "./pages/Admin/AdAccountConfirmation";
 import ProgramAttendance from "./pages/Admin/ProgramAttendance";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AccountConfirmationAccessDenied from "./components/AccountConfirmationAccessDenied";
+import { PERMISSIONS } from "./utils/rolePermissions";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -39,6 +42,23 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/set-password" element={<SetPassword />} />
           <Route path="/test-colors" element={<ColorTest />} />
+
+          {/* Protected Account Confirmation Route - Not nested under AdminLayout */}
+          <Route
+            path="/admin/account_confirmation"
+            element={
+              <ProtectedRoute
+                requiredPermission={PERMISSIONS.CAN_APPROVE_USERS}
+                fallback={<AccountConfirmationAccessDenied />}
+              >
+                <AdminLayout>
+                  <AdAccountConfirmation />
+                </AdminLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Regular Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index path="dashboard" element={<AdDashboard />} />
             <Route
@@ -47,11 +67,6 @@ function App() {
               element={<AdTrainingOverview />}
             />
             <Route index path="accounts" element={<AdAccounts />} />
-            <Route
-              index
-              path="account_confirmation"
-              element={<AdAccountConfirmation />}
-            />
             <Route
               path="programs/:programId/attendance"
               element={<ProgramAttendance />}

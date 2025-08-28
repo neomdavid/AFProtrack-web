@@ -1,14 +1,14 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 // Async thunks for authentication actions
 export const loginUser = createAsyncThunk(
-  'auth/login',
+  "auth/login",
   async ({ serviceId, password }, { rejectWithValue }) => {
     try {
-      const response = await fetch('http://localhost:5000/api/users/login', {
-        method: 'POST',
+      const response = await fetch("http://localhost:5000/api/users/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ serviceId, password }),
       });
@@ -16,7 +16,7 @@ export const loginUser = createAsyncThunk(
       const data = await response.json();
 
       if (!response.ok) {
-        return rejectWithValue(data.message || 'Login failed');
+        return rejectWithValue(data.message || "Login failed");
       }
 
       if (data.success && data.data) {
@@ -37,6 +37,7 @@ export const loginUser = createAsyncThunk(
           isVerified: data.data.user.isVerified,
           lastLogin: data.data.user.lastLogin,
           avatar: data.data.user.avatar,
+          permissions: data.data.user.permissions || {},
         };
 
         // Store user data and token in localStorage
@@ -45,34 +46,32 @@ export const loginUser = createAsyncThunk(
 
         return userData;
       } else {
-        return rejectWithValue(data.message || 'Login failed');
+        return rejectWithValue(data.message || "Login failed");
       }
     } catch (error) {
-      return rejectWithValue(error.message || 'Network error');
+      return rejectWithValue(error.message || "Network error");
     }
   }
 );
 
-export const logoutUser = createAsyncThunk(
-  'auth/logout',
-  async () => {
-    localStorage.removeItem("afprotrack_user");
-    localStorage.removeItem("afprotrack_token");
-    return null;
-  }
-);
+export const logoutUser = createAsyncThunk("auth/logout", async () => {
+  localStorage.removeItem("afprotrack_user");
+  localStorage.removeItem("afprotrack_token");
+  return null;
+});
 
 export const checkAuthStatus = createAsyncThunk(
-  'auth/checkStatus',
+  "auth/checkStatus",
   async (_, { rejectWithValue }) => {
     try {
       const storedUser = localStorage.getItem("afprotrack_user");
       const token = localStorage.getItem("afprotrack_token");
-      
+
       if (storedUser && token) {
         const userData = JSON.parse(storedUser);
         return userData;
       }
+      // Return null explicitly when no user data
       return null;
     } catch (error) {
       localStorage.removeItem("afprotrack_user");
@@ -83,7 +82,7 @@ export const checkAuthStatus = createAsyncThunk(
 );
 
 export const requestPasswordReset = createAsyncThunk(
-  'auth/requestPasswordReset',
+  "auth/requestPasswordReset",
   async (email, { rejectWithValue }) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -91,7 +90,7 @@ export const requestPasswordReset = createAsyncThunk(
       if (email && email.includes("@")) {
         const mockOTP = Math.floor(100000 + Math.random() * 900000).toString();
         console.log("Mock OTP for testing:", mockOTP);
-        
+
         return {
           success: true,
           message: "OTP sent successfully",
@@ -107,13 +106,14 @@ export const requestPasswordReset = createAsyncThunk(
 );
 
 export const verifyOTP = createAsyncThunk(
-  'auth/verifyOTP',
+  "auth/verifyOTP",
   async ({ email, otp }, { rejectWithValue }) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       if (email && otp && otp.length === 6) {
-        const mockToken = Math.random().toString(36).substring(2, 15) +
+        const mockToken =
+          Math.random().toString(36).substring(2, 15) +
           Math.random().toString(36).substring(2, 15);
 
         return {
@@ -131,7 +131,7 @@ export const verifyOTP = createAsyncThunk(
 );
 
 export const resetPassword = createAsyncThunk(
-  'auth/resetPassword',
+  "auth/resetPassword",
   async ({ token, newPassword }, { rejectWithValue }) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -160,7 +160,7 @@ const initialState = {
 };
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     clearError: (state) => {
