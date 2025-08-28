@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { InfoIcon, TrashIcon } from "@phosphor-icons/react";
+import { TrashIcon } from "@phosphor-icons/react";
 import {
   useGetActiveUserByIdQuery,
   useDeleteUserMutation,
   useUpdateUserStatusMutation,
 } from "../../features/api/adminEndpoints";
 import { useAuth } from "../../hooks/useAuth";
+import AccountActionConfirmModal from "./AccountActionConfirmModal";
 
 const AccessCard = ({ person }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -13,6 +14,14 @@ const AccessCard = ({ person }) => {
   const [deleteUser] = useDeleteUserMutation();
   const [updateUserStatus] = useUpdateUserStatusMutation();
   const { user: currentUser } = useAuth();
+
+  // Confirmation modal state
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    action: null,
+    accountName: "",
+    accountStatus: "",
+  });
 
   // Check if this account belongs to the currently logged-in user
   const isOwnAccount =
@@ -31,18 +40,45 @@ const AccessCard = ({ person }) => {
     setIsModalOpen(false);
   };
 
-  const handleArchiveAccount = async () => {
+  const showConfirmModal = (action) => {
+    setConfirmModal({
+      isOpen: true,
+      action,
+      accountName: person.name,
+      accountStatus: person.accountStatus,
+    });
+  };
+
+  const handleConfirmAction = async () => {
+    // Perform the action based on the confirmation
+    switch (confirmModal.action) {
+      case "archive":
+        await deleteUser(person.id).unwrap();
+        setIsModalOpen(false);
+        break;
+      case "activate":
+        await updateUserStatus({
+          userId: person.id,
+          accountStatus: "active",
+        }).unwrap();
+        break;
+      case "deactivate":
+        await updateUserStatus({
+          userId: person.id,
+          accountStatus: "inactive",
+        }).unwrap();
+        break;
+      default:
+        throw new Error("Unknown action");
+    }
+  };
+
+  const handleArchiveAccount = () => {
     if (isOwnAccount) {
       console.warn("Cannot archive own account");
       return;
     }
-
-    try {
-      await deleteUser(person.id).unwrap();
-      setIsModalOpen(false);
-    } catch (e) {
-      console.error("Failed to archive user", e);
-    }
+    showConfirmModal("archive");
   };
 
   const { data: userDetails } = useGetActiveUserByIdQuery(person.id, {
@@ -105,7 +141,7 @@ const AccessCard = ({ person }) => {
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Account Details Modal */}
       <dialog open={isModalOpen} className="modal z-[10000]">
         <div className="modal-box w-11/12 max-w-md relative bg-white p-8">
           {/* X Close Button in form */}
@@ -148,11 +184,12 @@ const AccessCard = ({ person }) => {
 
             {/* Email */}
             <p className="text-sm text-gray">{email}</p>
+
+            {/* Own Account Info Banner */}
             {isOwnAccount && (
               <div className="flex items-start gap-2 bg-gray-100 p-2 rounded-md mt-4 mb-[-13px]">
-                <InfoIcon size={16} className="text-gray-600 mt-[2px]" />
                 <span className="text-[13px] text-gray-700">
-                  You can’t change the status or archive your own account.
+                  You can't change the status or archive your own account.
                 </span>
               </div>
             )}
@@ -177,16 +214,8 @@ const AccessCard = ({ person }) => {
                     onChange={async (e) => {
                       if (isOwnAccount) return; // Prevent own account manipulation
                       const next = e.target.checked;
-                      setIsActive(next);
-                      try {
-                        await updateUserStatus({
-                          userId: person.id,
-                          accountStatus: next ? "active" : "inactive",
-                        }).unwrap();
-                      } catch (err) {
-                        console.error("Failed to update status", err);
-                        setIsActive(!next);
-                      }
+                      const action = next ? "activate" : "deactivate";
+                      showConfirmModal(action);
                     }}
                     disabled={isOwnAccount}
                   />
@@ -256,6 +285,17 @@ const AccessCard = ({ person }) => {
           </div>
         </div>
       </dialog>
+
+      {/* Confirmation Modal */}
+      <AccountActionConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        onConfirm={handleConfirmAction}
+        action={confirmModal.action}
+        accountName={confirmModal.accountName}
+        accountStatus={confirmModal.accountStatus}
+        serviceId={afpId}
+      />
     </>
   );
 };

@@ -114,6 +114,7 @@ export const adminApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, arg) => [
         { type: "User", id: "ACTIVE_USERS" },
+        { type: "User", id: "INACTIVE_USERS" },
         { type: "User", id: arg },
       ],
     }),
@@ -127,8 +128,18 @@ export const adminApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, arg) => [
         { type: "User", id: "ACTIVE_USERS" },
+        { type: "User", id: "INACTIVE_USERS" },
         { type: "User", id: arg.userId },
       ],
+    }),
+
+    // Verify current user's password for security confirmations
+    verifyPassword: builder.mutation({
+      query: (password) => ({
+        url: "/users/verify-password",
+        method: "POST",
+        body: { password },
+      }),
     }),
     approveUser: builder.mutation({
       query: (userId) => ({
@@ -330,4 +341,5 @@ export const {
   useReopenCompletedDayMutation,
   useGetProgramSessionMetaQuery,
   useGetInactiveUsersQuery,
+  useVerifyPasswordMutation,
 } = adminApi;
