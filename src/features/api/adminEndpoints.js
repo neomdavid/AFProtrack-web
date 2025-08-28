@@ -91,7 +91,7 @@ export const adminApi = apiSlice.injectEndpoints({
       }),
     }),
 
-    // Training Programs
+    // Training Programs list
     getTrainingPrograms: builder.query({
       query: ({ page = 1, limit = 10, search = "", status = "" } = {}) => {
         const params = new URLSearchParams();
@@ -112,13 +112,47 @@ export const adminApi = apiSlice.injectEndpoints({
         );
       },
       transformResponse: (response) => {
-        // unify shape
         return {
           programs: response?.data?.programs || [],
           pagination: response?.data?.pagination || null,
         };
       },
     }),
+
+    // Program details (for attendance header/dates)
+    getTrainingProgramById: builder.query({
+      query: (programId) => ({
+        url: `/training-programs/${programId}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, arg) => [{ type: "Program", id: arg }],
+      transformResponse: (response) => response?.data || response,
+    }),
+
+    // Session meta by date
+    getSessionMetaByDate: builder.query({
+      query: ({ programId, date }) => ({
+        url: `/training-programs/${programId}/sessions/${date}/meta`,
+        method: "GET",
+      }),
+      providesTags: (result, error, arg) => [
+        { type: "Program", id: `${arg.programId}-meta-${arg.date}` },
+      ],
+      transformResponse: (response) => response?.data || response,
+    }),
+
+    // Day attendance by date
+    getDayAttendanceByDate: builder.query({
+      query: ({ programId, date }) => ({
+        url: `/training-programs/${programId}/attendance/${date}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, arg) => [
+        { type: "Program", id: `${arg.programId}-attendance-${arg.date}` },
+      ],
+      transformResponse: (response) => response?.data || response,
+    }),
+
     createTrainingProgram: builder.mutation({
       query: (payload) => ({
         url: "/training-programs",
@@ -144,4 +178,7 @@ export const {
   useVerifyEmailMutation,
   useGetTrainingProgramsQuery,
   useCreateTrainingProgramMutation,
+  useGetTrainingProgramByIdQuery,
+  useGetSessionMetaByDateQuery,
+  useGetDayAttendanceByDateQuery,
 } = adminApi;

@@ -7,25 +7,42 @@ import DaySettings from "../../components/Trainer/DaySettings";
 import AttendanceTable from "../../components/Trainer/AttendanceTable";
 import EditEndDateModal from "../../components/Trainer/EditEndDateModal";
 import CompleteDayModal from "../../components/Trainer/CompleteDayModal";
+import {
+  useGetTrainingProgramByIdQuery,
+  useGetDayAttendanceByDateQuery,
+  useGetSessionMetaByDateQuery,
+} from "../../features/api/adminEndpoints";
+import { skipToken } from "@reduxjs/toolkit/query";
 
-// Placeholder sample trainees; replace with API data
-const sampleTrainees = Array.from({ length: 50 }).map((_, i) => ({
-  id: `enroll-${i + 1}`,
-  name: `Trainee ${i + 1}`,
-  email: `trainee${i + 1}@mail.com`,
-}));
+// Helper mappers
+const mapProgram = (apiProgram, fallbackId) => ({
+  id: apiProgram?._id || fallbackId,
+  name: apiProgram?.programName || "Training Program",
+  startDate: apiProgram?.startDate ? apiProgram.startDate.slice(0, 10) : "",
+  endDate: apiProgram?.endDate ? apiProgram.endDate.slice(0, 10) : "",
+  defaultStartTime: apiProgram?.startTime || "",
+  defaultEndTime: apiProgram?.endTime || "",
+});
 
 const ProgramAttendance = () => {
   const { programId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { data: programData, isLoading: isLoadingProgram } =
+    useGetTrainingProgramByIdQuery(programId);
   const [program, setProgram] = useState({
     id: programId,
-    name: "Training Program",
-    startDate: "2025-08-19",
-    endDate: "2025-08-29",
-    defaultStartTime: "08:00",
-    defaultEndTime: "17:00",
+    name: "Loading…",
+    startDate: "",
+    endDate: "",
+    defaultStartTime: "",
+    defaultEndTime: "",
   });
+
+  useEffect(() => {
+    if (programData) {
+      setProgram(mapProgram(programData, programId));
+    }
+  }, [programData, programId]);
 
   const toDate = (str) => (str ? new Date(str) : null);
   const formatYMD = (d) => d.toISOString().slice(0, 10);
@@ -64,13 +81,31 @@ const ProgramAttendance = () => {
     }
   }, [defaultDate]);
 
-  // Local attendance state placeholder
-  const [attendance, setAttendance] = useState({});
-  const dayAttendance = attendance[selectedKey] || {};
+  // Day attendance from API
+  const { data: dayAttendanceApi } = useGetDayAttendanceByDateQuery(
+    programId && selectedKey ? { programId, date: selectedKey } : skipToken,
+    { skip: !programId || !selectedKey }
+  );
+
+  // Normalize day attendance to { [traineeId]: { status } }
+  const dayAttendance = useMemo(() => {
+    const records = dayAttendanceApi?.attendanceRecords || [];
+    return records.reduce((acc, rec) => {
+      acc[rec.traineeId] = { status: rec.status };
+      return acc;
+    }, {});
+  }, [dayAttendanceApi]);
 
   // Per-day session meta (start/end time, status, reason)
-  const [sessionMeta, setSessionMeta] = useState({}); // { [dateKey]: { startTime, endTime, status: 'active'|'cancelled', reason } }
-  const dayMeta = sessionMeta[selectedKey] || {};
+  // Session meta (overrides/cancellation) from API; local edits retained for UI for now
+  const { data: sessionMetaApi } = useGetSessionMetaByDateQuery(
+    programId && selectedKey ? { programId, date: selectedKey } : skipToken,
+    { skip: !programId || !selectedKey }
+  );
+  const [sessionMeta, setSessionMeta] = useState({});
+  const apiMeta = sessionMetaApi || {};
+  const mergedMeta = { ...(sessionMeta[selectedKey] || {}), ...apiMeta };
+  const dayMeta = mergedMeta;
   const dayStartTime = dayMeta.startTime ?? program.defaultStartTime;
   const dayEndTime = dayMeta.endTime ?? program.defaultEndTime;
   const dayStatus = dayMeta.status ?? "active";
@@ -80,27 +115,23 @@ const ProgramAttendance = () => {
   const [editingTimes, setEditingTimes] = useState({}); // { [dateKey]: boolean }
   const isEditingTimes = !!editingTimes[selectedKey];
 
-  const updateAttendance = (enrollmentId, patch) => {
-    setAttendance((prev) => ({
-      ...prev,
-      [selectedKey]: {
-        ...(prev[selectedKey] || {}),
-        [enrollmentId]: {
-          ...(prev[selectedKey]?.[enrollmentId] || {}),
-          ...patch,
-        },
-      },
-    }));
+  const updateAttendance = (traineeId, patch) => {
+    // TODO: Wire to mutation for saving attendance
+    console.log("Update attendance (local only)", traineeId, patch);
   };
 
   const daySummary = useMemo(() => {
+    const summary = dayAttendanceApi?.summary;
+    if (summary) {
+      return { present: summary.present || 0, absent: summary.absent || 0 };
+    }
     const counts = { present: 0, absent: 0 };
-    sampleTrainees.forEach((t) => {
-      const s = dayAttendance[t.id]?.status;
-      if (s && counts[s] !== undefined) counts[s] += 1;
+    Object.values(dayAttendance).forEach((val) => {
+      if (val.status === "present") counts.present += 1;
+      if (val.status === "absent") counts.absent += 1;
     });
     return counts;
-  }, [dayAttendance]);
+  }, [dayAttendanceApi, dayAttendance]);
 
   // Completion state: mark a day as completed/locked with reason
   const [completedDays, setCompletedDays] = useState({}); // { [dateKey]: { completed: true, reason, at } }
@@ -118,13 +149,22 @@ const ProgramAttendance = () => {
   // Filters
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const trainees = useMemo(() => {
+    const records = dayAttendanceApi?.attendanceRecords || [];
+    return records.map((r, idx) => ({
+      id: r.traineeId || String(idx),
+      name: r.traineeName || "Unknown",
+      email: r.serviceId || "", // using serviceId in place of email for display
+    }));
+  }, [dayAttendanceApi]);
   const filteredTrainees = useMemo(() => {
-    let list = sampleTrainees;
+    let list = trainees;
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(
         (t) =>
-          t.name.toLowerCase().includes(q) || t.email.toLowerCase().includes(q)
+          t.name.toLowerCase().includes(q) ||
+          (t.email || "").toLowerCase().includes(q)
       );
     }
     if (statusFilter) {
@@ -133,7 +173,7 @@ const ProgramAttendance = () => {
       );
     }
     return list;
-  }, [sampleTrainees, search, statusFilter, dayAttendance]);
+  }, [trainees, search, statusFilter, dayAttendance]);
 
   // Autosave indicator
   const [saving, setSaving] = useState(false);
@@ -146,7 +186,7 @@ const ProgramAttendance = () => {
       setLastSaved(new Date());
     }, 800);
     return () => clearTimeout(t);
-  }, [attendance, sessionMeta, selectedKey]);
+  }, [dayAttendance, sessionMeta, selectedKey]);
 
   // Event handlers
   const handleDateSelect = (dateKey) => {
@@ -284,7 +324,7 @@ const ProgramAttendance = () => {
       <AttendanceSummary
         daySummary={daySummary}
         dayAttendance={dayAttendance}
-        totalTrainees={sampleTrainees.length}
+        totalTrainees={trainees.length}
       />
 
       <DaySettings

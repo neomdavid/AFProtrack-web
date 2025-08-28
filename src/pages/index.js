@@ -7,3 +7,4 @@ export { default as StaffLayout } from "./StaffLayout";
 export { default as AdAccountConfirmation } from "./Admin/AdAccountConfirmation";
 export { default as ProgramAttendance } from "./Trainer/ProgramAttendance";
 export { default as NotFound } from "../components/NotFound";
+export { default as ProgramAttendanceLite } from "./Trainer/ProgramAttendanceLite";
