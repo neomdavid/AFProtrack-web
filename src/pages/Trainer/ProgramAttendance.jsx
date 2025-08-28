@@ -10,10 +10,12 @@ import CompleteDayModal from "../../components/Trainer/CompleteDayModal";
 import {
   useGetTrainingProgramByIdQuery,
   useGetDayAttendanceByDateQuery,
-  useGetSessionMetaByDateQuery,
   useRecordTraineeAttendanceMutation,
   useUpdateSessionMetaMutation,
   useUpdateProgramEndDateMutation,
+  useMarkDayCompletedMutation,
+  useReopenCompletedDayMutation,
+  useGetProgramSessionMetaQuery,
 } from "../../features/api/adminEndpoints";
 import { skipToken } from "@reduxjs/toolkit/query";
 
@@ -49,6 +51,24 @@ const ProgramAttendance = () => {
 
   const toDate = (str) => (str ? new Date(str) : null);
   const formatYMD = (d) => d.toISOString().slice(0, 10);
+
+  // Helper to normalize date keys for consistent matching
+  const normalizeDateKey = (dateStr) => {
+    // Handle both "2025-09-09" and "2025-09-09T00:00:00.000Z" formats
+    if (dateStr.includes("T")) {
+      return dateStr.slice(0, 10);
+    }
+    return dateStr;
+  };
+
+  // Helper to compensate for backend's 1-day difference bug
+  // When sending dates to backend, add 1 day to compensate for their timezone issue
+  const adjustDateForBackend = (dateStr) => {
+    const date = new Date(dateStr);
+    date.setDate(date.getDate() + 1);
+    return date.toISOString().slice(0, 10) + "T00:00:00.000Z";
+  };
+
   const getDateRange = (start, end) => {
     if (!start || !end) return [];
     const days = [];
@@ -100,30 +120,83 @@ const ProgramAttendance = () => {
   }, [dayAttendanceApi]);
 
   // Per-day session meta (start/end time, status, reason)
-  // Session meta (overrides/cancellation) from API; local edits retained for UI for now
-  const { data: sessionMetaApi } = useGetSessionMetaByDateQuery(
-    programId && selectedKey ? { programId, date: selectedKey } : skipToken,
-    { skip: !programId || !selectedKey }
-  );
+  // We'll use only the bulk endpoint to avoid timezone/date mismatch issues
+  // const { data: sessionMetaApi } = useGetSessionMetaByDateQuery(
+  //   programId && selectedKey ? { programId, date: selectedKey } : skipToken,
+  //   { skip: !programId || !selectedKey }
+  // );
 
-  const [sessionMeta, setSessionMeta] = useState({});
+  // Fetch bulk session meta for all dates (for DayPills indicators)
+  const { data: bulkSessionMeta } = useGetProgramSessionMetaQuery(programId, {
+    skip: !programId,
+  });
 
-  // Store backend session meta in local state for persistence
-  useEffect(() => {
-    if (sessionMetaApi && selectedKey) {
-      setSessionMeta((prev) => ({
-        ...prev,
-        [selectedKey]: { ...(prev[selectedKey] || {}), ...sessionMetaApi },
-      }));
+  // Create complete session meta object with defaults for missing dates
+  const completeSessionMeta = useMemo(() => {
+    const result = {};
+
+    // Add backend data for all dates - this is the single source of truth for indicators
+    if (bulkSessionMeta) {
+      Object.entries(bulkSessionMeta).forEach(([date, meta]) => {
+        const normalizedDate = normalizeDateKey(date);
+        result[normalizedDate] = { ...meta };
+      });
     }
-  }, [sessionMetaApi, selectedKey]);
 
-  const dayMeta = sessionMeta[selectedKey] || {};
+    // Fill missing dates with defaults for proper indicators
+    sessions.forEach((date) => {
+      const dateKey = formatYMD(date);
+      if (!result[dateKey]) {
+        result[dateKey] = {
+          status: "active",
+          startTime: program.defaultStartTime || "08:00",
+          endTime: program.defaultEndTime || "17:00",
+          completed: false,
+        };
+      }
+    });
+
+    // Individual API data is only used for detailed settings, NOT for overriding indicators
+    // This prevents timezone-shifted data from corrupting the bulk metadata
+    // if (sessionMetaApi) {
+    //   console.log("🔍 Individual API response:", sessionMetaApi);
+    //   console.log("🎯 Current bulk meta for selectedKey:", result[selectedKey]);
+
+    //   // Only merge non-indicator fields (times, reason, etc.) but preserve bulk status/completed
+    //   const currentMeta = result[selectedKey] || {};
+    //   result[selectedKey] = {
+    //     ...currentMeta,
+    //     // Keep the bulk metadata status and completed state
+    //     status: currentMeta.status,
+    //     completed: currentMeta.completed,
+    //     // Merge other fields from individual API
+    //     startTime: sessionMetaApi.startTime || currentMeta.startTime,
+    //     endTime: sessionMetaApi.endTime || currentMeta.endTime,
+    //     reason: sessionMetaApi.reason || currentMeta.reason,
+    //     completedReason:
+    //       sessionMetaApi.completedReason || currentMeta.completedReason,
+    //   };
+
+    //   console.log("✅ Final merged meta for selectedKey:", result[selectedKey]);
+    // }
+
+    return result;
+  }, [
+    bulkSessionMeta,
+    // sessionMetaApi,
+    selectedKey,
+    sessions,
+    program.defaultStartTime,
+    program.defaultEndTime,
+  ]);
+
+  const dayMeta = completeSessionMeta[selectedKey] || {};
   const dayStartTime = dayMeta.startTime ?? program.defaultStartTime;
   const dayEndTime = dayMeta.endTime ?? program.defaultEndTime;
   const dayStatus = dayMeta.status ?? "active";
   const isDayCancelled = dayStatus === "cancelled";
   const metaCancelReason = dayMeta.reason || "";
+  const metaCompletionReason = dayMeta.completedReason || "";
 
   // Per-day edit state for time adjustments
   const [editingTimes, setEditingTimes] = useState({}); // { [dateKey]: boolean }
@@ -134,10 +207,12 @@ const ProgramAttendance = () => {
   const updateAttendance = async (traineeId, patch) => {
     if (!selectedKey || !programId || !patch?.status) return;
     try {
+      const adjustedDate = adjustDateForBackend(selectedKey);
+
       await recordAttendance({
         programId,
         traineeId,
-        date: selectedKey,
+        date: adjustedDate,
         status: patch.status,
         remarks: patch.remarks || "",
       }).unwrap();
@@ -159,13 +234,8 @@ const ProgramAttendance = () => {
     return counts;
   }, [dayAttendanceApi, dayAttendance]);
 
-  // Completion state: prefer backend meta.completed; fallback to local state
-  const [completedDays, setCompletedDays] = useState({}); // { [dateKey]: { completed: true, reason, at } }
-  const apiCompleted = sessionMetaApi?.completed;
-  const isDayCompleted =
-    typeof apiCompleted === "boolean"
-      ? apiCompleted
-      : !!completedDays[selectedKey]?.completed;
+  // Completion state from bulk metadata
+  const isDayCompleted = !!dayMeta.completed;
 
   // Deadline edit modal state
   const [showDeadlineModal, setShowDeadlineModal] = useState(false);
@@ -216,7 +286,7 @@ const ProgramAttendance = () => {
       setLastSaved(new Date());
     }, 800);
     return () => clearTimeout(t);
-  }, [dayAttendance, sessionMeta, selectedKey]);
+  }, [dayAttendance, bulkSessionMeta, selectedKey]);
 
   // Event handlers
   const handleDateSelect = (dateKey) => {
@@ -226,18 +296,13 @@ const ProgramAttendance = () => {
   const [updateSessionMetaMutation] = useUpdateSessionMetaMutation();
   const handleStartTimeChange = async (e) => {
     const value = e.target.value;
-    setSessionMeta((p) => ({
-      ...p,
-      [selectedKey]: {
-        ...(p[selectedKey] || {}),
-        startTime: value,
-      },
-    }));
     if (programId && selectedKey) {
       try {
+        const adjustedDate = adjustDateForBackend(selectedKey);
+
         await updateSessionMetaMutation({
           programId,
-          date: selectedKey,
+          date: adjustedDate,
           startTime: value,
           endTime: dayEndTime,
           status: dayStatus,
@@ -251,18 +316,13 @@ const ProgramAttendance = () => {
 
   const handleEndTimeChange = async (e) => {
     const value = e.target.value;
-    setSessionMeta((p) => ({
-      ...p,
-      [selectedKey]: {
-        ...(p[selectedKey] || {}),
-        endTime: value,
-      },
-    }));
     if (programId && selectedKey) {
       try {
+        const adjustedDate = adjustDateForBackend(selectedKey);
+
         await updateSessionMetaMutation({
           programId,
-          date: selectedKey,
+          date: adjustedDate,
           startTime: dayStartTime,
           endTime: value,
           status: dayStatus,
@@ -276,18 +336,13 @@ const ProgramAttendance = () => {
 
   const handleStatusChange = async (e) => {
     const value = e.target.value;
-    setSessionMeta((p) => ({
-      ...p,
-      [selectedKey]: {
-        ...(p[selectedKey] || {}),
-        status: value,
-      },
-    }));
     if (programId && selectedKey) {
       try {
+        const adjustedDate = adjustDateForBackend(selectedKey);
+
         await updateSessionMetaMutation({
           programId,
-          date: selectedKey,
+          date: adjustedDate,
           startTime: dayStartTime,
           endTime: dayEndTime,
           status: value,
@@ -310,12 +365,18 @@ const ProgramAttendance = () => {
     setShowCompleteModal(true);
   };
 
-  const handleReopenDay = () => {
-    setCompletedDays((p) => {
-      const newState = { ...p };
-      delete newState[selectedKey];
-      return newState;
-    });
+  const handleReopenDay = async () => {
+    if (!selectedKey || !programId) return;
+    try {
+      const adjustedDate = adjustDateForBackend(selectedKey);
+
+      await reopenCompletedDay({
+        programId,
+        date: adjustedDate,
+      }).unwrap();
+    } catch (e) {
+      console.error("Failed to reopen day", e);
+    }
   };
 
   const handleEditEndDate = () => {
@@ -344,34 +405,32 @@ const ProgramAttendance = () => {
     }
   };
 
-  const handleCompleteDay = () => {
-    setCompletedDays((p) => ({
-      ...p,
-      [selectedKey]: {
-        completed: true,
+  const [markDayCompleted] = useMarkDayCompletedMutation();
+  const handleCompleteDay = async () => {
+    if (!selectedKey || !programId || !completeReason.trim()) return;
+    try {
+      const adjustedDate = adjustDateForBackend(selectedKey);
+
+      await markDayCompleted({
+        programId,
+        date: adjustedDate,
         reason: completeReason,
-        at: new Date().toISOString(),
-      },
-    }));
-    setShowCompleteModal(false);
-    setCompleteReason("");
+      }).unwrap();
+      setShowCompleteModal(false);
+      setCompleteReason("");
+    } catch (e) {
+      console.error("Failed to mark day as completed", e);
+    }
   };
 
   const handleCancelDay = async (reason) => {
-    setSessionMeta((p) => ({
-      ...p,
-      [selectedKey]: {
-        ...(p[selectedKey] || {}),
-        status: "cancelled",
-        reason: reason,
-        cancelledAt: new Date().toISOString(),
-      },
-    }));
     if (programId && selectedKey) {
       try {
+        const adjustedDate = adjustDateForBackend(selectedKey);
+
         await updateSessionMetaMutation({
           programId,
-          date: selectedKey,
+          date: adjustedDate,
           startTime: dayStartTime,
           endTime: dayEndTime,
           status: "cancelled",
@@ -384,20 +443,13 @@ const ProgramAttendance = () => {
   };
 
   const handleUncancelDay = async () => {
-    setSessionMeta((p) => ({
-      ...p,
-      [selectedKey]: {
-        ...(p[selectedKey] || {}),
-        status: "active",
-        reason: undefined,
-        cancelledAt: undefined,
-      },
-    }));
     if (programId && selectedKey) {
       try {
+        const adjustedDate = adjustDateForBackend(selectedKey);
+
         await updateSessionMetaMutation({
           programId,
-          date: selectedKey,
+          date: adjustedDate,
           startTime: dayStartTime,
           endTime: dayEndTime,
           status: "active",
@@ -408,6 +460,8 @@ const ProgramAttendance = () => {
       }
     }
   };
+
+  const [reopenCompletedDay] = useReopenCompletedDayMutation();
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -422,7 +476,7 @@ const ProgramAttendance = () => {
         sessions={sessions}
         selectedKey={selectedKey}
         onDateSelect={handleDateSelect}
-        sessionMeta={sessionMeta}
+        sessionMeta={completeSessionMeta}
       />
 
       <AttendanceSummary
@@ -448,6 +502,7 @@ const ProgramAttendance = () => {
         onCancelDay={handleCancelDay}
         onUncancelDay={handleUncancelDay}
         selectedDate={selectedKey}
+        metaCompletionReason={metaCompletionReason}
       />
 
       <AttendanceTable

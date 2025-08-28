@@ -1,16 +1,22 @@
 import React, { useState } from "react";
-import { TrashIcon } from "@phosphor-icons/react";
+import { InfoIcon, TrashIcon } from "@phosphor-icons/react";
 import {
   useGetActiveUserByIdQuery,
   useDeleteUserMutation,
   useUpdateUserStatusMutation,
 } from "../../features/api/adminEndpoints";
+import { useAuth } from "../../hooks/useAuth";
 
 const AccessCard = ({ person }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [deleteUser] = useDeleteUserMutation();
   const [updateUserStatus] = useUpdateUserStatusMutation();
+  const { user: currentUser } = useAuth();
+
+  // Check if this account belongs to the currently logged-in user
+  const isOwnAccount =
+    currentUser?.id === person.id || currentUser?._id === person.id;
 
   const handleCardClick = () => {
     setIsModalOpen(true);
@@ -21,6 +27,11 @@ const AccessCard = ({ person }) => {
   };
 
   const handleArchiveAccount = async () => {
+    if (isOwnAccount) {
+      console.warn("Cannot archive own account");
+      return;
+    }
+
     try {
       await deleteUser(person.id).unwrap();
       setIsModalOpen(false);
@@ -113,6 +124,14 @@ const AccessCard = ({ person }) => {
 
             {/* Email */}
             <p className="text-sm text-gray">{email}</p>
+            {isOwnAccount && (
+              <div className="flex items-start gap-2 bg-gray-100 p-2 rounded-md mt-4 mb-[-13px]">
+                <InfoIcon size={16} className="text-gray-600 mt-[2px]" />
+                <span className="text-[13px] text-gray-700">
+                  You can’t change the status or archive your own account.
+                </span>
+              </div>
+            )}
 
             {/* Status and Archive Container */}
             <div className="flex justify-between items-center w-full mt-6">
@@ -120,12 +139,19 @@ const AccessCard = ({ person }) => {
                 <span className="text-sm font-semibold text-gray/90">
                   Account Status:
                 </span>
-                <label className="relative inline-flex items-center cursor-pointer">
+                <label
+                  className={`relative inline-flex items-center ${
+                    isOwnAccount
+                      ? "cursor-not-allowed opacity-60"
+                      : "cursor-pointer"
+                  }`}
+                >
                   <input
                     type="checkbox"
                     className="sr-only peer"
                     checked={isActive}
                     onChange={async (e) => {
+                      if (isOwnAccount) return; // Prevent own account manipulation
                       const next = e.target.checked;
                       setIsActive(next);
                       try {
@@ -138,6 +164,7 @@ const AccessCard = ({ person }) => {
                         setIsActive(!next);
                       }
                     }}
+                    disabled={isOwnAccount}
                   />
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   <span className="ml-3 text-sm font-medium text-black">
@@ -145,13 +172,20 @@ const AccessCard = ({ person }) => {
                   </span>
                 </label>
               </div>
-              <button
-                onClick={handleArchiveAccount}
-                className="flex items-center text-[13px] px-2 py-1 rounded-md gap-2 bg-error text-white btn-hover "
-              >
-                <TrashIcon size={16} />
-                Archive Account
-              </button>
+              <div className="flex flex-col items-end gap-2">
+                <button
+                  onClick={handleArchiveAccount}
+                  disabled={isOwnAccount}
+                  className={`flex items-center text-[13px] px-2 py-1 rounded-md gap-2 ${
+                    isOwnAccount
+                      ? "bg-gray-200 text-gray-700 cursor-not-allowed"
+                      : "bg-error text-white btn-hover"
+                  }`}
+                >
+                  <TrashIcon size={16} />
+                  Archive Account
+                </button>
+              </div>
             </div>
 
             {/* Additional Details Container */}

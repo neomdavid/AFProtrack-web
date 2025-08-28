@@ -9,6 +9,7 @@ const DaySettings = ({
   isDayCompleted,
   isDayCancelled,
   metaCancelReason,
+  metaCompletionReason,
   onStartTimeChange,
   onEndTimeChange,
   onStatusChange,
@@ -203,6 +204,36 @@ const DaySettings = ({
                 onClick={handleUncancelDay}
               >
                 Reactivate Day
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Completion Announcement */}
+      {isDayCompleted && (
+        <div className="border-t pt-3">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="font-medium text-green-800">Day Completed</span>
+            </div>
+            <p className="text-sm text-green-700">
+              This day has been marked as completed and is locked for further
+              editing.
+            </p>
+            {metaCompletionReason && (
+              <div className="mt-2 text-sm">
+                <span className="font-medium text-green-800">Reason: </span>
+                <span className="text-green-800">{metaCompletionReason}</span>
+              </div>
+            )}
+            {canReopen && (
+              <button
+                className="btn btn-sm btn-outline btn-warning mt-2"
+                onClick={onReopenDay}
+              >
+                Reopen Day
               </button>
             )}
           </div>

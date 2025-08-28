@@ -192,6 +192,18 @@ export const adminApi = apiSlice.injectEndpoints({
       transformResponse: (response) => response?.data || response,
     }),
 
+    // Bulk session meta for all dates in a program (for DayPills indicators)
+    getProgramSessionMeta: builder.query({
+      query: (programId) => ({
+        url: `/training-programs/${programId}/sessions/meta`,
+        method: "GET",
+      }),
+      providesTags: (result, error, arg) => [
+        { type: "Program", id: `${arg}-all-meta` },
+      ],
+      transformResponse: (response) => response?.data || response,
+    }),
+
     // Day attendance by date
     getDayAttendanceByDate: builder.query({
       query: ({ programId, date }) => ({
@@ -248,6 +260,29 @@ export const adminApi = apiSlice.injectEndpoints({
         { type: "Program", id: arg.programId },
       ],
     }),
+
+    // Mark day as completed
+    markDayCompleted: builder.mutation({
+      query: ({ programId, date, reason }) => ({
+        url: `/training-programs/${programId}/sessions/${date}/complete`,
+        method: "POST",
+        body: { reason },
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Program", id: `${arg.programId}-meta-${arg.date}` },
+      ],
+    }),
+
+    // Reopen completed day
+    reopenCompletedDay: builder.mutation({
+      query: ({ programId, date }) => ({
+        url: `/training-programs/${programId}/sessions/${date}/complete`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Program", id: `${arg.programId}-meta-${arg.date}` },
+      ],
+    }),
   }),
   overrideExisting: true,
 });
@@ -275,4 +310,7 @@ export const {
   useDeleteUserMutation,
   useUpdateUserStatusMutation,
   useUpdateProgramEndDateMutation,
+  useMarkDayCompletedMutation,
+  useReopenCompletedDayMutation,
+  useGetProgramSessionMetaQuery,
 } = adminApi;
