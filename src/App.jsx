@@ -24,7 +24,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AdAccounts from "./pages/Admin/AdAccounts";
 import AdAccountConfirmation from "./pages/Admin/AdAccountConfirmation";
-import ProgramAttendance from "./pages/Admin/ProgramAttendance";
+import ProgramAttendance from "./pages/Trainer/ProgramAttendance";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountConfirmationAccessDenied from "./components/AccountConfirmationAccessDenied";
 import { PERMISSIONS } from "./utils/rolePermissions";
