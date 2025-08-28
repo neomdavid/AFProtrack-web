@@ -3,16 +3,17 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { PERMISSIONS } from "../../utils/rolePermissions";
 
-const AttendanceHeader = ({ 
-  program, 
-  sessions, 
-  onEditEndDate, 
-  onExport, 
-  onSettings 
+const AttendanceHeader = ({
+  program,
+  sessions,
+  onEditEndDate,
+  onExport,
+  onSettings,
 }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
-  const canUpdateTrainingPrograms = user?.permissions?.canUpdateTrainingPrograms;
+  const canUpdateTrainingPrograms =
+    user?.permissions?.canUpdateTrainingPrograms;
 
   return (
     <>
@@ -40,18 +41,12 @@ const AttendanceHeader = ({
         </div>
         <div className="flex gap-2">
           {canUpdateTrainingPrograms && (
-            <button
-              className="btn btn-sm btn-outline"
-              onClick={onEditEndDate}
-            >
+            <button className="btn btn-sm btn-outline" onClick={onEditEndDate}>
               Edit End Date
             </button>
           )}
           <button className="btn btn-sm btn-outline" onClick={onExport}>
             Export
-          </button>
-          <button className="btn btn-sm btn-outline" onClick={onSettings}>
-            Settings
           </button>
         </div>
       </div>

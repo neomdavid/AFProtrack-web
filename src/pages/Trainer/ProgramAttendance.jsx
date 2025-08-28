@@ -13,6 +13,7 @@ import {
   useGetSessionMetaByDateQuery,
   useRecordTraineeAttendanceMutation,
   useUpdateSessionMetaMutation,
+  useUpdateProgramEndDateMutation,
 } from "../../features/api/adminEndpoints";
 import { skipToken } from "@reduxjs/toolkit/query";
 
@@ -327,18 +328,20 @@ const ProgramAttendance = () => {
     console.log("Export functionality");
   };
 
-  const handleSettings = () => {
-    console.log("Settings functionality");
-  };
-
-  const handleSaveEndDate = () => {
-    if (!newEndDate) return;
-    setProgram((p) => ({ ...p, endDate: newEndDate }));
-    setShowDeadlineModal(false);
-    console.log("End date updated:", {
-      newEndDate,
-      deadlineReason,
-    });
+  const [updateProgramEndDate] = useUpdateProgramEndDateMutation();
+  const handleSaveEndDate = async () => {
+    if (!newEndDate || !programId) return;
+    try {
+      await updateProgramEndDate({
+        programId,
+        endDate: newEndDate,
+        reason: deadlineReason,
+      }).unwrap();
+      setProgram((p) => ({ ...p, endDate: newEndDate }));
+      setShowDeadlineModal(false);
+    } catch (e) {
+      console.error("Failed to update end date", e);
+    }
   };
 
   const handleCompleteDay = () => {
@@ -413,7 +416,6 @@ const ProgramAttendance = () => {
         sessions={sessions}
         onEditEndDate={handleEditEndDate}
         onExport={handleExport}
-        onSettings={handleSettings}
       />
 
       <DayPills

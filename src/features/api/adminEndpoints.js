@@ -236,6 +236,18 @@ export const adminApi = apiSlice.injectEndpoints({
         { type: "Program", id: `${arg.programId}-meta-${arg.date}` },
       ],
     }),
+
+    // Update program end date
+    updateProgramEndDate: builder.mutation({
+      query: ({ programId, endDate, reason }) => ({
+        url: `/training-programs/${programId}/end-date`,
+        method: "PATCH",
+        body: { endDate, reason },
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Program", id: arg.programId },
+      ],
+    }),
   }),
   overrideExisting: true,
 });
@@ -262,4 +274,5 @@ export const {
   useGetActiveUserByIdQuery,
   useDeleteUserMutation,
   useUpdateUserStatusMutation,
+  useUpdateProgramEndDateMutation,
 } = adminApi;
