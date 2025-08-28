@@ -28,6 +28,7 @@ import ProgramAttendance from "./pages/Admin/ProgramAttendance";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AccountConfirmationAccessDenied from "./components/AccountConfirmationAccessDenied";
 import { PERMISSIONS } from "./utils/rolePermissions";
+import NotFound from "./components/NotFound";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -73,6 +74,7 @@ function App() {
             />
           </Route>
           <Route path="/trainer" element={<StaffLayout />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
       <ToastContainer

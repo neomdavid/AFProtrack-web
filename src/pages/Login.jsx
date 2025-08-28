@@ -2,15 +2,17 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import logo from "../assets/AFProTrack_logo.png";
 import { useAuth } from "../hooks/useAuth";
+import { EyeIcon, EyeSlashIcon } from "@phosphor-icons/react";
 
 const Login = () => {
   const [serviceId, setServiceId] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -60,15 +62,27 @@ const Login = () => {
             <label htmlFor="password" className="font-semibold">
               Password
             </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="bg-white border-2 border-primary/60 rounded-xl p-2 focus:outline-primary focus:outline-2"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="bg-white border-2 border-primary/60 rounded-xl p-2 pr-10 focus:outline-primary focus:outline-2 w-full"
+              />
+              <span
+                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="h-5 w-5 text-gray-500" />
+                ) : (
+                  <EyeIcon className="h-5 w-5 text-gray-500" />
+                )}
+              </span>
+            </div>
           </div>
           <Link
             to="/forgot-password"
