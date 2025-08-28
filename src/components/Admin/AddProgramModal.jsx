@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { canEditField, ROLES } from "../../utils/rolePermissions";
+import { toast } from "react-toastify";
 
 const AddProgramModal = ({
   open,
@@ -11,19 +11,21 @@ const AddProgramModal = ({
   programData = null, // For edit mode
 }) => {
   const { user } = useAuth();
-  const isAdmin = user?.role === ROLES.ADMIN;
-  const isTrainingStaff = user?.role === ROLES.TRAINING_STAFF;
 
   const [formData, setFormData] = useState({
-    name: "",
+    programName: "",
     startDate: "",
     endDate: "",
-    time: "",
+    enrollmentStartDate: "",
+    enrollmentEndDate: "",
+    startTime: "",
+    endTime: "",
     instructor: "",
     venue: "",
-    participants: "",
+    maxParticipants: "",
     additionalDetails: "",
   });
+  const [submitError, setSubmitError] = useState("");
 
   // Load program data when in edit mode
   useEffect(() => {
@@ -38,55 +40,166 @@ const AddProgramModal = ({
       ...prev,
       [name]: value,
     }));
+    if (submitError) setSubmitError("");
   };
 
-  const handleSubmit = (e) => {
+  // Function to determine status based on dates
+  const getStatusFromDates = (startDate) => {
+    if (!startDate) return "upcoming";
+
+    const today = new Date();
+    const start = new Date(startDate);
+
+    if (start > today) {
+      return "upcoming";
+    } else if (start <= today) {
+      return "ongoing";
+    } else {
+      return "completed";
+    }
+  };
+
+  const sanitizeApiError = (responseBody) => {
+    const rawMessage = (responseBody && responseBody.message) || "";
+    const errorsArray = Array.isArray(responseBody?.errors)
+      ? responseBody.errors
+      : [];
+
+    // Prefer specific validation errors if present
+    if (errorsArray.length) {
+      return errorsArray.join("\n");
+    }
+
+    // Remove generic prefixes like "Validation failed"
+    const cleaned = rawMessage.replace(/validation failed[:]?/i, "").trim();
+    return cleaned || "Request failed. Please review your inputs.";
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (
-      formData.name &&
+      formData.programName &&
       formData.startDate &&
       formData.endDate &&
+      formData.enrollmentStartDate &&
+      formData.enrollmentEndDate &&
+      formData.startTime &&
+      formData.endTime &&
       formData.instructor &&
-      formData.time &&
-      formData.venue
+      formData.venue &&
+      formData.maxParticipants
     ) {
-      if (mode === "edit") {
-        onEdit(formData);
-      } else {
-        onAdd(formData);
+      // Prepare the request body
+      const requestBody = {
+        programName: formData.programName,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        enrollmentStartDate: formData.enrollmentStartDate,
+        enrollmentEndDate: formData.enrollmentEndDate,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        instructor: formData.instructor,
+        venue: formData.venue,
+        maxParticipants: parseInt(formData.maxParticipants),
+        additionalDetails: formData.additionalDetails || "",
+        status: getStatusFromDates(formData.startDate),
+        createdBy: user?.id || "",
+      };
+
+      try {
+        if (mode === "edit") {
+          // Handle edit mode
+          onEdit(requestBody);
+          toast.success("Program updated successfully");
+        } else {
+          // Handle add mode - make API call
+          const token = localStorage.getItem("afprotrack_token");
+          const response = await fetch(
+            "http://localhost:5000/api/training-programs",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+              },
+              body: JSON.stringify(requestBody),
+            }
+          );
+
+          const contentType = response.headers.get("content-type") || "";
+          let responseBody;
+          try {
+            responseBody = contentType.includes("application/json")
+              ? await response.json()
+              : await response.text();
+          } catch (parseErr) {
+            responseBody = "<unable to parse response body>";
+          }
+
+          if (response.ok) {
+            const newProgram =
+              typeof responseBody === "string"
+                ? { success: true }
+                : responseBody;
+            onAdd(newProgram);
+            toast.success("Training program created successfully");
+            handleCancel();
+          } else {
+            const friendly =
+              typeof responseBody === "string"
+                ? "Request failed. Please review your inputs."
+                : sanitizeApiError(responseBody);
+            setSubmitError(friendly);
+
+            // If server returned an array of errors, toast each one separately
+            if (
+              Array.isArray(responseBody?.errors) &&
+              responseBody.errors.length
+            ) {
+              responseBody.errors.forEach((err) => {
+                const msg = (err || "").toString();
+                if (msg.trim()) toast.error(msg.trim());
+              });
+            } else {
+              toast.error(friendly);
+            }
+
+            console.error("Create program failed:", {
+              status: response.status,
+              statusText: response.statusText,
+              body: responseBody,
+            });
+          }
+        }
+      } catch (error) {
+        setSubmitError("Network error. Please try again.");
+        toast.error("Network error. Please try again.");
+        console.error("Network or unexpected error creating program:", error);
       }
-      setFormData({
-        name: "",
-        startDate: "",
-        endDate: "",
-        time: "",
-        instructor: "",
-        venue: "",
-        participants: "",
-        additionalDetails: "",
-      });
-      onClose();
     }
   };
 
   const handleCancel = () => {
     setFormData({
-      name: "",
+      programName: "",
       startDate: "",
       endDate: "",
-      time: "",
+      enrollmentStartDate: "",
+      enrollmentEndDate: "",
+      startTime: "",
+      endTime: "",
       instructor: "",
       venue: "",
-      participants: "",
+      maxParticipants: "",
       additionalDetails: "",
     });
+    setSubmitError("");
     onClose();
   };
 
-  // Determine if field is editable based on role
-  const isFieldEditable = (fieldName) => {
-    return canEditField(user?.role, fieldName);
-  };
+  // All fields are editable for training staff
+  const isFieldEditable = () => true;
 
   if (!open) return null;
 
@@ -129,19 +242,6 @@ const AddProgramModal = ({
 
         {/* Scrollable Content */}
         <div className="px-8 py-6 max-h-[70vh] overflow-y-auto">
-          {/* Role-based notice */}
-          {mode === "edit" && (
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-700">
-                {isAdmin
-                  ? "You have full editing permissions as an administrator."
-                  : isTrainingStaff
-                  ? "As training staff, you can only edit instructor, venue, time, and additional details."
-                  : "You have limited editing permissions."}
-              </p>
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm sm:text-md">
               {/* Program Name*/}
@@ -153,17 +253,12 @@ const AddProgramModal = ({
                 </label>
                 <input
                   type="text"
-                  name="name"
-                  value={formData.name}
+                  name="programName"
+                  value={formData.programName}
                   onChange={handleInputChange}
                   placeholder="Enter program name"
-                  className={`input input-bordered w-full ${
-                    !isFieldEditable("name")
-                      ? "bg-gray-100 cursor-not-allowed"
-                      : ""
-                  }`}
+                  className="input input-bordered w-full"
                   required
-                  disabled={!isFieldEditable("name")}
                 />
               </div>
 
@@ -177,13 +272,8 @@ const AddProgramModal = ({
                   name="startDate"
                   value={formData.startDate}
                   onChange={handleInputChange}
-                  className={`input input-bordered w-full ${
-                    !isFieldEditable("startDate")
-                      ? "bg-gray-100 cursor-not-allowed"
-                      : ""
-                  }`}
+                  className="input input-bordered w-full"
                   required
-                  disabled={!isFieldEditable("startDate")}
                 />
               </div>
 
@@ -197,33 +287,72 @@ const AddProgramModal = ({
                   name="endDate"
                   value={formData.endDate}
                   onChange={handleInputChange}
-                  className={`input input-bordered w-full ${
-                    !isFieldEditable("endDate")
-                      ? "bg-gray-100 cursor-not-allowed"
-                      : ""
-                  }`}
+                  className="input input-bordered w-full"
                   required
-                  disabled={!isFieldEditable("endDate")}
+                />
+              </div>
+
+              {/* Enrollment Start Date*/}
+              <div>
+                <label className="label">
+                  <span className="label-text font-semibold">
+                    Enrollment Start Date*
+                  </span>
+                </label>
+                <input
+                  type="date"
+                  name="enrollmentStartDate"
+                  value={formData.enrollmentStartDate}
+                  onChange={handleInputChange}
+                  className="input input-bordered w-full"
+                  required
+                />
+              </div>
+
+              {/* Enrollment End Date*/}
+              <div>
+                <label className="label">
+                  <span className="label-text font-semibold">
+                    Enrollment End Date*
+                  </span>
+                </label>
+                <input
+                  type="date"
+                  name="enrollmentEndDate"
+                  value={formData.enrollmentEndDate}
+                  onChange={handleInputChange}
+                  className="input input-bordered w-full"
+                  required
                 />
               </div>
 
               {/* Time*/}
               <div>
                 <label className="label">
-                  <span className="label-text font-semibold">Time*</span>
+                  <span className="label-text font-semibold">Start Time*</span>
                 </label>
                 <input
                   type="time"
-                  name="time"
-                  value={formData.time}
+                  name="startTime"
+                  value={formData.startTime}
                   onChange={handleInputChange}
-                  className={`input input-bordered w-full ${
-                    !isFieldEditable("time")
-                      ? "bg-gray-100 cursor-not-allowed"
-                      : ""
-                  }`}
+                  className="input input-bordered w-full"
                   required
-                  disabled={!isFieldEditable("time")}
+                />
+              </div>
+
+              {/* End Time*/}
+              <div>
+                <label className="label">
+                  <span className="label-text font-semibold">End Time*</span>
+                </label>
+                <input
+                  type="time"
+                  name="endTime"
+                  value={formData.endTime}
+                  onChange={handleInputChange}
+                  className="input input-bordered w-full"
+                  required
                 />
               </div>
 
@@ -238,13 +367,8 @@ const AddProgramModal = ({
                   value={formData.instructor}
                   onChange={handleInputChange}
                   placeholder="Enter instructor name"
-                  className={`input input-bordered w-full ${
-                    !isFieldEditable("instructor")
-                      ? "bg-gray-100 cursor-not-allowed"
-                      : ""
-                  }`}
+                  className="input input-bordered w-full"
                   required
-                  disabled={!isFieldEditable("instructor")}
                 />
               </div>
 
@@ -259,13 +383,8 @@ const AddProgramModal = ({
                   value={formData.venue}
                   onChange={handleInputChange}
                   placeholder="Enter venue"
-                  className={`input input-bordered w-full ${
-                    !isFieldEditable("venue")
-                      ? "bg-gray-100 cursor-not-allowed"
-                      : ""
-                  }`}
+                  className="input input-bordered w-full"
                   required
-                  disabled={!isFieldEditable("venue")}
                 />
               </div>
 
@@ -278,18 +397,13 @@ const AddProgramModal = ({
                 </label>
                 <input
                   type="number"
-                  name="participants"
-                  value={formData.participants}
+                  name="maxParticipants"
+                  value={formData.maxParticipants}
                   onChange={handleInputChange}
                   placeholder="Enter max participants"
                   min="1"
-                  className={`input input-bordered w-full ${
-                    !isFieldEditable("participants")
-                      ? "bg-gray-100 cursor-not-allowed"
-                      : ""
-                  }`}
+                  className="input input-bordered w-full"
                   required
-                  disabled={!isFieldEditable("participants")}
                 />
               </div>
             </div>
@@ -306,12 +420,7 @@ const AddProgramModal = ({
                 value={formData.additionalDetails}
                 onChange={handleInputChange}
                 placeholder="Enter any additional details about the program"
-                className={`textarea textarea-bordered w-full h-24 ${
-                  !isFieldEditable("additionalDetails")
-                    ? "bg-gray-100 cursor-not-allowed"
-                    : ""
-                }`}
-                disabled={!isFieldEditable("additionalDetails")}
+                className="textarea textarea-bordered w-full h-24"
               />
             </div>
 
@@ -324,15 +433,27 @@ const AddProgramModal = ({
               >
                 Cancel
               </button>
-              {(isAdmin || isTrainingStaff) && (
-                <button
-                  type="submit"
-                  className="btn btn-primary btn-sm sm:btn-md"
-                >
-                  {submitButtonText}
-                </button>
-              )}
+              <button
+                type="submit"
+                className="btn btn-primary btn-sm sm:btn-md"
+              >
+                {submitButtonText}
+              </button>
             </div>
+
+            {submitError && (
+              <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <ul className="list-disc pl-5 text-sm text-red-700">
+                  {submitError
+                    .split("\n")
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .map((msg, idx) => (
+                      <li key={idx}>{msg}</li>
+                    ))}
+                </ul>
+              </div>
+            )}
           </form>
         </div>
       </div>

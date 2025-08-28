@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { canPerformAction, ROLES } from "../../utils/rolePermissions";
 import AddProgramModal from "./AddProgramModal";
 import ProgramModal from "./ProgramModal";
 import { PlusIcon } from "@phosphor-icons/react";
@@ -61,12 +60,12 @@ const ProgramsTable = ({ programs = [], onViewDetails }) => {
       ...newProgram,
       id: Date.now(),
     };
-    setPrograms((prev) => [...prev, programWithId]);
+    setLocalPrograms((prev) => [...prev, programWithId]);
     setShowAddModal(false);
   };
 
   const handleEditProgram = (updatedProgram) => {
-    setPrograms((prev) =>
+    setLocalPrograms((prev) =>
       prev.map((program) =>
         program.id === selectedProgram.id
           ? { ...updatedProgram, id: program.id }
@@ -86,9 +85,10 @@ const ProgramsTable = ({ programs = [], onViewDetails }) => {
     }
   };
 
-  const canCreate = canPerformAction(user?.role, "create_program");
-  const canEdit = canPerformAction(user?.role, "edit_program");
-  const canDelete = canPerformAction(user?.role, "delete_program");
+  // Use the new permission system
+  const canCreate = user?.permissions?.canCreateTrainingPrograms;
+  const canEdit = user?.permissions?.canUpdateTrainingPrograms;
+  const canDelete = user?.permissions?.canDeleteTrainingPrograms;
 
   return (
     <div className="space-y-6">
