@@ -161,6 +161,18 @@ export const adminApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: [{ type: "Program", id: "LIST" }],
     }),
+
+    // Record/update a single trainee's attendance for a date
+    recordTraineeAttendance: builder.mutation({
+      query: ({ programId, traineeId, date, status, remarks = "" }) => ({
+        url: `/training-programs/${programId}/trainee/${traineeId}/attendance`,
+        method: "POST",
+        body: { date, status, remarks },
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Program", id: `${arg.programId}-attendance-${arg.date}` },
+      ],
+    }),
   }),
   overrideExisting: true,
 });
@@ -181,4 +193,5 @@ export const {
   useGetTrainingProgramByIdQuery,
   useGetSessionMetaByDateQuery,
   useGetDayAttendanceByDateQuery,
+  useRecordTraineeAttendanceMutation,
 } = adminApi;

@@ -11,6 +11,7 @@ import {
   useGetTrainingProgramByIdQuery,
   useGetDayAttendanceByDateQuery,
   useGetSessionMetaByDateQuery,
+  useRecordTraineeAttendanceMutation,
 } from "../../features/api/adminEndpoints";
 import { skipToken } from "@reduxjs/toolkit/query";
 
@@ -115,9 +116,21 @@ const ProgramAttendance = () => {
   const [editingTimes, setEditingTimes] = useState({}); // { [dateKey]: boolean }
   const isEditingTimes = !!editingTimes[selectedKey];
 
-  const updateAttendance = (traineeId, patch) => {
-    // TODO: Wire to mutation for saving attendance
-    console.log("Update attendance (local only)", traineeId, patch);
+  const [recordAttendance, { isLoading: isRecording }] =
+    useRecordTraineeAttendanceMutation();
+  const updateAttendance = async (traineeId, patch) => {
+    if (!selectedKey || !programId || !patch?.status) return;
+    try {
+      await recordAttendance({
+        programId,
+        traineeId,
+        date: selectedKey,
+        status: patch.status,
+        remarks: patch.remarks || "",
+      }).unwrap();
+    } catch (e) {
+      console.error("Failed to record attendance", e);
+    }
   };
 
   const daySummary = useMemo(() => {
