@@ -65,9 +65,16 @@ const AccessCard = ({ person }) => {
   return (
     <>
       <div
-        className="bg-white rounded-lg shadow-md p-4 border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer"
+        className="bg-white rounded-lg shadow-md p-4 border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer relative"
         onClick={handleCardClick}
       >
+        {/* Own Account Indicator */}
+        {isOwnAccount && (
+          <div className="absolute top-4 right-4 bg-gray-300/90 text-gray-800 text-xs px-2 py-1 rounded-full font-medium">
+            You
+          </div>
+        )}
+
         <div className="flex items-start gap-3">
           <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg flex-shrink-0">
             {avatar}
