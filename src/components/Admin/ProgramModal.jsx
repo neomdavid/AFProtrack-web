@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { canEditField, ROLES } from "../../utils/rolePermissions";
+import { useGetTrainingProgramByIdQuery } from "../../features/api/adminEndpoints";
 
 const sampleTrainees = [
   {
@@ -40,88 +41,33 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
   const isTrainingStaff = user?.role === ROLES.TRAINING_STAFF;
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(program || {});
-  const [activeTab, setActiveTab] = useState("details");
 
-  // --- Attendance state ---
-  const STATUS = [
-    { value: "present", label: "Present", color: "text-green-600" },
-    { value: "late", label: "Late", color: "text-amber-600" },
-    { value: "excused", label: "Excused", color: "text-blue-600" },
-    { value: "absent", label: "Absent", color: "text-red-600" },
-  ];
-
-  const toDate = (str) => (str ? new Date(str) : null);
-  const formatDayLabel = (d) =>
-    d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-  const formatYMD = (d) => d.toISOString().slice(0, 10);
-  const getDateRange = (start, end) => {
-    if (!start || !end) return [];
-    const days = [];
-    const cur = new Date(start);
-    const last = new Date(end);
-    while (cur <= last) {
-      days.push(new Date(cur));
-      cur.setDate(cur.getDate() + 1);
+  // Fetch complete program details when modal opens
+  const { data: completeProgram, isLoading } = useGetTrainingProgramByIdQuery(
+    program?.id,
+    {
+      skip: !open || !program?.id,
     }
-    return days;
-  };
-
-  const sessions = useMemo(
-    () => getDateRange(toDate(program?.startDate), toDate(program?.endDate)),
-    [program]
   );
 
-  const today = new Date();
-  const defaultSelected = useMemo(() => {
-    if (!sessions.length) return null;
-    const inRange = today >= sessions[0] && today <= sessions[sessions.length - 1];
-    return inRange ? today : sessions[0];
-  }, [sessions]);
-  const [selectedDate, setSelectedDate] = useState(defaultSelected);
+  // Use complete program data if available, otherwise fall back to basic program data
+  const programData = completeProgram || program;
 
-  // Attendance map: { [dateYMD]: { [traineeKey]: { status, timeIn, timeOut, note } } }
-  const [attendance, setAttendance] = useState({});
-
-  const selectedKey = selectedDate ? formatYMD(selectedDate) : null;
-  const dayAttendance = attendance[selectedKey] || {};
-
-  const updateAttendance = (traineeKey, patch) => {
-    setAttendance((prev) => ({
-      ...prev,
-      [selectedKey]: {
-        ...(prev[selectedKey] || {}),
-        [traineeKey]: { ...(prev[selectedKey]?.[traineeKey] || {}), ...patch },
-      },
-    }));
-  };
-
-  const bulkSetStatus = (value) => {
-    const next = { ...(attendance[selectedKey] || {}) };
-    sampleTrainees.forEach((t) => {
-      const key = t.email || t.name;
-      next[key] = { ...(next[key] || {}), status: value };
-    });
-    setAttendance((prev) => ({ ...prev, [selectedKey]: next }));
-  };
-
-  const daySummary = useMemo(() => {
-    const counts = { present: 0, late: 0, excused: 0, absent: 0 };
-    sampleTrainees.forEach((t) => {
-      const key = t.email || t.name;
-      const s = dayAttendance[key]?.status;
-      if (s && counts[s] !== undefined) counts[s] += 1;
-    });
-    return counts;
-  }, [dayAttendance]);
+  // Update editData when complete program data is fetched
+  useEffect(() => {
+    if (completeProgram && !isEditing) {
+      setEditData(completeProgram);
+    }
+  }, [completeProgram, isEditing]);
 
   const handleEditClick = () => {
     setIsEditing(true);
-    setEditData(program);
+    setEditData(programData);
   };
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    setEditData(program);
+    setEditData(programData);
   };
 
   const handleSaveEdit = () => {
@@ -142,7 +88,58 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
     return canEditField(user?.role, fieldName);
   };
 
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  // Format time with AM/PM
+  const formatTime = (timeString) => {
+    if (!timeString) return "N/A";
+    const [hours, minutes] = timeString.split(":");
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${displayHour}:${minutes} ${ampm}`;
+  };
+
+  // Format date range for display
+  const formatDateRange = (startDate, endDate) => {
+    if (!startDate && !endDate) return "N/A";
+    if (startDate && !endDate) return formatDate(startDate);
+    if (!startDate && endDate) return formatDate(endDate);
+    return `${formatDate(startDate)} to ${formatDate(endDate)}`;
+  };
+
+  // Format time range for display
+  const formatTimeRange = (startTime, endTime) => {
+    if (!startTime && !endTime) return "N/A";
+    if (startTime && !endTime) return formatTime(startTime);
+    if (!startTime && endTime) return formatTime(endTime);
+    return `${formatTime(startTime)} to ${formatTime(endTime)}`;
+  };
+
   if (!open || !program) return null;
+
+  // Show loading state while fetching complete program data
+  if (isLoading && !completeProgram) {
+    return (
+      <dialog open={open} className="modal z-[10000]">
+        <div className="modal-box w-11/12 max-w-4xl relative bg-white p-8">
+          <div className="flex justify-center items-center h-32">
+            <div className="loading loading-spinner loading-lg"></div>
+            <span className="ml-4 text-lg">Loading program details...</span>
+          </div>
+        </div>
+      </dialog>
+    );
+  }
 
   return (
     <dialog open={open} className="modal z-[10000]">
@@ -167,47 +164,294 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
           </button>
         </form>
 
-        {/* Header with Tabs */}
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h3 className="font-bold text-2xl mb-1">
-              {activeTab === "details"
-                ? isEditing
-                  ? "Edit Program Details"
-                  : program.name
-                : `${program.name} • Attendance`}
+        {/* Header */}
+        <div className="flex justify-between items-start mb-6">
+          <div className="flex-1">
+            <h3 className="font-bold text-2xl mb-4">
+              {isEditing
+                ? "Edit Program Details"
+                : programData.programName || programData.name}
             </h3>
-            <div className="flex flex-col gap-1 text-gray">
-              <p>
-                <span className="font-semibold">Program ID:</span> {program.id}
-              </p>
-              <p>
-                <span className="font-semibold">Instructor:</span>{" "}
-                {program.instructor}
-              </p>
+
+            {/* Program Details Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-3">
+              {/* Left Column */}
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <span className="font-semibold text-gray-700 min-w-[100px]">
+                    Program ID:
+                  </span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="id"
+                      value={editData.id || ""}
+                      onChange={handleInputChange}
+                      className="input input-bordered input-sm flex-1 ml-3"
+                      disabled
+                    />
+                  ) : (
+                    <span className="ml-3 text-gray-600">{programData.id}</span>
+                  )}
+                </div>
+
+                <div className="flex items-center">
+                  <span className="font-semibold text-gray-700 min-w-[100px]">
+                    Instructor:
+                  </span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="instructor"
+                      value={editData.instructor || ""}
+                      onChange={handleInputChange}
+                      className="input input-bordered input-sm flex-1 ml-3"
+                      disabled={!isFieldEditable("instructor")}
+                    />
+                  ) : (
+                    <span className="ml-3 text-gray-600">
+                      {programData.instructor}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center">
+                  <span className="font-semibold text-gray-700 min-w-[100px]">
+                    Program Dates:
+                  </span>
+                  {isEditing ? (
+                    <div className="flex gap-2 flex-1 ml-3">
+                      <input
+                        type="date"
+                        name="startDate"
+                        value={
+                          editData.startDate
+                            ? editData.startDate.split("T")[0]
+                            : ""
+                        }
+                        onChange={handleInputChange}
+                        className="input input-bordered input-sm flex-1"
+                        disabled={!isFieldEditable("startDate")}
+                      />
+                      <span className="text-gray-400 self-center">to</span>
+                      <input
+                        type="date"
+                        name="endDate"
+                        value={
+                          editData.endDate ? editData.endDate.split("T")[0] : ""
+                        }
+                        onChange={handleInputChange}
+                        className="input input-bordered input-sm flex-1"
+                        disabled={!isFieldEditable("endDate")}
+                      />
+                    </div>
+                  ) : (
+                    <span className="ml-3 text-gray-600">
+                      {formatDateRange(
+                        programData.startDate,
+                        programData.endDate
+                      )}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center">
+                  <span className="font-semibold text-gray-700 min-w-[100px]">
+                    Time:
+                  </span>
+                  {isEditing ? (
+                    <div className="flex gap-2 flex-1 ml-3">
+                      <input
+                        type="time"
+                        name="startTime"
+                        value={editData.startTime || ""}
+                        onChange={handleInputChange}
+                        className="input input-bordered input-sm flex-1"
+                        disabled={!isFieldEditable("startTime")}
+                      />
+                      <span className="text-gray-400 self-center">to</span>
+                      <input
+                        type="time"
+                        name="endTime"
+                        value={editData.endTime || ""}
+                        onChange={handleInputChange}
+                        className="input input-bordered input-sm flex-1"
+                        disabled={!isFieldEditable("endTime")}
+                      />
+                    </div>
+                  ) : (
+                    <span className="ml-3 text-gray-600">
+                      {formatTimeRange(
+                        programData.startTime,
+                        programData.endTime
+                      )}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column */}
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <span className="font-semibold text-gray-700 min-w-[140px]">
+                    Venue:
+                  </span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="venue"
+                      value={editData.venue || ""}
+                      onChange={handleInputChange}
+                      className="input input-bordered input-sm flex-1 ml-3"
+                      disabled={!isFieldEditable("venue")}
+                    />
+                  ) : (
+                    <span className="ml-3 text-gray-600">
+                      {programData.venue || "Not specified"}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center">
+                  <span className="font-semibold text-gray-700 min-w-[140px]">
+                    Max Participants:
+                  </span>
+                  {isEditing ? (
+                    <input
+                      type="number"
+                      name="maxParticipants"
+                      value={editData.maxParticipants || ""}
+                      onChange={handleInputChange}
+                      className="input input-bordered input-sm flex-1 ml-3"
+                      disabled={!isFieldEditable("maxParticipants")}
+                    />
+                  ) : (
+                    <span className="ml-3 text-gray-600">
+                      {programData.maxParticipants || "Not specified"}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center">
+                  <span className="font-semibold text-gray-700 min-w-[140px]">
+                    Status:
+                  </span>
+                  {isEditing ? (
+                    <select
+                      name="status"
+                      value={editData.status || ""}
+                      onChange={handleInputChange}
+                      className="select select-bordered select-sm flex-1 ml-3"
+                      disabled={!isFieldEditable("status")}
+                    >
+                      <option value="upcoming">Upcoming</option>
+                      <option value="ongoing">Ongoing</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  ) : (
+                    <span className="ml-3 text-gray-600 capitalize">
+                      {programData.status || "Not specified"}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center">
+                  <span className="font-semibold text-gray-700 min-w-[140px]">
+                    Batch:
+                  </span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="batch"
+                      value={editData.batch || ""}
+                      onChange={handleInputChange}
+                      className="input input-bordered input-sm flex-1 ml-3"
+                      disabled={!isFieldEditable("batch")}
+                    />
+                  ) : (
+                    <span className="ml-3 text-gray-600">
+                      {programData.batch || "Not specified"}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center">
+                  <span className="font-semibold text-gray-700 min-w-[140px]">
+                    Enrollment Period:
+                  </span>
+                  {isEditing ? (
+                    <div className="flex gap-2 flex-1 ml-3">
+                      <input
+                        type="date"
+                        name="enrollmentStartDate"
+                        value={
+                          editData.enrollmentStartDate
+                            ? editData.enrollmentStartDate.split("T")[0]
+                            : ""
+                        }
+                        onChange={handleInputChange}
+                        className="input input-bordered input-sm flex-1"
+                        disabled={!isFieldEditable("enrollmentStartDate")}
+                      />
+                      <span className="text-gray-400 self-center">to</span>
+                      <input
+                        type="date"
+                        name="enrollmentEndDate"
+                        value={
+                          editData.enrollmentEndDate
+                            ? editData.enrollmentEndDate.split("T")[0]
+                            : ""
+                        }
+                        onChange={handleInputChange}
+                        className="input input-bordered input-sm flex-1"
+                        disabled={!isFieldEditable("enrollmentEndDate")}
+                      />
+                    </div>
+                  ) : (
+                    <span className="ml-3 text-gray-600">
+                      {formatDateRange(
+                        programData.enrollmentStartDate,
+                        programData.enrollmentEndDate
+                      )}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
+
+            {/* Additional Details - Full Width */}
+            {programData.additionalDetails && (
+              <div className="mt-4">
+                <div className="flex items-start">
+                  <span className="font-semibold text-gray-700 min-w-[140px] mt-2">
+                    Additional Details:
+                  </span>
+                  {isEditing ? (
+                    <textarea
+                      name="additionalDetails"
+                      value={editData.additionalDetails || ""}
+                      onChange={handleInputChange}
+                      className="textarea textarea-bordered flex-1 ml-3"
+                      rows="3"
+                      disabled={!isFieldEditable("additionalDetails")}
+                    />
+                  ) : (
+                    <span className="ml-3 text-gray-600 mt-2">
+                      {programData.additionalDetails}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-          <div className="flex items-center gap-2">
-            <div className="join hidden sm:inline-flex">
+
+          <div className="flex items-center gap-2 ml-6">
+            {!isEditing && (isAdmin || isTrainingStaff) && (
               <button
-                className={`join-item btn btn-sm ${
-                  activeTab === "details" ? "btn-primary" : "btn-outline"
-                }`}
-                onClick={() => setActiveTab("details")}
+                onClick={handleEditClick}
+                className="btn btn-primary btn-sm"
               >
-                Details
-              </button>
-              <button
-                className={`join-item btn btn-sm ${
-                  activeTab === "attendance" ? "btn-primary" : "btn-outline"
-                }`}
-                onClick={() => setActiveTab("attendance")}
-              >
-                Attendance
-              </button>
-            </div>
-            {activeTab === "details" && !isEditing && (isAdmin || isTrainingStaff) && (
-              <button onClick={handleEditClick} className="btn btn-primary btn-sm">
                 <svg
                   className="w-4 h-4 mr-2"
                   fill="none"
@@ -241,7 +485,7 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
         )}
 
         {/* Program Details Section */}
-        {activeTab === "details" && isEditing && (
+        {isEditing && (
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <h4 className="font-semibold mb-4">Program Information</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -251,15 +495,15 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
                 </label>
                 <input
                   type="text"
-                  name="name"
-                  value={editData.name || ""}
+                  name="programName"
+                  value={editData.programName || ""}
                   onChange={handleInputChange}
                   className={`input input-bordered w-full ${
-                    !isFieldEditable("name")
+                    !isFieldEditable("programName")
                       ? "bg-gray-100 cursor-not-allowed"
                       : ""
                   }`}
-                  disabled={!isFieldEditable("name")}
+                  disabled={!isFieldEditable("programName")}
                 />
               </div>
               <div>
@@ -298,27 +542,25 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
               </div>
               <div>
                 <label className="label">
-                  <span className="label-text font-semibold">Time</span>
+                  <span className="label-text font-semibold">Start Time</span>
                 </label>
                 <input
                   type="time"
-                  name="time"
-                  value={editData.time || ""}
+                  name="startTime"
+                  value={editData.startTime || ""}
                   onChange={handleInputChange}
                   className={`input input-bordered w-full ${
-                    !isFieldEditable("time")
+                    !isFieldEditable("startTime")
                       ? "bg-gray-100 cursor-not-allowed"
                       : ""
                   }`}
-                  disabled={!isFieldEditable("time")}
+                  disabled={!isFieldEditable("startTime")}
                 />
               </div>
             </div>
           </div>
         )}
 
-        {activeTab === "details" && (
-          <>
         {/* Trainees Table Header Row */}
         <div className="flex items-center justify-between mb-2">
           <span className="font-semibold text-lg text-gray">
@@ -410,174 +652,6 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
             </tbody>
           </table>
         </div>
-          </>
-        )}
-
-        {activeTab === "attendance" && (
-          <div className="flex flex-col gap-4">
-            {/* Date Navigator */}
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-500">
-                {program?.startDate} – {program?.endDate} • {sessions.length} days
-              </div>
-            </div>
-            <div className="overflow-x-auto">
-              <div className="flex gap-2 py-1">
-                {sessions.map((d) => {
-                  const isActive = selectedKey === formatYMD(d);
-                  const isToday = formatYMD(d) === formatYMD(today);
-                  return (
-                    <button
-                      key={formatYMD(d)}
-                      onClick={() => setSelectedDate(d)}
-                      className={`px-3 py-1.5 rounded-full border text-sm whitespace-nowrap ${
-                        isActive
-                          ? "border-primary text-primary bg-primary/10"
-                          : "border-gray-300 text-gray-700 hover:bg-gray-100"
-                      }`}
-                      title={d.toDateString()}
-                    >
-                      {formatDayLabel(d)}{isToday ? " • Today" : ""}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Summary */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <div className="p-2 rounded border border-gray-200 bg-green-50">
-                <div className="text-xs text-gray-500">Present</div>
-                <div className="text-lg font-semibold text-green-700">{daySummary.present}</div>
-              </div>
-              <div className="p-2 rounded border border-gray-200 bg-amber-50">
-                <div className="text-xs text-gray-500">Late</div>
-                <div className="text-lg font-semibold text-amber-700">{daySummary.late}</div>
-              </div>
-              <div className="p-2 rounded border border-gray-200 bg-blue-50">
-                <div className="text-xs text-gray-500">Excused</div>
-                <div className="text-lg font-semibold text-blue-700">{daySummary.excused}</div>
-              </div>
-              <div className="p-2 rounded border border-gray-200 bg-red-50">
-                <div className="text-xs text-gray-500">Absent</div>
-                <div className="text-lg font-semibold text-red-700">{daySummary.absent}</div>
-              </div>
-            </div>
-
-            {/* Bulk actions */}
-            <div className="flex flex-wrap gap-2">
-              <span className="text-sm text-gray-600 self-center">Quick mark:</span>
-              {STATUS.map((s) => (
-                <button
-                  key={s.value}
-                  onClick={() => bulkSetStatus(s.value)}
-                  className="btn btn-xs btn-outline"
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Attendance table */}
-            <div className="overflow-x-auto">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Trainee</th>
-                    <th>Status</th>
-                    <th>Time In</th>
-                    <th>Time Out</th>
-                    <th>Notes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sampleTrainees.map((t) => {
-                    const key = t.email || t.name;
-                    const rec = dayAttendance[key] || {};
-                    return (
-                      <tr key={key}>
-                        <td>
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">
-                              {getInitials(t.name)}
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="font-medium">{t.name}</span>
-                              <span className="text-xs text-gray-500">{t.email}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td>
-                          <select
-                            className="select select-bordered select-sm"
-                            value={rec.status || ""}
-                            onChange={(e) => updateAttendance(key, { status: e.target.value })}
-                          >
-                            <option value="">Select</option>
-                            {STATUS.map((s) => (
-                              <option key={s.value} value={s.value}>{s.label}</option>
-                            ))}
-                          </select>
-                        </td>
-                        <td>
-                          <input
-                            type="time"
-                            className="input input-bordered input-sm"
-                            value={rec.timeIn || ""}
-                            onChange={(e) => updateAttendance(key, { timeIn: e.target.value })}
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="time"
-                            className="input input-bordered input-sm"
-                            value={rec.timeOut || ""}
-                            onChange={(e) => updateAttendance(key, { timeOut: e.target.value })}
-                          />
-                        </td>
-                        <td>
-                          <input
-                            type="text"
-                            className="input input-bordered input-sm w-64"
-                            placeholder="Add note"
-                            value={rec.note || ""}
-                            onChange={(e) => updateAttendance(key, { note: e.target.value })}
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Save row */}
-            <div className="flex justify-end gap-2">
-              <button className="btn btn-outline btn-sm" onClick={() => console.log("discard day changes")}>Discard</button>
-              <button
-                className="btn btn-primary btn-sm"
-                onClick={() => {
-                  // Mock bulk save payload for selected day
-                  const payload = sampleTrainees.map((t) => {
-                    const key = t.email || t.name;
-                    const rec = (attendance[selectedKey] || {})[key] || {};
-                    return {
-                      enrollmentId: key, // replace with real id
-                      sessionDate: selectedKey,
-                      status: rec.status || null,
-                      timeIn: rec.timeIn || null,
-                      timeOut: rec.timeOut || null,
-                      note: rec.note || null,
-                    };
-                  });
-                  console.log("Saving attendance:", payload);
-                }}
-              >
-                Save Attendance
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </dialog>
   );
