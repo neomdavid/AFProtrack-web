@@ -1,12 +1,6 @@
 import React from "react";
 
-const DayPills = ({
-  sessions,
-  selectedKey,
-  onDateSelect,
-  sessionMeta,
-  completedDays,
-}) => {
+const DayPills = ({ sessions, selectedKey, onDateSelect, sessionMeta }) => {
   const today = new Date();
   const formatDayLabel = (d) =>
     d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
@@ -14,7 +8,7 @@ const DayPills = ({
 
   const getTooltipText = (ymd) => {
     const isCancelled = (sessionMeta[ymd]?.status || "active") === "cancelled";
-    const isCompleted = !!completedDays[ymd]?.completed;
+    const isCompleted = !!sessionMeta[ymd]?.completed;
 
     if (isCancelled) {
       const reason = sessionMeta[ymd]?.reason;
@@ -35,7 +29,7 @@ const DayPills = ({
           const isToday = formatYMD(today) === ymd;
           const isCancelled =
             (sessionMeta[ymd]?.status || "active") === "cancelled";
-          const isCompleted = !!completedDays[ymd]?.completed;
+          const isCompleted = !!sessionMeta[ymd]?.completed;
 
           return (
             <button

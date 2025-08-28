@@ -104,14 +104,25 @@ const ProgramAttendance = () => {
     programId && selectedKey ? { programId, date: selectedKey } : skipToken,
     { skip: !programId || !selectedKey }
   );
+
   const [sessionMeta, setSessionMeta] = useState({});
-  const apiMeta = sessionMetaApi || {};
-  const mergedMeta = { ...(sessionMeta[selectedKey] || {}), ...apiMeta };
-  const dayMeta = mergedMeta;
+
+  // Store backend session meta in local state for persistence
+  useEffect(() => {
+    if (sessionMetaApi && selectedKey) {
+      setSessionMeta((prev) => ({
+        ...prev,
+        [selectedKey]: { ...(prev[selectedKey] || {}), ...sessionMetaApi },
+      }));
+    }
+  }, [sessionMetaApi, selectedKey]);
+
+  const dayMeta = sessionMeta[selectedKey] || {};
   const dayStartTime = dayMeta.startTime ?? program.defaultStartTime;
   const dayEndTime = dayMeta.endTime ?? program.defaultEndTime;
   const dayStatus = dayMeta.status ?? "active";
   const isDayCancelled = dayStatus === "cancelled";
+  const metaCancelReason = dayMeta.reason || "";
 
   // Per-day edit state for time adjustments
   const [editingTimes, setEditingTimes] = useState({}); // { [dateKey]: boolean }
@@ -410,7 +421,6 @@ const ProgramAttendance = () => {
         selectedKey={selectedKey}
         onDateSelect={handleDateSelect}
         sessionMeta={sessionMeta}
-        completedDays={completedDays}
       />
 
       <AttendanceSummary
@@ -426,6 +436,7 @@ const ProgramAttendance = () => {
         isEditingTimes={isEditingTimes}
         isDayCompleted={isDayCompleted}
         isDayCancelled={isDayCancelled}
+        metaCancelReason={metaCancelReason}
         onStartTimeChange={handleStartTimeChange}
         onEndTimeChange={handleEndTimeChange}
         onStatusChange={handleStatusChange}

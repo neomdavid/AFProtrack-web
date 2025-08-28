@@ -89,6 +89,31 @@ export const adminApi = apiSlice.injectEndpoints({
       transformResponse: (response) => response?.data || response,
       providesTags: (result, error, arg) => [{ type: "User", id: arg }],
     }),
+
+    // Soft delete (archive) a user
+    deleteUser: builder.mutation({
+      query: (userId) => ({
+        url: `/users/${userId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "User", id: "ACTIVE_USERS" },
+        { type: "User", id: arg },
+      ],
+    }),
+
+    // Update user account status (active/inactive)
+    updateUserStatus: builder.mutation({
+      query: ({ userId, accountStatus }) => ({
+        url: `/users/${userId}/status`,
+        method: "PATCH",
+        body: { accountStatus },
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "User", id: "ACTIVE_USERS" },
+        { type: "User", id: arg.userId },
+      ],
+    }),
     approveUser: builder.mutation({
       query: (userId) => ({
         url: `/users/pending/${userId}/approve`,
@@ -235,4 +260,6 @@ export const {
   useUpdateSessionMetaMutation,
   useGetActiveUsersQuery,
   useGetActiveUserByIdQuery,
+  useDeleteUserMutation,
+  useUpdateUserStatusMutation,
 } = adminApi;

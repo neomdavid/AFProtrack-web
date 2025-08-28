@@ -8,6 +8,7 @@ const DaySettings = ({
   isEditingTimes,
   isDayCompleted,
   isDayCancelled,
+  metaCancelReason,
   onStartTimeChange,
   onEndTimeChange,
   onStatusChange,
@@ -16,7 +17,7 @@ const DaySettings = ({
   onReopenDay,
   onCancelDay,
   onUncancelDay,
-  selectedDate
+  selectedDate,
 }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
@@ -72,7 +73,9 @@ const DaySettings = ({
               className="input input-bordered input-sm w-full"
               value={dayStartTime}
               onChange={onStartTimeChange}
-              disabled={!canEdit || !isEditingTimes || isDayCompleted || isDayCancelled}
+              disabled={
+                !canEdit || !isEditingTimes || isDayCompleted || isDayCancelled
+              }
             />
           </div>
           <div>
@@ -84,7 +87,9 @@ const DaySettings = ({
               className="input input-bordered input-sm w-full"
               value={dayEndTime}
               onChange={onEndTimeChange}
-              disabled={!canEdit || !isEditingTimes || isDayCompleted || isDayCancelled}
+              disabled={
+                !canEdit || !isEditingTimes || isDayCompleted || isDayCancelled
+              }
             />
           </div>
           <div>
@@ -102,7 +107,7 @@ const DaySettings = ({
             </select>
           </div>
         </div>
-        
+
         <div className="flex gap-2">
           {canEdit && (
             <button
@@ -115,7 +120,7 @@ const DaySettings = ({
               {isEditingTimes ? "Save Times" : "Adjust Times"}
             </button>
           )}
-          
+
           {canComplete && !isDayCompleted && (
             <button
               className="btn btn-sm btn-outline btn-success"
@@ -125,7 +130,7 @@ const DaySettings = ({
               Mark Complete
             </button>
           )}
-          
+
           {canReopen && isDayCompleted && (
             <button
               className="btn btn-sm btn-outline btn-warning"
@@ -183,8 +188,15 @@ const DaySettings = ({
               <span className="font-medium text-red-800">Day Cancelled</span>
             </div>
             <p className="text-sm text-red-700">
-              This day has been cancelled and is no longer available for attendance recording.
+              This day has been cancelled and is no longer available for
+              attendance recording.
             </p>
+            {metaCancelReason && (
+              <div className="mt-2 text-sm">
+                <span className="font-medium text-red-800">Reason: </span>
+                <span className="text-red-800">{metaCancelReason}</span>
+              </div>
+            )}
             {canEdit && (
               <button
                 className="btn btn-sm btn-outline btn-error mt-2"

@@ -1,10 +1,16 @@
 import React, { useState } from "react";
 import { TrashIcon } from "@phosphor-icons/react";
-import { useGetActiveUserByIdQuery } from "../../features/api/adminEndpoints";
+import {
+  useGetActiveUserByIdQuery,
+  useDeleteUserMutation,
+  useUpdateUserStatusMutation,
+} from "../../features/api/adminEndpoints";
 
 const AccessCard = ({ person }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isActive, setIsActive] = useState(true);
+  const [deleteUser] = useDeleteUserMutation();
+  const [updateUserStatus] = useUpdateUserStatusMutation();
 
   const handleCardClick = () => {
     setIsModalOpen(true);
@@ -14,9 +20,13 @@ const AccessCard = ({ person }) => {
     setIsModalOpen(false);
   };
 
-  const handleArchiveAccount = () => {
-    // Mock archive functionality
-    alert("Archiving account...");
+  const handleArchiveAccount = async () => {
+    try {
+      await deleteUser(person.id).unwrap();
+      setIsModalOpen(false);
+    } catch (e) {
+      console.error("Failed to archive user", e);
+    }
   };
 
   const { data: userDetails } = useGetActiveUserByIdQuery(person.id, {
@@ -115,7 +125,19 @@ const AccessCard = ({ person }) => {
                     type="checkbox"
                     className="sr-only peer"
                     checked={isActive}
-                    onChange={(e) => setIsActive(e.target.checked)}
+                    onChange={async (e) => {
+                      const next = e.target.checked;
+                      setIsActive(next);
+                      try {
+                        await updateUserStatus({
+                          userId: person.id,
+                          accountStatus: next ? "active" : "inactive",
+                        }).unwrap();
+                      } catch (err) {
+                        console.error("Failed to update status", err);
+                        setIsActive(!next);
+                      }
+                    }}
                   />
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   <span className="ml-3 text-sm font-medium text-black">
