@@ -1,6 +1,9 @@
 import { CaretDownIcon, PlusIcon } from "@phosphor-icons/react";
 import React, { useState, useMemo } from "react";
-import { useGetActiveUsersQuery } from "../../features/api/adminEndpoints";
+import {
+  useGetActiveUsersQuery,
+  useGetInactiveUsersQuery,
+} from "../../features/api/adminEndpoints";
 import AccessCard from "./AccessCard";
 import CreateAccountModal from "./CreateAccountModal";
 
@@ -13,10 +16,22 @@ const WebAccessTab = () => {
   const { data: activeData } = useGetActiveUsersQuery({
     roles: ["admin", "training_staff"],
   });
-  const users = activeData?.users || [];
+  const { data: inactiveData } = useGetInactiveUsersQuery({
+    roles: ["admin", "training_staff"],
+  });
+
+  // Combine active and inactive users
+  const activeUsers = activeData?.users || [];
+  const inactiveUsers = inactiveData?.users || [];
+
+  // Add status to each user
+  const allUsers = [
+    ...activeUsers.map((user) => ({ ...user, accountStatus: "active" })),
+    ...inactiveUsers.map((user) => ({ ...user, accountStatus: "inactive" })),
+  ];
 
   // Map backend -> AccessCard props
-  const people = users.map((u) => ({
+  const people = allUsers.map((u) => ({
     id: u.id || u._id,
     avatar:
       u.avatar ||
@@ -28,6 +43,7 @@ const WebAccessTab = () => {
     email: u.email || "",
     unit: u.unit || "",
     branchOfService: u.branchOfService || "",
+    accountStatus: u.accountStatus || "active",
   }));
 
   // Get unique units and branches for filter options

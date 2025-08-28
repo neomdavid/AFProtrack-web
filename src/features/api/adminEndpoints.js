@@ -80,6 +80,22 @@ export const adminApi = apiSlice.injectEndpoints({
       providesTags: [{ type: "User", id: "ACTIVE_USERS" }],
     }),
 
+    // Inactive users by roles (supports multiple role params)
+    getInactiveUsers: builder.query({
+      query: ({ roles = [], page = 1, limit = 100 } = {}) => {
+        const params = new URLSearchParams();
+        params.set("page", String(page));
+        params.set("limit", String(limit));
+        roles.forEach((r) => params.append("role", r));
+        return {
+          url: `/users/inactive?${params.toString()}`,
+          method: "GET",
+        };
+      },
+      transformResponse: (response) => response?.data || response,
+      providesTags: [{ type: "User", id: "INACTIVE_USERS" }],
+    }),
+
     // Active user details by id (same route with id param)
     getActiveUserById: builder.query({
       query: (userId) => ({
@@ -313,4 +329,5 @@ export const {
   useMarkDayCompletedMutation,
   useReopenCompletedDayMutation,
   useGetProgramSessionMetaQuery,
+  useGetInactiveUsersQuery,
 } = adminApi;

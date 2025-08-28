@@ -9,7 +9,7 @@ import { useAuth } from "../../hooks/useAuth";
 
 const AccessCard = ({ person }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isActive, setIsActive] = useState(true);
+  const [isActive, setIsActive] = useState(person.accountStatus === "active");
   const [deleteUser] = useDeleteUserMutation();
   const [updateUserStatus] = useUpdateUserStatusMutation();
   const { user: currentUser } = useAuth();
@@ -17,6 +17,11 @@ const AccessCard = ({ person }) => {
   // Check if this account belongs to the currently logged-in user
   const isOwnAccount =
     currentUser?.id === person.id || currentUser?._id === person.id;
+
+  // Update isActive when person.accountStatus changes
+  React.useEffect(() => {
+    setIsActive(person.accountStatus === "active");
+  }, [person.accountStatus]);
 
   const handleCardClick = () => {
     setIsModalOpen(true);
@@ -65,25 +70,37 @@ const AccessCard = ({ person }) => {
   return (
     <>
       <div
-        className="bg-white rounded-lg shadow-md p-4 border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer relative"
+        className="bg-white rounded-lg shadow-md p-4 border border-gray-200 hover:shadow-lg transition-shadow cursor-pointer"
         onClick={handleCardClick}
       >
-        {/* Own Account Indicator */}
-        {isOwnAccount && (
-          <div className="absolute top-4 right-4 bg-gray-300/90 text-gray-800 text-xs px-2 py-1 rounded-full font-medium">
-            You
-          </div>
-        )}
-
         <div className="flex items-start gap-3">
           <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg flex-shrink-0">
             {avatar}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-gray-800 truncate">{fullName}</p>
+            <p className="font-semibold text-gray-800 truncate mb-1">
+              {fullName}
+            </p>
             <p className="text-sm text-gray-600 truncate">{afpId}</p>
             <p className="text-sm text-gray-600 truncate">{email}</p>
-            <p className="text-xs text-gray-500 truncate">{unit}</p>
+            <div className="flex items-center justify-between gap-2 mt-1">
+              <p className="text-xs text-gray-500 truncate">{unit}</p>
+              {isOwnAccount ? (
+                <div className="bg-primary/80 text-white text-xs px-2 py-1 rounded-full font-medium flex-shrink-0">
+                  You
+                </div>
+              ) : (
+                <div
+                  className={`text-xs px-2 py-1 rounded-full font-medium flex-shrink-0 ${
+                    person.accountStatus === "active"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-gray-200 text-gray-800"
+                  }`}
+                >
+                  {person.accountStatus === "active" ? "Active" : "Inactive"}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
