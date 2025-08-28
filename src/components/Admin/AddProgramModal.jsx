@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { toast } from "react-toastify";
+import { useCreateTrainingProgramMutation } from "../../features/api/adminEndpoints";
 
 const AddProgramModal = ({
   open,
@@ -11,6 +12,8 @@ const AddProgramModal = ({
   programData = null, // For edit mode
 }) => {
   const { user } = useAuth();
+  const [createProgram, { isLoading: isCreating }] =
+    useCreateTrainingProgramMutation();
 
   const [formData, setFormData] = useState({
     programName: "",
@@ -46,17 +49,11 @@ const AddProgramModal = ({
   // Function to determine status based on dates
   const getStatusFromDates = (startDate) => {
     if (!startDate) return "upcoming";
-
     const today = new Date();
     const start = new Date(startDate);
-
-    if (start > today) {
-      return "upcoming";
-    } else if (start <= today) {
-      return "ongoing";
-    } else {
-      return "completed";
-    }
+    if (start > today) return "upcoming";
+    if (start <= today) return "ongoing";
+    return "completed";
   };
 
   const sanitizeApiError = (responseBody) => {
@@ -64,13 +61,7 @@ const AddProgramModal = ({
     const errorsArray = Array.isArray(responseBody?.errors)
       ? responseBody.errors
       : [];
-
-    // Prefer specific validation errors if present
-    if (errorsArray.length) {
-      return errorsArray.join("\n");
-    }
-
-    // Remove generic prefixes like "Validation failed"
+    if (errorsArray.length) return errorsArray.join("\n");
     const cleaned = rawMessage.replace(/validation failed[:]?/i, "").trim();
     return cleaned || "Request failed. Please review your inputs.";
   };
@@ -90,7 +81,6 @@ const AddProgramModal = ({
       formData.venue &&
       formData.maxParticipants
     ) {
-      // Prepare the request body
       const requestBody = {
         programName: formData.programName,
         startDate: formData.startDate,
@@ -109,73 +99,29 @@ const AddProgramModal = ({
 
       try {
         if (mode === "edit") {
-          // Handle edit mode
           onEdit(requestBody);
           toast.success("Program updated successfully");
         } else {
-          // Handle add mode - make API call
-          const token = localStorage.getItem("afprotrack_token");
-          const response = await fetch(
-            "http://localhost:5000/api/training-programs",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
-              },
-              body: JSON.stringify(requestBody),
-            }
-          );
-
-          const contentType = response.headers.get("content-type") || "";
-          let responseBody;
-          try {
-            responseBody = contentType.includes("application/json")
-              ? await response.json()
-              : await response.text();
-          } catch (parseErr) {
-            responseBody = "<unable to parse response body>";
-          }
-
-          if (response.ok) {
-            const newProgram =
-              typeof responseBody === "string"
-                ? { success: true }
-                : responseBody;
-            onAdd(newProgram);
-            toast.success("Training program created successfully");
-            handleCancel();
-          } else {
-            const friendly =
-              typeof responseBody === "string"
-                ? "Request failed. Please review your inputs."
-                : sanitizeApiError(responseBody);
-            setSubmitError(friendly);
-
-            // If server returned an array of errors, toast each one separately
-            if (
-              Array.isArray(responseBody?.errors) &&
-              responseBody.errors.length
-            ) {
-              responseBody.errors.forEach((err) => {
-                const msg = (err || "").toString();
-                if (msg.trim()) toast.error(msg.trim());
-              });
-            } else {
-              toast.error(friendly);
-            }
-
-            console.error("Create program failed:", {
-              status: response.status,
-              statusText: response.statusText,
-              body: responseBody,
-            });
-          }
+          // Use RTK Query mutation
+          const created = await createProgram(requestBody).unwrap();
+          onAdd(created);
+          toast.success("Training program created successfully");
+          handleCancel();
         }
-      } catch (error) {
-        setSubmitError("Network error. Please try again.");
-        toast.error("Network error. Please try again.");
-        console.error("Network or unexpected error creating program:", error);
+      } catch (err) {
+        const data = err?.data || err; // RTKQ error shape
+        const friendly = sanitizeApiError(data);
+        setSubmitError(friendly);
+        if (Array.isArray(data?.errors) && data.errors.length) {
+          data.errors.forEach((msg) => {
+            const m = (msg || "").toString().trim();
+            if (m) toast.error(m);
+          });
+        } else {
+          toast.error(friendly);
+        }
+        // eslint-disable-next-line no-console
+        console.error("Create program failed:", data);
       }
     }
   };

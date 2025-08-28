@@ -123,46 +123,57 @@ const ProgramsTable = ({ programs = [], onViewDetails }) => {
               </tr>
             </thead>
             <tbody className="text-[13px] sm:text-md">
-              {displayPrograms.map((program) => (
-                <tr key={program.id}>
-                  <td className="font-medium">{program.name}</td>
-                  <td className="">{program.duration}</td>
-                  <td>{program.instructor}</td>
-                  <td className="text-center">{program.participants}</td>
-                  <td className="text-center">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-bold border ${
-                        program.status === "Ongoing"
-                          ? "bg-info text-info-content border-info-content"
-                          : program.status === "Scheduled"
-                          ? "bg-warning text-warning-content border-warning-content"
-                          : program.status === "Completed"
-                          ? "bg-base-success text-success-content border-success-content"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {program.status}
-                    </span>
-                  </td>
-                  <td className="flex justify-center items-center ">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleViewDetails(program)}
-                        className="bg-primary  min-w-24.5 text-[12px] text-white py-1 px-3 rounded-sm hover:bg-primary/80 hover:cursor-pointer transition-all duration-300"
+              {displayPrograms.map((program) => {
+                const status = (program.status || "").toLowerCase();
+                const statusLabel = status
+                  ? status.charAt(0).toUpperCase() + status.slice(1)
+                  : "";
+                const statusClass =
+                  status === "upcoming"
+                    ? "bg-warning text-warning-content border-warning-content"
+                    : status === "available"
+                    ? "bg-info text-info-content border-info-content"
+                    : status === "ongoing"
+                    ? "bg-primary text-white border-primary"
+                    : status === "completed"
+                    ? "bg-base-success text-success-content border-success-content"
+                    : status === "cancelled"
+                    ? "bg-red-100 text-red-800 border-red-300"
+                    : "bg-gray-100 text-gray-800";
+
+                return (
+                  <tr key={program.id}>
+                    <td className="font-medium">{program.name}</td>
+                    <td className="">{program.duration}</td>
+                    <td>{program.instructor}</td>
+                    <td className="text-center">{program.participants}</td>
+                    <td className="text-center">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-bold border ${statusClass}`}
                       >
-                        View Details
-                      </button>
-                      <a
-                        href={`/admin/programs/${program.id}/attendance`}
-                        className="btn btn-ghost btn-xs text-[12px]"
-                        title="Open Attendance Page"
-                      >
-                        Attendance
-                      </a>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        {statusLabel}
+                      </span>
+                    </td>
+                    <td className="flex justify-center items-center ">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleViewDetails(program)}
+                          className="bg-primary  min-w-24.5 text-[12px] text-white py-1 px-3 rounded-sm hover:bg-primary/80 hover:cursor-pointer transition-all duration-300"
+                        >
+                          View Details
+                        </button>
+                        <a
+                          href={`/admin/programs/${program.id}/attendance`}
+                          className="btn btn-ghost btn-xs text-[12px]"
+                          title="Open Attendance Page"
+                        >
+                          Attendance
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         ) : (

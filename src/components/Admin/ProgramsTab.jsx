@@ -1,18 +1,12 @@
 import React, { useState, useMemo, useEffect } from "react";
 import DashboardCard from "./DashboardCard";
-import {
-  CaretDownIcon,
-  PersonSimpleRunIcon,
-  WarehouseIcon,
-  PlusIcon,
-} from "@phosphor-icons/react";
-import MixedChart from "./MixedChart";
-import ChartContainer from "./ChartContainer";
-import MetricsList from "./MetricsList";
+import { PersonSimpleRunIcon, WarehouseIcon } from "@phosphor-icons/react";
 import ProgramModal from "./ProgramModal";
 import AddProgramModal from "./AddProgramModal";
 import ProgramsTable from "./ProgramsTable";
 import SearchFilterBar from "./SearchFilterBar";
+import { toast } from "react-toastify";
+import { useGetTrainingProgramsQuery } from "../../features/api/adminEndpoints";
 
 const ProgramsTab = () => {
   const [selectedProgram, setSelectedProgram] = useState(null);
@@ -21,150 +15,65 @@ const ProgramsTab = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterDate, setFilterDate] = useState("");
+
+  // Server-side pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(3);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Sample data (reverted from RTK Query)
-  const programsData = [
-    {
-      id: 1,
-      name: "Advanced Combat Training",
-      duration: "5 days",
-      instructor: "Col. Santos",
-      participants: "25/30",
-      status: "Ongoing",
-      startDate: "2024-01-15",
-      endDate: "2024-01-20",
-      time: "08:00",
-      venue: "Training Ground A",
-      additionalDetails:
-        "Comprehensive combat training program for advanced personnel.",
-    },
-    {
-      id: 2,
-      name: "Leadership Development",
-      duration: "1 week",
-      instructor: "Maj. Rodriguez",
-      participants: "15/20",
-      status: "Scheduled",
-      startDate: "2024-02-01",
-      endDate: "2024-02-05",
-      time: "09:00",
-      venue: "Conference Hall B",
-      additionalDetails: "Leadership skills development for senior officers.",
-    },
-    {
-      id: 3,
-      name: "Basic Training Course",
-      duration: "12 weeks",
-      instructor: "Sgt. Johnson",
-      participants: "40/50",
-      status: "Completed",
-      startDate: "2023-10-01",
-      endDate: "2023-12-20",
-      time: "07:00",
-      venue: "Training Center",
-      additionalDetails: "Basic military training for new recruits.",
-    },
-    {
-      id: 4,
-      name: "Tactical Operations",
-      duration: "2 weeks",
-      instructor: "Capt. Martinez",
-      participants: "30/35",
-      status: "Scheduled",
-      startDate: "2024-03-01",
-      endDate: "2024-03-14",
-      time: "06:00",
-      venue: "Field Training Area",
-      additionalDetails: "Advanced tactical operations training.",
-    },
-    {
-      id: 5,
-      name: "Communication Skills",
-      duration: "3 days",
-      instructor: "Lt. Thompson",
-      participants: "20/25",
-      status: "Ongoing",
-      startDate: "2024-01-25",
-      endDate: "2024-01-27",
-      time: "10:00",
-      venue: "Classroom C",
-      additionalDetails: "Effective communication and reporting skills.",
-    },
-  ];
+  // Fetch via RTK Query
+  const { data, error, isLoading, refetch } = useGetTrainingProgramsQuery({
+    page: currentPage,
+    limit: itemsPerPage,
+    search: searchTerm,
+    status: filterStatus,
+  });
 
-  // Get unique statuses for filter dropdown
-  const uniqueStatuses = useMemo(() => {
-    const statuses = [
-      ...new Set(programsData.map((program) => program.status)),
-    ];
-    return statuses.sort();
-  }, [programsData]);
+  const programs = useMemo(() => {
+    const source = data?.programs || [];
+    return source.map((p) => ({
+      id: p.id || p._id,
+      name: p.programName,
+      duration:
+        typeof p.duration === "number" ? `${p.duration} days` : p.duration,
+      instructor: p.instructor,
+      participants: p.currentEnrollment ?? 0,
+      status: p.status,
+      startDate: p.startDate,
+      endDate: p.endDate,
+      venue: p.venue,
+    }));
+  }, [data]);
 
-  // Filter data based on search, filter, and date
-  const filteredPrograms = useMemo(() => {
-    console.log("Filtering with:", { searchTerm, filterStatus, filterDate });
+  const pagination = data?.pagination || {
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: programs.length,
+    itemsPerPage,
+  };
 
-    return programsData.filter((program) => {
-      // Search filter - search in name, instructor, and status
-      let searchMatch = false;
-      if (searchTerm === "") {
-        searchMatch = true; // No search term means show all
-      } else {
-        searchMatch =
-          program.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          program.instructor.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          program.status.toLowerCase().includes(searchTerm.toLowerCase());
-      }
+  useEffect(() => {
+    // Keep local itemsPerPage aligned with server value if provided
+    if (pagination?.itemsPerPage) setItemsPerPage(pagination.itemsPerPage);
+  }, [pagination?.itemsPerPage]);
 
-      // Status filter
-      const statusMatch =
-        filterStatus === "" || program.status === filterStatus;
-
-      // Date filter - for now, we'll filter by participants (as a proxy for activity)
-      // In a real app, you'd have actual program dates
-      const dateMatch = filterDate === "" || true; // Placeholder for date filtering
-
-      // ALL conditions must be true for the record to show
-      const shouldShow = searchMatch && statusMatch && dateMatch;
-
-      console.log(
-        `Program "${program.name}": searchMatch=${searchMatch}, statusMatch=${statusMatch}, dateMatch=${dateMatch}, shouldShow=${shouldShow}`
-      );
-
-      return shouldShow;
-    });
-  }, [searchTerm, filterStatus, filterDate, programsData]);
-
-  // Pagination logic
-  const totalPages = Math.ceil(filteredPrograms.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentPrograms = filteredPrograms.slice(startIndex, endIndex);
-
-  // Reset to first page when filters change
+  // Filters: reset to page 1 and refetch
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filterStatus, filterDate]);
+  }, [searchTerm, filterStatus]);
+
+  const uniqueStatuses = useMemo(() => {
+    const statuses = [...new Set(programs.map((program) => program.status))];
+    return statuses.sort();
+  }, [programs]);
 
   const handleViewDetails = (program) => {
     setSelectedProgram(program);
     setModalOpen(true);
   };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const handleFilterChange = (e) => {
-    setFilterStatus(e.target.value);
-  };
-
-  const handleDateChange = (e) => {
-    setFilterDate(e.target.value);
-  };
-
+  const handleSearchChange = (e) => setSearchTerm(e.target.value);
+  const handleFilterChange = (e) => setFilterStatus(e.target.value);
+  const handleDateChange = (e) => setFilterDate(e.target.value);
   const clearFilters = () => {
     setSearchTerm("");
     setFilterStatus("");
@@ -172,26 +81,14 @@ const ProgramsTab = () => {
   };
 
   const goToPage = (page) => {
-    setCurrentPage(page);
+    if (page >= 1 && page <= (pagination.totalPages || 1)) setCurrentPage(page);
   };
+  const goToNextPage = () => goToPage((pagination.currentPage || 1) + 1);
+  const goToPreviousPage = () => goToPage((pagination.currentPage || 1) - 1);
 
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleAddProgram = (newProgram) => {
-    // In a real app, this would make an API call to add the program
-    console.log("Adding new program:", newProgram);
-    // For now, we'll just show an alert
-    alert("Program added successfully!");
+  const handleAddProgram = () => {
+    // After creation, refresh current filtered page
+    refetch();
   };
 
   return (
@@ -211,8 +108,6 @@ const ProgramsTab = () => {
         />
       </div>
       <div className="flex flex-col gap-6 ">
-        {/* Add New Program Button */}
-        <div className="flex justify-start items-center"></div>
         {/* Filter Controls */}
         <SearchFilterBar
           searchTerm={searchTerm}
@@ -222,52 +117,73 @@ const ProgramsTab = () => {
           onFilterChange={handleFilterChange}
           onDateChange={handleDateChange}
           onClearFilters={clearFilters}
-          statusOptions={uniqueStatuses}
+          statusOptions={[
+            { value: "upcoming", label: "Upcoming" },
+            { value: "available", label: "Available" },
+            { value: "ongoing", label: "Ongoing" },
+            { value: "completed", label: "Completed" },
+            { value: "cancelled", label: "Cancelled" },
+          ]}
           searchPlaceholder="Search program name, instructor, or status"
         />
 
+        {/* Loading / Error */}
+        {isLoading && (
+          <div className="text-sm text-gray-600">Loading programs...</div>
+        )}
+        {error && !isLoading && (
+          <div className="text-sm text-red-600">Failed to load programs</div>
+        )}
+
         {/* Programs Table */}
-        <ProgramsTable
-          programs={currentPrograms}
-          onViewDetails={handleViewDetails}
-        />
+        {!isLoading && (
+          <ProgramsTable
+            programs={programs}
+            onViewDetails={handleViewDetails}
+          />
+        )}
 
         {/* Results Summary and Pagination */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 sm:mt-4">
-          {/* Page Indicator - Always show */}
+          {/* Page Indicator */}
           <div className="text-xs sm:text-sm text-gray-600">
-            Showing page {currentPage} of {totalPages} (
-            {filteredPrograms.length} records)
+            Showing page {pagination.currentPage || 1} of{" "}
+            {pagination.totalPages || 1} ({pagination.totalItems || 0} records)
           </div>
 
-          {/* Pagination Controls - Only show when multiple pages */}
-          {totalPages > 1 && (
+          {/* Pagination Controls */}
+          {(pagination.totalPages || 1) > 1 && (
             <div className="join">
               <button
                 onClick={goToPreviousPage}
-                disabled={currentPage === 1}
+                disabled={(pagination.currentPage || 1) === 1}
                 className="join-item btn btn-sm btn-outline"
               >
                 Previous
               </button>
 
-              {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-                (page) => (
-                  <button
-                    key={page}
-                    onClick={() => goToPage(page)}
-                    className={`join-item btn btn-sm ${
-                      currentPage === page ? "btn-primary" : "btn-outline"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                )
-              )}
+              {Array.from(
+                { length: pagination.totalPages || 1 },
+                (_, index) => index + 1
+              ).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => goToPage(page)}
+                  className={`join-item btn btn-sm ${
+                    (pagination.currentPage || 1) === page
+                      ? "btn-primary"
+                      : "btn-outline"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
 
               <button
                 onClick={goToNextPage}
-                disabled={currentPage === totalPages}
+                disabled={
+                  (pagination.currentPage || 1) === (pagination.totalPages || 1)
+                }
                 className="join-item btn btn-sm btn-outline"
               >
                 Next
