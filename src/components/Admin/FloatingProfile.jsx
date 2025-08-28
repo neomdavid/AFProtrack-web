@@ -58,6 +58,8 @@ const FloatingProfile = ({ isSticky, onOpenProfileModal }) => {
   // Format role for display
   const getFormattedRole = () => {
     if (!user?.role) return "User";
+    if (user.role === "admin") return "Admin";
+    if (user.role === "training_staff") return "Training Staff";
     return user.role
       .split("_")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))

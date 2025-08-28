@@ -38,6 +38,17 @@ const MobileProfileDropdown = ({ onOpenProfileModal }) => {
     setIsDropdownOpen(false);
   };
 
+  // Format role for display
+  const getFormattedRole = () => {
+    if (!user?.role) return "User";
+    if (user.role === "admin") return "Admin";
+    if (user.role === "training_staff") return "Training Staff";
+    return user.role
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       <div
@@ -63,7 +74,7 @@ const MobileProfileDropdown = ({ onOpenProfileModal }) => {
                 <p className="text-sm font-medium text-gray-900">
                   {user?.fullName || 'User'}
                 </p>
-                <p className="text-xs text-gray-500">{user?.role || 'User'} Access</p>
+                <p className="text-xs text-gray-500">{getFormattedRole()}</p>
               </div>
             </div>
           </div>

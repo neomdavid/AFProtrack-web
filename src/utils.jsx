@@ -9,22 +9,22 @@ import {
 const adminLinks = [
   {
     name: "Dashboard",
-    path: "dashboard",
+    path: "/admin/dashboard",
     icon: <CheckerboardIcon size={17} />,
   },
   {
     name: "Training Data Overview",
-    path: "training_data_overview",
+    path: "/admin/training_data_overview",
     icon: <PresentationChartIcon size={17} />,
   },
   {
     name: "Account Management",
-    path: "accounts",
+    path: "/admin/accounts",
     icon: <UsersIcon size={17} />,
   },
   {
     name: "Account Confirmation",
-    path: "account_confirmation",
+    path: "/admin/account_confirmation",
     icon: <CheckCircleIcon size={17} />,
     requiredPermission: "canApproveUsers", // Add permission requirement
   },
