@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { TrashIcon } from "@phosphor-icons/react";
+import { useGetActiveUserByIdQuery } from "../../features/api/adminEndpoints";
 
 const AccessCard = ({ person }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -18,6 +19,28 @@ const AccessCard = ({ person }) => {
     alert("Archiving account...");
   };
 
+  const { data: userDetails } = useGetActiveUserByIdQuery(person.id, {
+    skip: !isModalOpen,
+  });
+
+  // Normalize response: API may return the user object directly or as data.users[]
+  const rawUsers = Array.isArray(userDetails?.users) ? userDetails.users : null;
+  const details = rawUsers
+    ? rawUsers.find((u) => (u.id || u._id) === person.id) || {}
+    : userDetails || {};
+  const fullName = details.fullName || person.name;
+  const avatar = details.avatar || person.avatar;
+  const afpId = details.serviceId || person.afpId;
+  const email = details.email || person.email;
+  const unit = details.unit || person.unit;
+  const branch = details.branchOfService || person.branchOfService;
+  const division = details.division || "";
+  const rank = details.rank || "";
+  const address = details.address || "";
+  const contactNumber = details.contactNumber || "";
+  const dateOfBirth = details.dateOfBirth || "";
+  const role = details.role || "";
+
   return (
     <>
       <div
@@ -26,15 +49,13 @@ const AccessCard = ({ person }) => {
       >
         <div className="flex items-start gap-3">
           <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg flex-shrink-0">
-            {person.avatar}
+            {avatar}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-gray-800 truncate">
-              {person.name}
-            </p>
-            <p className="text-sm text-gray-600 truncate">{person.afpId}</p>
-            <p className="text-sm text-gray-600 truncate">{person.email}</p>
-            <p className="text-xs text-gray-500 truncate">{person.unit}</p>
+            <p className="font-semibold text-gray-800 truncate">{fullName}</p>
+            <p className="text-sm text-gray-600 truncate">{afpId}</p>
+            <p className="text-sm text-gray-600 truncate">{email}</p>
+            <p className="text-xs text-gray-500 truncate">{unit}</p>
           </div>
         </div>
       </div>
@@ -69,19 +90,19 @@ const AccessCard = ({ person }) => {
           <div className="flex flex-col items-center text-center space-y-1">
             {/* Avatar */}
             <div className="w-24 h-24 bg-primary text-white rounded-full flex mb-3 items-center justify-center text-3xl font-bold">
-              {person.avatar}
+              {avatar}
             </div>
 
             {/* AFP ID */}
-            <p className="text-sm text-primary font-bold">{person.afpId}</p>
+            <p className="text-sm text-primary font-bold">{afpId}</p>
             {/* Rank */}
-            <p className="text-md text-black font">Lieutenant</p>
+            <p className="text-md text-black font">{rank}</p>
 
             {/* Name */}
-            <h3 className="font-bold text-2xl text-black">{person.name}</h3>
+            <h3 className="font-bold text-2xl text-black">{fullName}</h3>
 
             {/* Email */}
-            <p className="text-sm text-gray">{person.email}</p>
+            <p className="text-sm text-gray">{email}</p>
 
             {/* Status and Archive Container */}
             <div className="flex justify-between items-center w-full mt-6">
@@ -117,43 +138,39 @@ const AccessCard = ({ person }) => {
                 <span className="text-sm font-semibold text-gray/90">
                   Unit:
                 </span>
-                <span className="text-black text-[15px]">{person.unit}</span>
+                <span className="text-black text-[15px]">{unit}</span>
               </div>
               <div className="flex gap-2 items-center">
                 <span className="text-sm font-semibold text-gray/90">
                   Branch of Service:
                 </span>
-                <span className="text-black text-[15px]">
-                  {person.branchOfService}
-                </span>
+                <span className="text-black text-[15px]">{branch}</span>
               </div>
               <div className="flex gap-2 items-center">
                 <span className="text-sm font-semibold text-gray/90">
                   Division:
                 </span>
-                <span className="text-black text-[15px]">
-                  1st Infantry Division
-                </span>
+                <span className="text-black text-[15px]">{division}</span>
               </div>
               <div className="flex gap-2 items-center">
                 <span className="text-sm font-semibold text-gray/90">
                   Date of Birth:
                 </span>
-                <span className="text-black text-[15px]">January 15, 1990</span>
+                <span className="text-black text-[15px]">
+                  {dateOfBirth && new Date(dateOfBirth).toLocaleDateString()}
+                </span>
               </div>
               <div className="flex gap-2 items-center">
                 <span className="text-sm font-semibold text-gray/90">
                   Phone:
                 </span>
-                <span className="text-black text-[15px]">+63 912 345 6789</span>
+                <span className="text-black text-[15px]">{contactNumber}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-sm font-semibold text-gray/90 mb-1">
                   Address:
                 </span>
-                <span className="text-black text-[15px]">
-                  123 Military Ave, Camp Aguinaldo, Quezon City
-                </span>
+                <span className="text-black text-[15px]">{address}</span>
               </div>
             </div>
           </div>

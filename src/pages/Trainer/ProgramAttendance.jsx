@@ -12,6 +12,7 @@ import {
   useGetDayAttendanceByDateQuery,
   useGetSessionMetaByDateQuery,
   useRecordTraineeAttendanceMutation,
+  useUpdateSessionMetaMutation,
 } from "../../features/api/adminEndpoints";
 import { skipToken } from "@reduxjs/toolkit/query";
 
@@ -146,9 +147,13 @@ const ProgramAttendance = () => {
     return counts;
   }, [dayAttendanceApi, dayAttendance]);
 
-  // Completion state: mark a day as completed/locked with reason
+  // Completion state: prefer backend meta.completed; fallback to local state
   const [completedDays, setCompletedDays] = useState({}); // { [dateKey]: { completed: true, reason, at } }
-  const isDayCompleted = !!completedDays[selectedKey]?.completed;
+  const apiCompleted = sessionMetaApi?.completed;
+  const isDayCompleted =
+    typeof apiCompleted === "boolean"
+      ? apiCompleted
+      : !!completedDays[selectedKey]?.completed;
 
   // Deadline edit modal state
   const [showDeadlineModal, setShowDeadlineModal] = useState(false);
@@ -206,34 +211,80 @@ const ProgramAttendance = () => {
     setSearchParams({ date: dateKey });
   };
 
-  const handleStartTimeChange = (e) => {
+  const [updateSessionMetaMutation] = useUpdateSessionMetaMutation();
+  const handleStartTimeChange = async (e) => {
+    const value = e.target.value;
     setSessionMeta((p) => ({
       ...p,
       [selectedKey]: {
         ...(p[selectedKey] || {}),
-        startTime: e.target.value,
+        startTime: value,
       },
     }));
+    if (programId && selectedKey) {
+      try {
+        await updateSessionMetaMutation({
+          programId,
+          date: selectedKey,
+          startTime: value,
+          endTime: dayEndTime,
+          status: dayStatus,
+          reason: dayMeta.reason,
+        }).unwrap();
+      } catch (err) {
+        console.error("Failed updating startTime", err);
+      }
+    }
   };
 
-  const handleEndTimeChange = (e) => {
+  const handleEndTimeChange = async (e) => {
+    const value = e.target.value;
     setSessionMeta((p) => ({
       ...p,
       [selectedKey]: {
         ...(p[selectedKey] || {}),
-        endTime: e.target.value,
+        endTime: value,
       },
     }));
+    if (programId && selectedKey) {
+      try {
+        await updateSessionMetaMutation({
+          programId,
+          date: selectedKey,
+          startTime: dayStartTime,
+          endTime: value,
+          status: dayStatus,
+          reason: dayMeta.reason,
+        }).unwrap();
+      } catch (err) {
+        console.error("Failed updating endTime", err);
+      }
+    }
   };
 
-  const handleStatusChange = (e) => {
+  const handleStatusChange = async (e) => {
+    const value = e.target.value;
     setSessionMeta((p) => ({
       ...p,
       [selectedKey]: {
         ...(p[selectedKey] || {}),
-        status: e.target.value,
+        status: value,
       },
     }));
+    if (programId && selectedKey) {
+      try {
+        await updateSessionMetaMutation({
+          programId,
+          date: selectedKey,
+          startTime: dayStartTime,
+          endTime: dayEndTime,
+          status: value,
+          reason: dayMeta.reason,
+        }).unwrap();
+      } catch (err) {
+        console.error("Failed updating status", err);
+      }
+    }
   };
 
   const handleToggleEditTimes = () => {
@@ -292,7 +343,7 @@ const ProgramAttendance = () => {
     setCompleteReason("");
   };
 
-  const handleCancelDay = (reason) => {
+  const handleCancelDay = async (reason) => {
     setSessionMeta((p) => ({
       ...p,
       [selectedKey]: {
@@ -302,9 +353,23 @@ const ProgramAttendance = () => {
         cancelledAt: new Date().toISOString(),
       },
     }));
+    if (programId && selectedKey) {
+      try {
+        await updateSessionMetaMutation({
+          programId,
+          date: selectedKey,
+          startTime: dayStartTime,
+          endTime: dayEndTime,
+          status: "cancelled",
+          reason,
+        }).unwrap();
+      } catch (err) {
+        console.error("Failed cancelling day", err);
+      }
+    }
   };
 
-  const handleUncancelDay = () => {
+  const handleUncancelDay = async () => {
     setSessionMeta((p) => ({
       ...p,
       [selectedKey]: {
@@ -314,6 +379,20 @@ const ProgramAttendance = () => {
         cancelledAt: undefined,
       },
     }));
+    if (programId && selectedKey) {
+      try {
+        await updateSessionMetaMutation({
+          programId,
+          date: selectedKey,
+          startTime: dayStartTime,
+          endTime: dayEndTime,
+          status: "active",
+          reason: undefined,
+        }).unwrap();
+      } catch (err) {
+        console.error("Failed reactivating day", err);
+      }
+    }
   };
 
   return (

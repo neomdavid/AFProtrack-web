@@ -63,6 +63,32 @@ export const adminApi = apiSlice.injectEndpoints({
       },
       providesTags: [{ type: "User", id: "ALL_USERS" }],
     }),
+
+    // Active users by roles (supports multiple role params)
+    getActiveUsers: builder.query({
+      query: ({ roles = [], page = 1, limit = 100 } = {}) => {
+        const params = new URLSearchParams();
+        params.set("page", String(page));
+        params.set("limit", String(limit));
+        roles.forEach((r) => params.append("role", r));
+        return {
+          url: `/users/active?${params.toString()}`,
+          method: "GET",
+        };
+      },
+      transformResponse: (response) => response?.data || response,
+      providesTags: [{ type: "User", id: "ACTIVE_USERS" }],
+    }),
+
+    // Active user details by id (same route with id param)
+    getActiveUserById: builder.query({
+      query: (userId) => ({
+        url: `/users/active?id=${userId}`,
+        method: "GET",
+      }),
+      transformResponse: (response) => response?.data || response,
+      providesTags: (result, error, arg) => [{ type: "User", id: arg }],
+    }),
     approveUser: builder.mutation({
       query: (userId) => ({
         url: `/users/pending/${userId}/approve`,
@@ -173,6 +199,18 @@ export const adminApi = apiSlice.injectEndpoints({
         { type: "Program", id: `${arg.programId}-attendance-${arg.date}` },
       ],
     }),
+
+    // Update session meta (start/end time, status, reason) for a given date
+    updateSessionMeta: builder.mutation({
+      query: ({ programId, date, startTime, endTime, status, reason }) => ({
+        url: `/training-programs/${programId}/sessions/${date}/meta`,
+        method: "PUT",
+        body: { startTime, endTime, status, reason },
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Program", id: `${arg.programId}-meta-${arg.date}` },
+      ],
+    }),
   }),
   overrideExisting: true,
 });
@@ -194,4 +232,7 @@ export const {
   useGetSessionMetaByDateQuery,
   useGetDayAttendanceByDateQuery,
   useRecordTraineeAttendanceMutation,
+  useUpdateSessionMetaMutation,
+  useGetActiveUsersQuery,
+  useGetActiveUserByIdQuery,
 } = adminApi;
