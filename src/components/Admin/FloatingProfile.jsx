@@ -42,16 +42,26 @@ const FloatingProfile = ({ isSticky, onOpenProfileModal }) => {
 
   // Get user's rank/prefix from serviceId or use default
   const getUserRank = () => {
-    if (user?.role === 'admin') return 'System';
-    if (user?.role === 'trainer') return 'Lt.';
-    return 'User';
+    if (user?.role === "admin") return "System";
+    if (user?.role === "trainer") return "Lt.";
+    return "User";
   };
 
   // Get display name
   const getDisplayName = () => {
     if (user?.fullName) return user.fullName;
-    if (user?.firstName && user?.lastName) return `${user.firstName} ${user.lastName}`;
-    return 'User';
+    if (user?.firstName && user?.lastName)
+      return `${user.firstName} ${user.lastName}`;
+    return "User";
+  };
+
+  // Format role for display
+  const getFormattedRole = () => {
+    if (!user?.role) return "User";
+    return user.role
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
 
   return (
@@ -74,7 +84,9 @@ ${
             <p className="text-sm flex font-light">{getDisplayName()}</p>
             <div className="flex items-center gap-0.5 text-success-content text-xs bg-base-success px-2 py-1 ml-[-3px] border border-success-content rounded-2xl">
               <ShieldIcon size={13} weight="bold" />
-              <p className="mb-[-2px] text-[11px] capitalize">{user?.role || 'User'} Access</p>
+              <p className="mb-[-2px] text-[11px] capitalize">
+                {getFormattedRole()}
+              </p>
             </div>
           </div>
           <CaretDownIcon
