@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { canEditField, ROLES } from "../../utils/rolePermissions";
+import { ROLES } from "../../utils/rolePermissions";
 import { useGetTrainingProgramByIdQuery } from "../../features/api/adminEndpoints";
 
 const sampleTrainees = [
@@ -83,9 +83,9 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
     }));
   };
 
-  // Determine if field is editable based on role
+  // Determine if field is editable based on permissions
   const isFieldEditable = (fieldName) => {
-    return canEditField(user?.role, fieldName);
+    return user?.permissions?.canUpdateTrainingPrograms || false;
   };
 
   // Format date for display
@@ -174,29 +174,31 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
             </h3>
 
             {/* Program Details Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-3 text-sm">
               {/* Left Column */}
               <div className="space-y-3">
                 <div className="flex items-center">
-                  <span className="font-semibold text-gray-700 min-w-[100px]">
-                    Program ID:
+                  <span className="font-semibold text-gray min-w-[100px]">
+                    Batch:
                   </span>
                   {isEditing ? (
                     <input
                       type="text"
-                      name="id"
-                      value={editData.id || ""}
+                      name="batch"
+                      value={editData.batch || ""}
                       onChange={handleInputChange}
                       className="input input-bordered input-sm flex-1 ml-3"
-                      disabled
+                      disabled={!isFieldEditable("batch")}
                     />
                   ) : (
-                    <span className="ml-3 text-gray-600">{programData.id}</span>
+                    <span className="ml-3 text-gray-800">
+                      {programData.batch || "Not specified"}
+                    </span>
                   )}
                 </div>
 
                 <div className="flex items-center">
-                  <span className="font-semibold text-gray-700 min-w-[100px]">
+                  <span className="font-semibold text-gray min-w-[100px]">
                     Instructor:
                   </span>
                   {isEditing ? (
@@ -209,91 +211,14 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
                       disabled={!isFieldEditable("instructor")}
                     />
                   ) : (
-                    <span className="ml-3 text-gray-600">
+                    <span className="ml-3 text-gray-800">
                       {programData.instructor}
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-center">
-                  <span className="font-semibold text-gray-700 min-w-[100px]">
-                    Program Dates:
-                  </span>
-                  {isEditing ? (
-                    <div className="flex gap-2 flex-1 ml-3">
-                      <input
-                        type="date"
-                        name="startDate"
-                        value={
-                          editData.startDate
-                            ? editData.startDate.split("T")[0]
-                            : ""
-                        }
-                        onChange={handleInputChange}
-                        className="input input-bordered input-sm flex-1"
-                        disabled={!isFieldEditable("startDate")}
-                      />
-                      <span className="text-gray-400 self-center">to</span>
-                      <input
-                        type="date"
-                        name="endDate"
-                        value={
-                          editData.endDate ? editData.endDate.split("T")[0] : ""
-                        }
-                        onChange={handleInputChange}
-                        className="input input-bordered input-sm flex-1"
-                        disabled={!isFieldEditable("endDate")}
-                      />
-                    </div>
-                  ) : (
-                    <span className="ml-3 text-gray-600">
-                      {formatDateRange(
-                        programData.startDate,
-                        programData.endDate
-                      )}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex items-center">
-                  <span className="font-semibold text-gray-700 min-w-[100px]">
-                    Time:
-                  </span>
-                  {isEditing ? (
-                    <div className="flex gap-2 flex-1 ml-3">
-                      <input
-                        type="time"
-                        name="startTime"
-                        value={editData.startTime || ""}
-                        onChange={handleInputChange}
-                        className="input input-bordered input-sm flex-1"
-                        disabled={!isFieldEditable("startTime")}
-                      />
-                      <span className="text-gray-400 self-center">to</span>
-                      <input
-                        type="time"
-                        name="endTime"
-                        value={editData.endTime || ""}
-                        onChange={handleInputChange}
-                        className="input input-bordered input-sm flex-1"
-                        disabled={!isFieldEditable("endTime")}
-                      />
-                    </div>
-                  ) : (
-                    <span className="ml-3 text-gray-600">
-                      {formatTimeRange(
-                        programData.startTime,
-                        programData.endTime
-                      )}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Right Column */}
-              <div className="space-y-3">
-                <div className="flex items-center">
-                  <span className="font-semibold text-gray-700 min-w-[140px]">
+                  <span className="font-semibold text-gray min-w-[100px]">
                     Venue:
                   </span>
                   {isEditing ? (
@@ -306,34 +231,14 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
                       disabled={!isFieldEditable("venue")}
                     />
                   ) : (
-                    <span className="ml-3 text-gray-600">
+                    <span className="ml-3 text-gray-800">
                       {programData.venue || "Not specified"}
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-center">
-                  <span className="font-semibold text-gray-700 min-w-[140px]">
-                    Max Participants:
-                  </span>
-                  {isEditing ? (
-                    <input
-                      type="number"
-                      name="maxParticipants"
-                      value={editData.maxParticipants || ""}
-                      onChange={handleInputChange}
-                      className="input input-bordered input-sm flex-1 ml-3"
-                      disabled={!isFieldEditable("maxParticipants")}
-                    />
-                  ) : (
-                    <span className="ml-3 text-gray-600">
-                      {programData.maxParticipants || "Not specified"}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex items-center">
-                  <span className="font-semibold text-gray-700 min-w-[140px]">
+                  <span className="font-semibold text-gray min-w-[100px]">
                     Status:
                   </span>
                   {isEditing ? (
@@ -350,34 +255,54 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
                       <option value="cancelled">Cancelled</option>
                     </select>
                   ) : (
-                    <span className="ml-3 text-gray-600 capitalize">
-                      {programData.status || "Not specified"}
+                    <span className="ml-3">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-bold border ${
+                          programData.status === "upcoming"
+                            ? "bg-warning text-warning-content border-warning-content"
+                            : programData.status === "ongoing"
+                            ? "bg-primary text-white border-primary"
+                            : programData.status === "completed"
+                            ? "bg-success text-success-content border-success-content"
+                            : programData.status === "cancelled"
+                            ? "bg-error text-error-content border-error-content"
+                            : "bg-gray-100 text-gray-800 border-gray-300"
+                        }`}
+                      >
+                        {programData.status
+                          ? programData.status.charAt(0).toUpperCase() +
+                            programData.status.slice(1)
+                          : "Not specified"}
+                      </span>
                     </span>
                   )}
                 </div>
+              </div>
 
+              {/* Right Column */}
+              <div className="space-y-3">
                 <div className="flex items-center">
-                  <span className="font-semibold text-gray-700 min-w-[140px]">
-                    Batch:
+                  <span className="font-semibold text-gray min-w-[140px]">
+                    Max Participants:
                   </span>
                   {isEditing ? (
                     <input
-                      type="text"
-                      name="batch"
-                      value={editData.batch || ""}
+                      type="number"
+                      name="maxParticipants"
+                      value={editData.maxParticipants || ""}
                       onChange={handleInputChange}
                       className="input input-bordered input-sm flex-1 ml-3"
-                      disabled={!isFieldEditable("batch")}
+                      disabled={!isFieldEditable("maxParticipants")}
                     />
                   ) : (
-                    <span className="ml-3 text-gray-600">
-                      {programData.batch || "Not specified"}
+                    <span className="ml-3 text-gray-800">
+                      {programData.maxParticipants || "Not specified"}
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-center">
-                  <span className="font-semibold text-gray-700 min-w-[140px]">
+                  <span className="font-semibold text-gray min-w-[140px]">
                     Enrollment Period:
                   </span>
                   {isEditing ? (
@@ -409,7 +334,7 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
                       />
                     </div>
                   ) : (
-                    <span className="ml-3 text-gray-600">
+                    <span className="ml-3 text-gray-800">
                       {formatDateRange(
                         programData.enrollmentStartDate,
                         programData.enrollmentEndDate
@@ -417,37 +342,86 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
                     </span>
                   )}
                 </div>
-              </div>
-            </div>
 
-            {/* Additional Details - Full Width */}
-            {programData.additionalDetails && (
-              <div className="mt-4">
-                <div className="flex items-start">
-                  <span className="font-semibold text-gray-700 min-w-[140px] mt-2">
-                    Additional Details:
+                <div className="flex items-center">
+                  <span className="font-semibold text-gray min-w-[140px]">
+                    Time:
                   </span>
                   {isEditing ? (
-                    <textarea
-                      name="additionalDetails"
-                      value={editData.additionalDetails || ""}
-                      onChange={handleInputChange}
-                      className="textarea textarea-bordered flex-1 ml-3"
-                      rows="3"
-                      disabled={!isFieldEditable("additionalDetails")}
-                    />
+                    <div className="flex gap-2 flex-1 ml-3">
+                      <input
+                        type="time"
+                        name="startTime"
+                        value={editData.startTime || ""}
+                        onChange={handleInputChange}
+                        className="input input-bordered input-sm flex-1"
+                        disabled={!isFieldEditable("startTime")}
+                      />
+                      <span className="text-gray-400 self-center">to</span>
+                      <input
+                        type="time"
+                        name="endTime"
+                        value={editData.endTime || ""}
+                        onChange={handleInputChange}
+                        className="input input-bordered input-sm flex-1"
+                        disabled={!isFieldEditable("endTime")}
+                      />
+                    </div>
                   ) : (
-                    <span className="ml-3 text-gray-600 mt-2">
-                      {programData.additionalDetails}
+                    <span className="ml-3 text-gray-800">
+                      {formatTimeRange(
+                        programData.startTime,
+                        programData.endTime
+                      )}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center">
+                  <span className="font-semibold text-gray min-w-[140px]">
+                    Program Dates:
+                  </span>
+                  {isEditing ? (
+                    <div className="flex gap-2 flex-1 ml-3">
+                      <input
+                        type="date"
+                        name="startDate"
+                        value={
+                          editData.startDate
+                            ? editData.startDate.split("T")[0]
+                            : ""
+                        }
+                        onChange={handleInputChange}
+                        className="input input-bordered input-sm flex-1"
+                        disabled={!isFieldEditable("startDate")}
+                      />
+                      <span className="text-gray-400 self-center">to</span>
+                      <input
+                        type="date"
+                        name="endDate"
+                        value={
+                          editData.endDate ? editData.endDate.split("T")[0] : ""
+                        }
+                        onChange={handleInputChange}
+                        className="input input-bordered input-sm flex-1"
+                        disabled={!isFieldEditable("endDate")}
+                      />
+                    </div>
+                  ) : (
+                    <span className="ml-3 text-gray-800">
+                      {formatDateRange(
+                        programData.startDate,
+                        programData.endDate
+                      )}
                     </span>
                   )}
                 </div>
               </div>
-            )}
+            </div>
           </div>
 
           <div className="flex items-center gap-2 ml-6">
-            {!isEditing && (isAdmin || isTrainingStaff) && (
+            {!isEditing && user?.permissions?.canUpdateTrainingPrograms && (
               <button
                 onClick={handleEditClick}
                 className="btn btn-primary btn-sm"
@@ -471,14 +445,14 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
           </div>
         </div>
 
-        {/* Role-based notice when editing */}
+        {/* Permission-based notice when editing */}
         {isEditing && (
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-700">
-              {isAdmin
-                ? "You have full editing permissions as an administrator."
-                : isTrainingStaff
-                ? "As training staff, you can only edit instructor, venue, time, and additional details."
+              {user?.permissions?.canUpdateTrainingPrograms
+                ? isAdmin
+                  ? "You have full editing permissions as an administrator."
+                  : "You have editing permissions for this training program."
                 : "You have limited editing permissions."}
             </p>
           </div>

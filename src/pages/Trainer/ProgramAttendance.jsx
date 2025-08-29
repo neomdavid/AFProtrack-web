@@ -61,14 +61,6 @@ const ProgramAttendance = () => {
     return dateStr;
   };
 
-  // Helper to compensate for backend's 1-day difference bug
-  // When sending dates to backend, add 1 day to compensate for their timezone issue
-  const adjustDateForBackend = (dateStr) => {
-    const date = new Date(dateStr);
-    date.setDate(date.getDate() + 1);
-    return date.toISOString().slice(0, 10) + "T00:00:00.000Z";
-  };
-
   const getDateRange = (start, end) => {
     if (!start || !end) return [];
     const days = [];
@@ -207,12 +199,10 @@ const ProgramAttendance = () => {
   const updateAttendance = async (traineeId, patch) => {
     if (!selectedKey || !programId || !patch?.status) return;
     try {
-      const adjustedDate = adjustDateForBackend(selectedKey);
-
       await recordAttendance({
         programId,
         traineeId,
-        date: adjustedDate,
+        date: selectedKey,
         status: patch.status,
         remarks: patch.remarks || "",
       }).unwrap();
@@ -298,11 +288,9 @@ const ProgramAttendance = () => {
     const value = e.target.value;
     if (programId && selectedKey) {
       try {
-        const adjustedDate = adjustDateForBackend(selectedKey);
-
         await updateSessionMetaMutation({
           programId,
-          date: adjustedDate,
+          date: selectedKey,
           startTime: value,
           endTime: dayEndTime,
           status: dayStatus,
@@ -318,11 +306,9 @@ const ProgramAttendance = () => {
     const value = e.target.value;
     if (programId && selectedKey) {
       try {
-        const adjustedDate = adjustDateForBackend(selectedKey);
-
         await updateSessionMetaMutation({
           programId,
-          date: adjustedDate,
+          date: selectedKey,
           startTime: dayStartTime,
           endTime: value,
           status: dayStatus,
@@ -338,11 +324,9 @@ const ProgramAttendance = () => {
     const value = e.target.value;
     if (programId && selectedKey) {
       try {
-        const adjustedDate = adjustDateForBackend(selectedKey);
-
         await updateSessionMetaMutation({
           programId,
-          date: adjustedDate,
+          date: selectedKey,
           startTime: dayStartTime,
           endTime: dayEndTime,
           status: value,
@@ -368,11 +352,9 @@ const ProgramAttendance = () => {
   const handleReopenDay = async () => {
     if (!selectedKey || !programId) return;
     try {
-      const adjustedDate = adjustDateForBackend(selectedKey);
-
       await reopenCompletedDay({
         programId,
-        date: adjustedDate,
+        date: selectedKey,
       }).unwrap();
     } catch (e) {
       console.error("Failed to reopen day", e);
@@ -409,11 +391,9 @@ const ProgramAttendance = () => {
   const handleCompleteDay = async () => {
     if (!selectedKey || !programId || !completeReason.trim()) return;
     try {
-      const adjustedDate = adjustDateForBackend(selectedKey);
-
       await markDayCompleted({
         programId,
-        date: adjustedDate,
+        date: selectedKey,
         reason: completeReason,
       }).unwrap();
       setShowCompleteModal(false);
@@ -426,11 +406,9 @@ const ProgramAttendance = () => {
   const handleCancelDay = async (reason) => {
     if (programId && selectedKey) {
       try {
-        const adjustedDate = adjustDateForBackend(selectedKey);
-
         await updateSessionMetaMutation({
           programId,
-          date: adjustedDate,
+          date: selectedKey,
           startTime: dayStartTime,
           endTime: dayEndTime,
           status: "cancelled",
@@ -445,11 +423,9 @@ const ProgramAttendance = () => {
   const handleUncancelDay = async () => {
     if (programId && selectedKey) {
       try {
-        const adjustedDate = adjustDateForBackend(selectedKey);
-
         await updateSessionMetaMutation({
           programId,
-          date: adjustedDate,
+          date: selectedKey,
           startTime: dayStartTime,
           endTime: dayEndTime,
           status: "active",
