@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { WarningIcon } from "@phosphor-icons/react";
+import { WarningIcon, EyeIcon, EyeSlashIcon } from "@phosphor-icons/react";
 import { toast } from "react-toastify";
+import { useAuth } from "../../hooks/useAuth";
+import config from "../../config/env";
 
 const AccountActionConfirmModal = ({
   isOpen,
@@ -11,25 +13,22 @@ const AccountActionConfirmModal = ({
   accountStatus,
   serviceId,
 }) => {
-  const [confirmationText, setConfirmationText] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // Extract last name and last 3 digits of service ID
-  const lastName = accountName?.split(" ").slice(-1)[0] || "";
-  const lastThreeDigits = serviceId?.slice(-3) || "";
-  const expectedConfirmation =
-    `${lastName}/${lastThreeDigits}/${action}`.toLowerCase();
+  const { user } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!confirmationText.trim()) {
-      setError("Confirmation text is required");
+    if (!password.trim()) {
+      setError("Password is required");
       return;
     }
 
-    if (confirmationText.toLowerCase() !== expectedConfirmation) {
-      setError("Text does not match. Please check your input.");
+    const token = localStorage.getItem("afprotrack_token");
+    if (!token) {
+      setError("Authentication token not found. Please log in again.");
       return;
     }
 
@@ -37,7 +36,32 @@ const AccountActionConfirmModal = ({
     setError("");
 
     try {
+      // Verify password first
+      const response = await fetch(
+        `${config.api.baseUrl}/users/verify-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ password }),
+        }
+      );
+
+      const data = await response.json();
+
+      // Debug logging (keep minimal for troubleshooting)
+      console.log("Password verification response:", data);
+
+      if (!data.success) {
+        setError("Invalid password. Please try again.");
+        return;
+      }
+
+      // Password verified, proceed with action
       await onConfirm();
+
       // Show success toast
       toast.success(`Successfully ${action}d ${accountName}'s account!`, {
         position: "top-center",
@@ -49,14 +73,19 @@ const AccountActionConfirmModal = ({
       });
       handleClose();
     } catch (err) {
-      setError("Action failed. Please try again.");
+      console.error("Password verification error:", err);
+      if (err.name === "TypeError" && err.message.includes("fetch")) {
+        setError("Network error. Please check your connection and try again.");
+      } else {
+        setError(`Action failed: ${err.message}. Please try again.`);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleClose = () => {
-    setConfirmationText("");
+    setPassword("");
     setError("");
     setIsLoading(false);
     onClose();
@@ -122,29 +151,39 @@ const AccountActionConfirmModal = ({
           )}
         </div>
 
-        {/* Confirmation Form */}
+        {/* Password Verification Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label
-              htmlFor="confirmationText"
+              htmlFor="password"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Type{" "}
-              <span className="font-mono font-bold text-primary">
-                {lastName}/{lastThreeDigits}/{action}
-              </span>{" "}
-              to proceed
+              Enter your password to confirm this action
             </label>
-            <input
-              type="text"
-              id="confirmationText"
-              value={confirmationText}
-              onChange={(e) => setConfirmationText(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-mono"
-              placeholder={`${lastName}/${lastThreeDigits}/${action}`}
-              disabled={isLoading}
-              autoFocus
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                placeholder="Enter your password"
+                disabled={isLoading}
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                disabled={isLoading}
+              >
+                {showPassword ? (
+                  <EyeSlashIcon size={16} />
+                ) : (
+                  <EyeIcon size={16} />
+                )}
+              </button>
+            </div>
             {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
           </div>
 

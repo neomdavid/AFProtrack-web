@@ -43,12 +43,15 @@ const ProgramAttendance = () => {
     useGetTrainingProgramByIdQuery(programId);
   const [program, setProgram] = useState({
     id: programId,
-    name: "Loading…",
+    name: "",
     startDate: "",
     endDate: "",
     defaultStartTime: "",
     defaultEndTime: "",
   });
+
+  // Combined loading state for better UX
+  const isLoading = isLoadingProgram || (programData && !program.name);
 
   useEffect(() => {
     if (programData) {
@@ -568,38 +571,45 @@ const ProgramAttendance = () => {
         sessions={sessions}
         onEditEndDate={handleEditEndDate}
         onExport={handleExport}
+        isLoading={isLoading}
       />
 
-      <DayPills
-        sessions={sessions}
-        selectedKey={selectedKey}
-        onDateSelect={handleDateSelect}
-        sessionMeta={completeSessionMeta}
-      />
+      {!isLoading && (
+        <DayPills
+          sessions={sessions}
+          selectedKey={selectedKey}
+          onDateSelect={handleDateSelect}
+          sessionMeta={completeSessionMeta}
+        />
+      )}
 
-      <AttendanceSummary
-        daySummary={daySummary}
-        dayAttendance={dayAttendance}
-        totalTrainees={trainees.length}
-      />
+      {!isLoading && (
+        <AttendanceSummary
+          daySummary={daySummary}
+          dayAttendance={dayAttendance}
+          totalTrainees={trainees.length}
+        />
+      )}
 
-      <DaySettings
-        dayStartTime={dayStartTime}
-        dayEndTime={dayEndTime}
-        dayStatus={dayStatus}
-        isEditingTimes={false}
-        isDayCompleted={isDayCompleted}
-        isDayCancelled={isDayCancelled}
-        metaCancelReason={metaCancelReason}
-        onOpenTimesModal={handleOpenTimesModal}
-        onOpenStatusModal={handleOpenStatusModal}
-        onMarkDayCompleted={handleMarkDayCompleted}
-        onReopenDay={handleReopenDay}
-        onCancelDay={() => setShowCancelModal(true)}
-        onUncancelDay={() => setShowReactivateModal(true)}
-        selectedDate={selectedKey}
-        metaCompletionReason={metaCompletionReason}
-      />
+      {!isLoading && (
+        <DaySettings
+          dayStartTime={dayStartTime}
+          dayEndTime={dayEndTime}
+          dayStatus={dayStatus}
+          isEditingTimes={false}
+          isDayCompleted={isDayCompleted}
+          isDayCancelled={isDayCancelled}
+          metaCancelReason={metaCancelReason}
+          onOpenTimesModal={handleOpenTimesModal}
+          onOpenStatusModal={handleOpenStatusModal}
+          onMarkDayCompleted={handleMarkDayCompleted}
+          onReopenDay={handleReopenDay}
+          onCancelDay={() => setShowCancelModal(true)}
+          onUncancelDay={() => setShowReactivateModal(true)}
+          selectedDate={selectedKey}
+          metaCompletionReason={metaCompletionReason}
+        />
+      )}
 
       <AttendanceTable
         filteredTrainees={filteredTrainees}
@@ -611,7 +621,7 @@ const ProgramAttendance = () => {
         statusFilter={statusFilter}
         onSearchChange={setSearch}
         onStatusFilterChange={setStatusFilter}
-        isLoading={isLoadingAttendance}
+        isLoading={isLoading}
         selectedDate={selectedKey}
         programStartTime={dayStartTime}
         programEndTime={dayEndTime}

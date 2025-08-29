@@ -46,22 +46,6 @@ const WebAccessTab = () => {
   );
   const units = selectedDivisionData?.units || [];
 
-  // Debug logging to understand data structure
-  console.log("Debug - Selected Branch:", selectedBranch);
-  console.log("Debug - Branches data:", branches);
-  console.log("Debug - Selected Branch Data:", selectedBranchData);
-  console.log("Debug - Divisions:", divisions);
-  console.log("Debug - Selected Division:", selectedDivision);
-  console.log("Debug - Selected Division Data:", selectedDivisionData);
-  console.log("Debug - Units:", units);
-  if (units.length > 0) {
-    console.log("Debug - First unit structure:", units[0]);
-    console.log(
-      "Debug - All unit keys:",
-      units.map((u) => ({ key: u.label || u.code, value: u.label || u.code }))
-    );
-  }
-
   // Fetch active and inactive (accountStatus implicitly active; routes return by isActive)
   const common = {
     page: 1,
@@ -198,7 +182,11 @@ const WebAccessTab = () => {
               <p className="font-semibold text-gray">Division</p>
               <div className="relative">
                 <select
-                  className="bg-white/90 border w-70 appearance-none rounded-md border-gray-300 p-2"
+                  className={`w-70 appearance-none rounded-md border p-2 ${
+                    !selectedBranch
+                      ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                      : "bg-white/90 border-gray-300"
+                  }`}
                   value={selectedDivision}
                   onChange={(e) => handleDivisionChange(e.target.value)}
                   disabled={!selectedBranch}
@@ -223,7 +211,11 @@ const WebAccessTab = () => {
               <p className="font-semibold text-gray">Unit</p>
               <div className="relative">
                 <select
-                  className="bg-white/90 border w-70 appearance-none rounded-md border-gray-300 p-2"
+                  className={`w-70 appearance-none rounded-md border p-2 ${
+                    !selectedDivision
+                      ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                      : "bg-white/90 border-gray-300"
+                  }`}
                   value={selectedUnit}
                   onChange={(e) => setSelectedUnit(e.target.value)}
                   disabled={!selectedDivision}
@@ -300,7 +292,7 @@ const WebAccessTab = () => {
               <select
                 className="bg-white/90 border w-70 appearance-none rounded-md border-gray-300 p-2"
                 value={selectedBranch}
-                onChange={(e) => setSelectedBranch(e.target.value)}
+                onChange={(e) => handleBranchChange(e.target.value)}
               >
                 <option value="">All Branches</option>
                 {branches.map((branch) => (
@@ -322,9 +314,13 @@ const WebAccessTab = () => {
             <p className="font-semibold text-gray">Division</p>
             <div className="relative">
               <select
-                className="bg-white/90 border w-70 appearance-none rounded-md border-gray-300 p-2"
+                className={`w-70 appearance-none rounded-md border p-2 ${
+                  !selectedBranch
+                    ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                    : "bg-white/90 border-gray-300"
+                }`}
                 value={selectedDivision}
-                onChange={(e) => setSelectedDivision(e.target.value)}
+                onChange={(e) => handleDivisionChange(e.target.value)}
                 disabled={!selectedBranch}
               >
                 <option value="">All Divisions</option>
@@ -347,7 +343,11 @@ const WebAccessTab = () => {
             <p className="font-semibold text-gray">Unit</p>
             <div className="relative">
               <select
-                className="bg-white/90 border w-70 appearance-none rounded-md border-gray-300 p-2"
+                className={`w-70 appearance-none rounded-md border p-2 ${
+                  !selectedDivision
+                    ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed"
+                    : "bg-white/90 border-gray-300"
+                }`}
                 value={selectedUnit}
                 onChange={(e) => setSelectedUnit(e.target.value)}
                 disabled={!selectedDivision}

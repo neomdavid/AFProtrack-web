@@ -9,6 +9,7 @@ import {
 import { useAuth } from "../../hooks/useAuth";
 import AccountActionConfirmModal from "./AccountActionConfirmModal";
 import LoadingSpinner from "../LoadingSpinner";
+import { toast } from "react-toastify";
 
 const AccessCard = ({ person }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -64,26 +65,65 @@ const AccessCard = ({ person }) => {
   };
 
   const handleConfirmAction = async () => {
-    // Perform the action based on the confirmation
-    switch (confirmModal.action) {
-      case "archive":
-        await deleteUser(person.id).unwrap();
-        setIsModalOpen(false);
-        break;
-      case "activate":
-        await updateUserStatus({
-          userId: person.id,
-          accountStatus: "active",
-        }).unwrap();
-        break;
-      case "deactivate":
-        await updateUserStatus({
-          userId: person.id,
-          accountStatus: "inactive",
-        }).unwrap();
-        break;
-      default:
-        throw new Error("Unknown action");
+    try {
+      // Perform the action based on the confirmation
+      switch (confirmModal.action) {
+        case "archive":
+          await deleteUser(person.id).unwrap();
+          toast.success(`Successfully archived ${person.name}'s account!`, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+          setIsModalOpen(false);
+          break;
+        case "activate":
+          await updateUserStatus({
+            userId: person.id,
+            accountStatus: "active",
+          }).unwrap();
+          toast.success(`Successfully activated ${person.name}'s account!`, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+          break;
+        case "deactivate":
+          await updateUserStatus({
+            userId: person.id,
+            accountStatus: "inactive",
+          }).unwrap();
+          toast.success(`Successfully deactivated ${person.name}'s account!`, {
+            position: "top-center",
+            autoClose: 3000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+          });
+          break;
+        default:
+          throw new Error("Unknown action");
+      }
+    } catch (error) {
+      console.error("Action failed:", error);
+      toast.error(
+        `Failed to ${confirmModal.action} ${person.name}'s account. Please try again.`,
+        {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        }
+      );
     }
   };
 
@@ -96,12 +136,14 @@ const AccessCard = ({ person }) => {
   };
 
   // Fetch details depending on active/inactive
-  const { data: activeDetails, isLoading: isLoadingActive } = useGetActiveUserByIdQuery(person.id, {
-    skip: !isModalOpen || !displayActive,
-  });
-  const { data: inactiveDetails, isLoading: isLoadingInactive } = useGetInactiveUserByIdQuery(person.id, {
-    skip: !isModalOpen || displayActive,
-  });
+  const { data: activeDetails, isLoading: isLoadingActive } =
+    useGetActiveUserByIdQuery(person.id, {
+      skip: !isModalOpen || !displayActive,
+    });
+  const { data: inactiveDetails, isLoading: isLoadingInactive } =
+    useGetInactiveUserByIdQuery(person.id, {
+      skip: !isModalOpen || displayActive,
+    });
 
   const detailsSource = displayActive ? activeDetails : inactiveDetails;
   const isLoadingDetails = isLoadingActive || isLoadingInactive;
@@ -199,7 +241,7 @@ const AccessCard = ({ person }) => {
 
             {/* AFP ID */}
             <p className="text-sm text-primary font-bold">{afpId}</p>
-            
+
             {/* Rank */}
             <p className="text-md text-black font">{rank}</p>
 
@@ -303,14 +345,17 @@ const AccessCard = ({ person }) => {
                       Date of Birth:
                     </span>
                     <span className="text-black text-[15px]">
-                      {dateOfBirth && new Date(dateOfBirth).toLocaleDateString()}
+                      {dateOfBirth &&
+                        new Date(dateOfBirth).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex gap-2 items-center">
                     <span className="text-sm font-semibold text-gray/90">
                       Phone:
                     </span>
-                    <span className="text-black text-[15px]">{contactNumber}</span>
+                    <span className="text-black text-[15px]">
+                      {contactNumber}
+                    </span>
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-semibold text-gray/90 mb-1">

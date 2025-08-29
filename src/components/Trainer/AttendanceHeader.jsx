@@ -9,6 +9,7 @@ const AttendanceHeader = ({
   onEditEndDate,
   onExport,
   onSettings,
+  isLoading = false,
 }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
@@ -26,7 +27,7 @@ const AttendanceHeader = ({
           <li>
             <Link to="/admin/training_data_overview">Programs</Link>
           </li>
-          <li>{program.name}</li>
+          <li>{isLoading ? "Loading..." : program.name}</li>
           <li className="font-semibold">Attendance</li>
         </ul>
       </div>
@@ -34,9 +35,13 @@ const AttendanceHeader = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
         <div>
-          <h2 className="text-2xl font-bold">{program.name} • Attendance</h2>
+          <h2 className="text-2xl font-bold">
+            {isLoading ? "Loading..." : program.name} • Attendance
+          </h2>
           <p className="text-gray-500 text-sm">
-            {program.startDate} – {program.endDate} • {sessions.length} days
+            {isLoading
+              ? "Loading..."
+              : `${program.startDate} – ${program.endDate} • ${sessions.length} days`}
           </p>
         </div>
         <div className="flex gap-2">
