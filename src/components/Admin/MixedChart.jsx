@@ -1,26 +1,7 @@
 import { Chart } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  BarElement,
-  LineElement,
-  PointElement,
-  CategoryScale,
-  LinearScale,
-  Filler,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import { Chart as ChartJS, registerables } from "chart.js";
 
-ChartJS.register(
-  BarElement,
-  LineElement,
-  PointElement,
-  CategoryScale,
-  LinearScale,
-  Filler,
-  Tooltip,
-  Legend
-);
+ChartJS.register(...registerables);
 
 const MixedChart = ({ labels, datasets }) => {
   const data = { labels, datasets };
