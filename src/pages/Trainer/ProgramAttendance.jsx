@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { useParams, useSearchParams } from "react-router-dom";
 import AttendanceHeader from "../../components/Trainer/AttendanceHeader";
 import DayPills from "../../components/Trainer/DayPills";
@@ -7,6 +9,11 @@ import DaySettings from "../../components/Trainer/DaySettings";
 import AttendanceTable from "../../components/Trainer/AttendanceTable";
 import EditEndDateModal from "../../components/Trainer/EditEndDateModal";
 import CompleteDayModal from "../../components/Trainer/CompleteDayModal";
+import EditTimesModal from "../../components/Trainer/EditTimesModal";
+import ChangeStatusModal from "../../components/Trainer/ChangeStatusModal";
+import ReopenDayModal from "../../components/Trainer/ReopenDayModal";
+import CancelDayModal from "../../components/Trainer/CancelDayModal";
+import ReactivateDayModal from "../../components/Trainer/ReactivateDayModal";
 import {
   useGetTrainingProgramByIdQuery,
   useGetDayAttendanceByDateQuery,
@@ -237,9 +244,12 @@ const ProgramAttendance = () => {
   const metaCancelReason = dayMeta.reason || "";
   const metaCompletionReason = dayMeta.completedReason || "";
 
-  // Per-day edit state for time adjustments
-  const [editingTimes, setEditingTimes] = useState({}); // { [dateKey]: boolean }
-  const isEditingTimes = !!editingTimes[selectedKey];
+  // Times/Status modals
+  const [showTimesModal, setShowTimesModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showReopenModal, setShowReopenModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showReactivateModal, setShowReactivateModal] = useState(false);
 
   const [recordAttendance, { isLoading: isRecording }] =
     useRecordTraineeAttendanceMutation();
@@ -364,8 +374,10 @@ const ProgramAttendance = () => {
         }).unwrap();
         // eslint-disable-next-line no-console
         console.log("[Attendance] updateSessionMeta startTime success");
+        toast.success("Start time updated");
       } catch (err) {
         console.error("Failed updating startTime", err);
+        toast.error("Failed to update start time");
       }
     }
   };
@@ -393,70 +405,24 @@ const ProgramAttendance = () => {
         }).unwrap();
         // eslint-disable-next-line no-console
         console.log("[Attendance] updateSessionMeta endTime success");
+        toast.success("End time updated");
       } catch (err) {
         console.error("Failed updating endTime", err);
+        toast.error("Failed to update end time");
       }
     }
   };
 
-  const handleStatusChange = async (e) => {
-    const value = e.target.value;
-    if (programId && selectedKey) {
-      try {
-        // eslint-disable-next-line no-console
-        console.log("[Attendance] updateSessionMeta status payload", {
-          programId,
-          date: selectedKey,
-          startTime: dayStartTime,
-          endTime: dayEndTime,
-          status: value,
-          reason: dayMeta.reason,
-        });
-        await updateSessionMetaMutation({
-          programId,
-          date: selectedKey,
-          startTime: dayStartTime,
-          endTime: dayEndTime,
-          status: value,
-          reason: dayMeta.reason,
-        }).unwrap();
-        // eslint-disable-next-line no-console
-        console.log("[Attendance] updateSessionMeta status success");
-      } catch (err) {
-        console.error("Failed updating status", err);
-      }
-    }
-  };
+  const handleStatusChange = () => setShowReactivateModal(true);
 
-  const handleToggleEditTimes = () => {
-    setEditingTimes((p) => ({
-      ...p,
-      [selectedKey]: !p[selectedKey],
-    }));
-  };
+  const handleOpenTimesModal = () => setShowTimesModal(true);
+  const handleOpenStatusModal = () => setShowStatusModal(true);
 
   const handleMarkDayCompleted = () => {
     setShowCompleteModal(true);
   };
 
-  const handleReopenDay = async () => {
-    if (!selectedKey || !programId) return;
-    try {
-      // eslint-disable-next-line no-console
-      console.log("[Attendance] reopenCompletedDay payload", {
-        programId,
-        date: selectedKey,
-      });
-      await reopenCompletedDay({
-        programId,
-        date: selectedKey,
-      }).unwrap();
-      // eslint-disable-next-line no-console
-      console.log("[Attendance] reopenCompletedDay success");
-    } catch (e) {
-      console.error("Failed to reopen day", e);
-    }
-  };
+  const handleReopenDay = () => setShowReopenModal(true);
 
   const handleEditEndDate = () => {
     setNewEndDate(program.endDate || "");
@@ -487,8 +453,10 @@ const ProgramAttendance = () => {
       setShowDeadlineModal(false);
       // eslint-disable-next-line no-console
       console.log("[Attendance] updateProgramEndDate success");
+      toast.success("End date updated");
     } catch (e) {
       console.error("Failed to update end date", e);
+      toast.error("Failed to update end date");
     }
   };
 
@@ -511,8 +479,10 @@ const ProgramAttendance = () => {
       setCompleteReason("");
       // eslint-disable-next-line no-console
       console.log("[Attendance] markDayCompleted success");
+      toast.success("Day marked as completed");
     } catch (e) {
       console.error("Failed to mark day as completed", e);
+      toast.error("Failed to mark day as completed");
     }
   };
 
@@ -538,8 +508,10 @@ const ProgramAttendance = () => {
         }).unwrap();
         // eslint-disable-next-line no-console
         console.log("[Attendance] cancel day success");
+        toast.success("Day cancelled");
       } catch (err) {
         console.error("Failed cancelling day", err);
+        toast.error("Failed to cancel day");
       }
     }
   };
@@ -565,8 +537,10 @@ const ProgramAttendance = () => {
         }).unwrap();
         // eslint-disable-next-line no-console
         console.log("[Attendance] uncancel day success");
+        toast.success("Day reactivated");
       } catch (err) {
         console.error("Failed reactivating day", err);
+        toast.error("Failed to reactivate day");
       }
     }
   };
@@ -599,18 +573,16 @@ const ProgramAttendance = () => {
         dayStartTime={dayStartTime}
         dayEndTime={dayEndTime}
         dayStatus={dayStatus}
-        isEditingTimes={isEditingTimes}
+        isEditingTimes={false}
         isDayCompleted={isDayCompleted}
         isDayCancelled={isDayCancelled}
         metaCancelReason={metaCancelReason}
-        onStartTimeChange={handleStartTimeChange}
-        onEndTimeChange={handleEndTimeChange}
-        onStatusChange={handleStatusChange}
-        onToggleEditTimes={handleToggleEditTimes}
+        onOpenTimesModal={handleOpenTimesModal}
+        onOpenStatusModal={handleOpenStatusModal}
         onMarkDayCompleted={handleMarkDayCompleted}
         onReopenDay={handleReopenDay}
-        onCancelDay={handleCancelDay}
-        onUncancelDay={handleUncancelDay}
+        onCancelDay={() => setShowCancelModal(true)}
+        onUncancelDay={() => setShowReactivateModal(true)}
         selectedDate={selectedKey}
         metaCompletionReason={metaCompletionReason}
       />
@@ -658,6 +630,78 @@ const ProgramAttendance = () => {
         onReasonChange={(e) => setCompleteReason(e.target.value)}
         onConfirm={handleCompleteDay}
         selectedDate={selectedKey}
+      />
+
+      <EditTimesModal
+        isOpen={showTimesModal}
+        onClose={() => setShowTimesModal(false)}
+        startTime={dayStartTime}
+        endTime={dayEndTime}
+        onSave={async ({ startTime, endTime }) => {
+          if (!programId || !selectedKey) return;
+          try {
+            await updateSessionMetaMutation({
+              programId,
+              date: selectedKey,
+              startTime,
+              endTime,
+              status: dayStatus,
+              reason: dayMeta.reason,
+            }).unwrap();
+            setShowTimesModal(false);
+            toast.success("Times updated");
+          } catch (err) {
+            console.error("Failed updating times", err);
+            toast.error("Failed to update times");
+          }
+        }}
+      />
+
+      {/* Status modal removed in favor of toggle + dedicated cancel/reactivate modals */}
+
+      <ReopenDayModal
+        isOpen={showReopenModal}
+        onClose={() => setShowReopenModal(false)}
+        onConfirm={async () => {
+          if (!selectedKey || !programId) return;
+          try {
+            await reopenCompletedDay({ programId, date: selectedKey }).unwrap();
+            setShowReopenModal(false);
+            toast.success("Day reopened");
+          } catch (e) {
+            console.error("Failed to reopen day", e);
+            toast.error("Failed to reopen day");
+          }
+        }}
+      />
+
+      <CancelDayModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        onConfirm={async (reason) => {
+          try {
+            await handleCancelDay(reason);
+            setShowCancelModal(false);
+          } catch {}
+        }}
+      />
+
+      <ReactivateDayModal
+        isOpen={showReactivateModal}
+        onClose={() => setShowReactivateModal(false)}
+        onConfirm={async () => {
+          try {
+            await handleUncancelDay();
+            setShowReactivateModal(false);
+          } catch {}
+        }}
+      />
+      <ToastContainer
+        position="top-center"
+        newestOnTop
+        closeOnClick
+        pauseOnHover={false}
+        theme="light"
       />
     </div>
   );

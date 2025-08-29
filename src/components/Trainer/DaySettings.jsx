@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useAuth } from "../../hooks/useAuth";
 
 const DaySettings = ({
@@ -10,9 +10,8 @@ const DaySettings = ({
   isDayCancelled,
   metaCancelReason,
   metaCompletionReason,
-  onStartTimeChange,
-  onEndTimeChange,
-  onStatusChange,
+  onOpenTimesModal,
+  onOpenStatusModal,
   onToggleEditTimes,
   onMarkDayCompleted,
   onReopenDay,
@@ -31,35 +30,17 @@ const DaySettings = ({
   const canComplete = !isAdmin || canMarkDayCompleted;
   const canReopen = !isAdmin || canReopenCompletedDay;
 
-  // Local state for cancellation
-  const [showCancelInput, setShowCancelInput] = useState(false);
-  const [cancelReason, setCancelReason] = useState("");
-
-  const handleStatusChange = (e) => {
-    const newStatus = e.target.value;
-    if (newStatus === "cancelled") {
-      setShowCancelInput(true);
-      setCancelReason("");
+  // Toggle handler: open corresponding modal; actual state updates after confirm
+  const handleStatusToggle = (e) => {
+    const goingToCancelled = e.target.checked;
+    if (goingToCancelled) {
+      onCancelDay && onCancelDay();
     } else {
-      setShowCancelInput(false);
-      setCancelReason("");
-      onStatusChange(e);
+      onUncancelDay && onUncancelDay();
     }
   };
 
-  const handleCancelDay = () => {
-    if (cancelReason.trim()) {
-      onCancelDay(cancelReason);
-      setShowCancelInput(false);
-      setCancelReason("");
-    }
-  };
-
-  const handleUncancelDay = () => {
-    onUncancelDay();
-    setShowCancelInput(false);
-    setCancelReason("");
-  };
+  // Inline confirm flows removed; parent opens modals via handlers
 
   return (
     <div className="p-3 rounded border border-gray-200 bg-white flex flex-col gap-3">
@@ -73,10 +54,8 @@ const DaySettings = ({
               type="time"
               className="input input-bordered input-sm w-full"
               value={dayStartTime}
-              onChange={onStartTimeChange}
-              disabled={
-                !canEdit || !isEditingTimes || isDayCompleted || isDayCancelled
-              }
+              readOnly
+              disabled
             />
           </div>
           <div>
@@ -87,98 +66,87 @@ const DaySettings = ({
               type="time"
               className="input input-bordered input-sm w-full"
               value={dayEndTime}
-              onChange={onEndTimeChange}
-              disabled={
-                !canEdit || !isEditingTimes || isDayCompleted || isDayCancelled
-              }
+              readOnly
+              disabled
             />
           </div>
           <div>
             <label className="label">
               <span className="label-text">Day Status</span>
             </label>
-            <select
-              className="select select-bordered select-sm w-full"
-              value={dayStatus}
-              onChange={handleStatusChange}
-              disabled={!canEdit || isDayCompleted}
-            >
-              <option value="active">Active</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
+            <div className="join">
+              <input
+                className={`btn btn-sm join-item ${
+                  dayStatus === "active" && !isDayCompleted
+                    ? "btn-primary"
+                    : "btn-outline"
+                }`}
+                type="radio"
+                name="day-status"
+                aria-label="Active"
+                checked={dayStatus === "active" && !isDayCompleted}
+                onChange={() => {
+                  if (isDayCompleted) {
+                    onReopenDay && onReopenDay();
+                  } else if (dayStatus !== "active") {
+                    onUncancelDay && onUncancelDay();
+                  }
+                }}
+                disabled={!canEdit && !isDayCompleted}
+              />
+              <input
+                className={`btn btn-sm join-item ${
+                  dayStatus === "cancelled" && !isDayCompleted
+                    ? "btn-error"
+                    : "btn-outline"
+                }`}
+                type="radio"
+                name="day-status"
+                aria-label="Cancelled"
+                checked={dayStatus === "cancelled" && !isDayCompleted}
+                onChange={() => {
+                  if (!isDayCompleted && dayStatus !== "cancelled") {
+                    onCancelDay && onCancelDay();
+                  }
+                }}
+                disabled={!canEdit || isDayCompleted}
+              />
+              <input
+                className={`btn btn-sm join-item ${
+                  isDayCompleted ? "btn-success" : "btn-outline"
+                }`}
+                type="radio"
+                name="day-status"
+                aria-label="Completed"
+                checked={isDayCompleted}
+                onChange={() => {
+                  if (!isDayCompleted && !isDayCancelled) {
+                    onMarkDayCompleted && onMarkDayCompleted();
+                  }
+                }}
+                disabled={!canComplete || isDayCancelled}
+              />
+            </div>
           </div>
         </div>
 
         <div className="flex gap-2">
           {canEdit && (
             <button
-              className={`btn btn-sm ${
-                isEditingTimes ? "btn-primary" : "btn-outline"
-              }`}
-              onClick={onToggleEditTimes}
+              className="btn btn-sm btn-outline"
+              onClick={onOpenTimesModal}
               disabled={isDayCompleted || isDayCancelled}
             >
-              {isEditingTimes ? "Save Times" : "Adjust Times"}
+              Adjust Times
             </button>
           )}
 
-          {canComplete && !isDayCompleted && (
-            <button
-              className="btn btn-sm btn-outline btn-success"
-              onClick={onMarkDayCompleted}
-              disabled={isDayCancelled}
-            >
-              Mark Complete
-            </button>
-          )}
-
-          {canReopen && isDayCompleted && (
-            <button
-              className="btn btn-sm btn-outline btn-warning"
-              onClick={onReopenDay}
-            >
-              Reopen Day
-            </button>
-          )}
+          {/* Mark Complete button removed; use the status control to complete */}
+          {/* Reopen action removed here; use status control to reopen */}
         </div>
       </div>
 
-      {/* Cancellation Reason Input */}
-      {showCancelInput && (
-        <div className="border-t pt-3">
-          <div className="flex flex-col sm:flex-row gap-3 items-end">
-            <div className="flex-1">
-              <label className="label">
-                <span className="label-text">Cancellation Reason</span>
-              </label>
-              <textarea
-                className="textarea textarea-bordered w-full"
-                rows={2}
-                placeholder="Provide reason for cancelling this day..."
-                value={cancelReason}
-                onChange={(e) => setCancelReason(e.target.value)}
-                disabled={!canEdit}
-              />
-            </div>
-            <div className="flex gap-2">
-              <button
-                className="btn btn-sm btn-error"
-                onClick={handleCancelDay}
-                disabled={!canEdit || !cancelReason.trim()}
-              >
-                Confirm Cancellation
-              </button>
-              <button
-                className="btn btn-sm btn-ghost"
-                onClick={handleUncancelDay}
-                disabled={!canEdit}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Inline cancellation inputs removed in favor of modal */}
 
       {/* Cancellation Announcement */}
       {isDayCancelled && (
@@ -201,7 +169,7 @@ const DaySettings = ({
             {canEdit && (
               <button
                 className="btn btn-sm btn-outline btn-error mt-2"
-                onClick={handleUncancelDay}
+                onClick={onUncancelDay}
               >
                 Reactivate Day
               </button>
