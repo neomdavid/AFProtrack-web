@@ -97,16 +97,40 @@ const AccountRequestModal = ({ open, onClose, request, onStatusUpdate }) => {
     try {
       await approveUser(request.raw._id || request.id).unwrap();
       const email = request.raw?.email || request.email;
-      toast.success(
-        <div className="text-left">
-          <div className="font-semibold text-[14px] mb-2">Account approved</div>
-          <div className="text-[12px] text-gray-700">
-            {email} has been approved. A password setup link will be sent to
-            their email.
-          </div>
-        </div>,
-        { autoClose: 400000 }
-      );
+      const role = request.raw?.role || request.role;
+
+      // Check if the user is a trainee
+      const isTrainee = role?.toLowerCase() === "trainee";
+
+      if (isTrainee) {
+        // For trainees, don't mention password setup since they're already approved
+        toast.success(
+          <div className="text-left">
+            <div className="font-semibold text-[14px] mb-2">
+              Account approved
+            </div>
+            <div className="text-[12px] text-gray-700">
+              {email} has been approved. The trainee account is now active.
+            </div>
+          </div>,
+          { autoClose: 400000 }
+        );
+      } else {
+        // For non-trainees, show the password setup message
+        toast.success(
+          <div className="text-left">
+            <div className="font-semibold text-[14px] mb-2">
+              Account approved
+            </div>
+            <div className="text-[12px] text-gray-700">
+              {email} has been approved. A password setup link will be sent to
+              their email.
+            </div>
+          </div>,
+          { autoClose: 400000 }
+        );
+      }
+
       // Small delay to ensure cache is updated
       setTimeout(() => {
         onStatusUpdate(request.id, "Approved");
@@ -333,9 +357,20 @@ const AccountRequestModal = ({ open, onClose, request, onStatusUpdate }) => {
                         Request Approved
                       </div>
                       <div className="text-sm text-gray ">
-                        A password setup link has been sent to{" "}
-                        {request.raw?.email || request.email}. The user can now
-                        complete their account setup.
+                        {(() => {
+                          const role = request.raw?.role || request.role;
+                          const isTrainee = role?.toLowerCase() === "trainee";
+
+                          if (isTrainee) {
+                            return `The trainee account for ${
+                              request.raw?.email || request.email
+                            } is now active.`;
+                          } else {
+                            return `A password setup link has been sent to ${
+                              request.raw?.email || request.email
+                            }. The user can now complete their account setup.`;
+                          }
+                        })()}
                       </div>
                     </div>
                   </div>
