@@ -149,7 +149,7 @@ const ProgramsTable = ({ programs = [], onViewDetails }) => {
                     <td className="text-center">{program.participants}</td>
                     <td className="text-center">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-bold border ${statusClass}`}
+                        className={`px-2 py-1 rounded-full text-xs font-bold border whitespace-nowrap ${statusClass}`}
                       >
                         {statusLabel}
                       </span>

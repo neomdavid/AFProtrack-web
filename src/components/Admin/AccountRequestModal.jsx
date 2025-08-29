@@ -90,7 +90,9 @@ const AccountRequestModal = ({ open, onClose, request, onStatusUpdate }) => {
     if (statusValue === "declined" || statusValue === "rejected")
       displayText = "Declined";
 
-    return <span className={statusClass}>{displayText}</span>;
+    return (
+      <span className={`${statusClass} whitespace-nowrap`}>{displayText}</span>
+    );
   };
 
   const handleApprove = async () => {

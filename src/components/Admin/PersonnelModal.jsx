@@ -8,9 +8,9 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
   const {
     data: traineeData,
     isLoading,
-    error
+    error,
   } = useGetTraineeRecordsQuery(person?.id, {
-    skip: !person?.id || !isOpen
+    skip: !person?.id || !isOpen,
   });
 
   const handleExport = () => {
@@ -49,8 +49,8 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
 
         <div className="flex flex-col sm:flex-row text-center sm:text-left items-center gap-3 sm:gap-6 mb-5 sm:mb-6">
           {person.profilePhoto?.cloudinaryUrl ? (
-            <img 
-              src={person.profilePhoto.cloudinaryUrl} 
+            <img
+              src={person.profilePhoto.cloudinaryUrl}
               alt={person.name}
               className="w-20 h-20 rounded-full object-cover flex-shrink-0"
             />
@@ -64,9 +64,7 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
               {person.name}
             </h3>
             <p className="text-gray-600 mb-1">{person.rank}</p>
-            <p className="text-sm text-gray-500 mb-1">
-              {person.serviceId}
-            </p>
+            <p className="text-sm text-gray-500 mb-1">{person.serviceId}</p>
             <p className="text-sm text-gray-500">{person.email}</p>
             {person.unit && (
               <p className="text-sm text-gray-500">{person.unit}</p>
@@ -136,7 +134,7 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
                       <td>{record.instructor}</td>
                       <td>
                         <span
-                          className={`badge badge-sm ${
+                          className={`badge badge-sm whitespace-nowrap ${
                             record.grade?.startsWith("A")
                               ? "bg-success"
                               : record.grade?.startsWith("B")

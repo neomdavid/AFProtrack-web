@@ -82,12 +82,24 @@ const AttendanceTable = ({
     if (!status || status === "not_recorded") return null;
 
     if (status === "present") {
-      return <span className="badge badge-sm badge-success">Present</span>;
+      return (
+        <span className="badge badge-sm badge-success whitespace-nowrap">
+          Present
+        </span>
+      );
     }
     if (status === "absent") {
-      return <span className="badge badge-sm badge-error">Absent</span>;
+      return (
+        <span className="badge badge-sm badge-error whitespace-nowrap">
+          Absent
+        </span>
+      );
     }
-    return <span className="badge badge-sm badge-ghost">{status}</span>;
+    return (
+      <span className="badge badge-sm badge-ghost whitespace-nowrap">
+        {status}
+      </span>
+    );
   };
 
   if (isLoading) {

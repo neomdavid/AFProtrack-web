@@ -1,28 +1,12 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { ROLES } from "../../utils/rolePermissions";
-import { useGetTrainingProgramByIdQuery } from "../../features/api/adminEndpoints";
+import {
+  useGetTrainingProgramByIdQuery,
+  useGetTraineeByIdQuery,
+} from "../../features/api/adminEndpoints";
 import { ProgramModalSkeleton } from "../skeletons";
 import { toast } from "react-toastify";
-
-const sampleTrainees = [
-  {
-    name: "John Doe",
-    email: "john.doe@email.com",
-    rank: "Private",
-    grade: "A",
-    attendance: 95,
-    progress: 80,
-  },
-  {
-    name: "Jane Smith",
-    email: "jane.smith@email.com",
-    rank: "Corporal",
-    grade: "B+",
-    attendance: 88,
-    progress: 70,
-  },
-];
 
 const handleExport = () => {
   // Mock export functionality
@@ -297,7 +281,7 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
                   </span>
                   <span className="ml-3">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-bold border ${
+                      className={`px-2 py-1 rounded-full text-xs font-bold border whitespace-nowrap ${
                         programData.status === "upcoming"
                           ? "bg-warning text-warning-content border-warning-content"
                           : programData.status === "ongoing"
@@ -552,54 +536,86 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="table table-zebra">
-            <thead>
-              <tr>
-                <th></th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Rank</th>
-                <th>Grade</th>
-                <th>Attendance %</th>
-                <th>Progress %</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sampleTrainees.map((t, idx) => (
-                <tr key={idx}>
-                  <td>
-                    <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">
-                      {getInitials(t.name)}
-                    </div>
-                  </td>
-                  <td>{t.name}</td>
-                  <td>{t.email}</td>
-                  <td>{t.rank}</td>
-                  <td>{t.grade}</td>
-                  <td>
-                    <div className="flex items-center gap-2">
-                      <progress
-                        className="progress text-success-content w-24"
-                        value={t.attendance}
-                        max="100"
-                      ></progress>
-                      <span>{t.attendance}%</span>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="flex items-center gap-2">
-                      <progress
-                        className="progress text-success-content w-24"
-                        value={t.progress}
-                        max="100"
-                      ></progress>
-                      <span>{t.progress}%</span>
-                    </div>
-                  </td>
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="loading loading-spinner loading-lg"></div>
+              <p className="mt-2 text-gray-600">Loading trainee data...</p>
+            </div>
+          ) : programData.enrolledTrainees &&
+            programData.enrolledTrainees.length > 0 ? (
+            <table className="table table-zebra">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Name</th>
+                  <th>Rank</th>
+                  <th>Status</th>
+                  <th>Attendance %</th>
+                  <th>Progress %</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {programData.enrolledTrainees.map((enrollment, idx) => {
+                  // Calculate attendance percentage from attendance records
+                  const attendanceRecords = enrollment.attendance || [];
+                  const totalSessions = attendanceRecords.length;
+                  const presentSessions = attendanceRecords.filter(
+                    (record) => record.status === "present"
+                  ).length;
+                  const attendancePercentage =
+                    totalSessions > 0
+                      ? Math.round((presentSessions / totalSessions) * 100)
+                      : 0;
+
+                  return (
+                    <tr key={enrollment._id || idx}>
+                      <td>
+                        <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">
+                          {getInitials(`Trainee ${idx + 1}`)}
+                        </div>
+                      </td>
+                      <td>Trainee {idx + 1}</td>
+                      <td>N/A</td>
+                      <td>
+                        <span className="badge badge-sm badge-neutral whitespace-nowrap">
+                          {enrollment.certificateIssued
+                            ? "Completed"
+                            : "In Progress"}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-2">
+                          <progress
+                            className="progress text-success-content w-24"
+                            value={attendancePercentage}
+                            max="100"
+                          ></progress>
+                          <span>{attendancePercentage}%</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-2">
+                          <progress
+                            className="progress text-primary w-24"
+                            value={enrollment.progress || 0}
+                            max="100"
+                          ></progress>
+                          <span>{enrollment.progress || 0}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p className="text-lg">No trainees enrolled in this program.</p>
+              <p className="text-sm mt-2">
+                Trainees will appear here once they enroll.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </dialog>

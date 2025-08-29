@@ -454,6 +454,18 @@ export const adminApi = apiSlice.injectEndpoints({
       transformResponse: (response) => response?.data || response,
     }),
 
+    // Get trainee details by ID
+    getTraineeById: builder.query({
+      query: (traineeId) => ({
+        url: `/training-data/trainees/${traineeId}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, arg) => [
+        { type: "TrainingData", id: `TRAINEE_${arg}` },
+      ],
+      transformResponse: (response) => response?.data || response,
+    }),
+
     // Performance Metrics endpoint
     getPerformanceMetrics: builder.query({
       query: () => "/dashboard/performance-metrics",
@@ -533,6 +545,7 @@ export const {
   useGetDashboardOverviewQuery,
   useGetTrainingDataTraineesQuery,
   useGetTraineeRecordsQuery,
+  useGetTraineeByIdQuery,
   useGetPerformanceMetricsQuery,
   useGetChartDataQuery,
 } = adminApi;

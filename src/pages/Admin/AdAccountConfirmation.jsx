@@ -187,7 +187,9 @@ const AdAccountConfirmation = () => {
         "px-4 py-1 text-[12px] font-bold rounded-full bg-neutral text-neutral-content";
     }
 
-    return <span className={statusClass}>{statusText}</span>;
+    return (
+      <span className={`${statusClass} whitespace-nowrap`}>{statusText}</span>
+    );
   };
 
   return (
