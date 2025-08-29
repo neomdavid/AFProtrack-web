@@ -14,8 +14,9 @@ const AdAccountConfirmation = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [accountStatusFilter, setAccountStatusFilter] = useState("");
-  const [sortBy, setSortBy] = useState("createdAt");
-  const [sortOrder, setSortOrder] = useState("desc");
+  const [branchOfServiceFilter, setBranchOfServiceFilter] = useState("");
+  const [divisionFilter, setDivisionFilter] = useState("");
+  const [unitFilter, setUnitFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -31,8 +32,9 @@ const AdAccountConfirmation = () => {
       search: searchTerm,
       role: roleFilter,
       accountStatus: accountStatusFilter,
-      sortBy,
-      sortOrder,
+      branchOfService: branchOfServiceFilter,
+      division: divisionFilter,
+      unit: unitFilter,
     },
     { skip: !isAdmin }
   );
@@ -90,7 +92,14 @@ const AdAccountConfirmation = () => {
   useEffect(() => {
     setCurrentPage(1);
     setPage(1);
-  }, [searchTerm, roleFilter, accountStatusFilter, sortBy, sortOrder]);
+  }, [
+    searchTerm,
+    roleFilter,
+    accountStatusFilter,
+    branchOfServiceFilter,
+    divisionFilter,
+    unitFilter,
+  ]);
 
   const handleViewRequest = (request) => {
     setSelectedRequest(request);
@@ -114,8 +123,9 @@ const AdAccountConfirmation = () => {
     setSearchTerm("");
     setRoleFilter("");
     setAccountStatusFilter("");
-    setSortBy("createdAt");
-    setSortOrder("desc");
+    setBranchOfServiceFilter("");
+    setDivisionFilter("");
+    setUnitFilter("");
     setCurrentPage(1);
   };
 
@@ -252,19 +262,19 @@ const AdAccountConfirmation = () => {
           </div>
         </div>
 
-        {/* Sort By */}
+        {/* Branch of Service Filter */}
         <div className="flex flex-col gap-1">
-          <p className="font-semibold text-gray">Sort By</p>
+          <p className="font-semibold text-gray">Branch</p>
           <div className="relative">
             <select
               className="bg-white/90 border w-70 appearance-none rounded-md border-gray-300 p-2"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              value={branchOfServiceFilter}
+              onChange={(e) => setBranchOfServiceFilter(e.target.value)}
             >
-              <option value="createdAt">Request Date</option>
-              <option value="fullName">Full Name</option>
-              <option value="role">Role</option>
-              <option value="unit">Unit</option>
+              <option value="">All Branches</option>
+              <option value="Philippine Army">Philippine Army</option>
+              <option value="Philippine Navy">Philippine Navy</option>
+              <option value="Philippine Air Force">Philippine Air Force</option>
             </select>
             <CaretDownIcon
               weight="bold"
@@ -273,17 +283,70 @@ const AdAccountConfirmation = () => {
           </div>
         </div>
 
-        {/* Sort Order */}
+        {/* Division Filter */}
         <div className="flex flex-col gap-1">
-          <p className="font-semibold text-gray">Order</p>
+          <p className="font-semibold text-gray">Division</p>
           <div className="relative">
             <select
               className="bg-white/90 border w-70 appearance-none rounded-md border-gray-300 p-2"
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
+              value={divisionFilter}
+              onChange={(e) => setDivisionFilter(e.target.value)}
             >
-              <option value="desc">Descending</option>
-              <option value="asc">Ascending</option>
+              <option value="">All Divisions</option>
+              <option value="1st Infantry Division (1ID) – Tabak Division">
+                1st Infantry Division (1ID) – Tabak Division
+              </option>
+              <option value="5th Fighter Wing (5FW)">
+                5th Fighter Wing (5FW)
+              </option>
+              <option value="Army Aviation Regiment (AAR)">
+                Army Aviation Regiment (AAR)
+              </option>
+              <option value="6th Infantry Division (6ID) – Kampilan Division">
+                6th Infantry Division (6ID) – Kampilan Division
+              </option>
+              <option value="Naval Forces Northern Luzon (NFNL)">
+                Naval Forces Northern Luzon (NFNL)
+              </option>
+              <option value="Tactical Operations Wing – Northern Luzon (TOWNL)">
+                Tactical Operations Wing – Northern Luzon (TOWNL)
+              </option>
+            </select>
+            <CaretDownIcon
+              weight="bold"
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+            />
+          </div>
+        </div>
+
+        {/* Unit Filter */}
+        <div className="flex flex-col gap-1">
+          <p className="font-semibold text-gray">Unit</p>
+          <div className="relative">
+            <select
+              className="bg-white/90 border w-70 appearance-none rounded-md border-gray-300 p-2"
+              value={unitFilter}
+              onChange={(e) => setUnitFilter(e.target.value)}
+            >
+              <option value="">All Units</option>
+              <option value="1st Infantry Division (1ID) – Tabak Division">
+                1st Infantry Division (1ID) – Tabak Division
+              </option>
+              <option value="5th Fighter Wing (5FW)">
+                5th Fighter Wing (5FW)
+              </option>
+              <option value="Army Aviation Regiment (AAR)">
+                Army Aviation Regiment (AAR)
+              </option>
+              <option value="6th Infantry Division (6ID) – Kampilan Division">
+                6th Infantry Division (6ID) – Kampilan Division
+              </option>
+              <option value="Naval Forces Northern Luzon (NFNL)">
+                Naval Forces Northern Luzon (NFNL)
+              </option>
+              <option value="Tactical Operations Wing – Northern Luzon (TOWNL)">
+                Tactical Operations Wing – Northern Luzon (TOWNL)
+              </option>
             </select>
             <CaretDownIcon
               weight="bold"
