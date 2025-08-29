@@ -157,6 +157,7 @@ const AccessCard = ({ person }) => {
     : detailsSource || {};
   const fullName = details.fullName || person.name;
   const avatar = details.avatar || person.avatar;
+  const profilePhoto = details.profilePhoto || person.profilePhoto;
   const afpId = details.serviceId || person.afpId;
   const email = details.email || person.email;
   const unit = details.unit || person.unit;
@@ -175,9 +176,17 @@ const AccessCard = ({ person }) => {
         onClick={handleCardClick}
       >
         <div className="flex items-start gap-3">
-          <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg flex-shrink-0">
-            {avatar}
-          </div>
+          {profilePhoto?.cloudinaryUrl ? (
+            <img
+              src={profilePhoto.cloudinaryUrl}
+              alt={fullName}
+              className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg flex-shrink-0">
+              {avatar}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-gray-800 truncate mb-1">
               {fullName}
@@ -234,10 +243,18 @@ const AccessCard = ({ person }) => {
 
           {/* Vertical Layout */}
           <div className="flex flex-col items-center text-center space-y-1">
-            {/* Avatar */}
-            <div className="w-24 h-24 bg-primary text-white rounded-full flex mb-3 items-center justify-center text-3xl font-bold">
-              {avatar}
-            </div>
+            {/* Avatar/Profile Photo */}
+            {profilePhoto?.cloudinaryUrl ? (
+              <img
+                src={profilePhoto.cloudinaryUrl}
+                alt={fullName}
+                className="w-24 h-24 rounded-full object-cover mb-3"
+              />
+            ) : (
+              <div className="w-24 h-24 bg-primary text-white rounded-full flex mb-3 items-center justify-center text-3xl font-bold">
+                {avatar}
+              </div>
+            )}
 
             {/* AFP ID */}
             <p className="text-sm text-primary font-bold">{afpId}</p>

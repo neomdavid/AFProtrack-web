@@ -64,8 +64,12 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
               {trainee?.name || person.name}
             </h3>
             <p className="text-gray-600 mb-1">{trainee?.rank || person.rank}</p>
-            <p className="text-sm text-gray-500 mb-1">{trainee?.serviceId || person.serviceId}</p>
-            <p className="text-sm text-gray-500">{trainee?.email || person.email}</p>
+            <p className="text-sm text-gray-500 mb-1">
+              {trainee?.serviceId || person.serviceId}
+            </p>
+            <p className="text-sm text-gray-500">
+              {trainee?.email || person.email}
+            </p>
             {trainee?.unit && (
               <p className="text-sm text-gray-500">{trainee.unit}</p>
             )}

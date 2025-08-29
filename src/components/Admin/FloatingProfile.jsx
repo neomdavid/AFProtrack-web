@@ -42,7 +42,14 @@ const FloatingProfile = ({ isSticky, onOpenProfileModal }) => {
 
   // Get user's rank from user data or use default
   const getUserRank = () => {
-    if (user?.rank) return user.rank;
+    if (user?.rank) {
+      // Extract abbreviated rank from parentheses if available
+      const match = user.rank.match(/\(([^)]+)\)/);
+      if (match) {
+        return match[1]; // Return the abbreviated rank (e.g., "FCMCPO")
+      }
+      return user.rank; // Return full rank if no parentheses found
+    }
     if (user?.role === "admin") return "System";
     if (user?.role === "trainer") return "Lt.";
     return "User";
