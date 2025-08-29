@@ -454,6 +454,20 @@ export const adminApi = apiSlice.injectEndpoints({
       transformResponse: (response) => response?.data || response,
     }),
 
+    // Performance Metrics endpoint
+    getPerformanceMetrics: builder.query({
+      query: () => "/dashboard/performance-metrics",
+      providesTags: [{ type: "Dashboard", id: "PERFORMANCE_METRICS" }],
+      transformResponse: (response) => response?.data || response,
+    }),
+
+    // Chart Data endpoint
+    getChartData: builder.query({
+      query: () => "/dashboard/chart-data",
+      providesTags: [{ type: "Dashboard", id: "CHART_DATA" }],
+      transformResponse: (response) => response?.data || response,
+    }),
+
     // Update user status by userId
     updateUserStatusById: builder.mutation({
       query: ({ userId, accountStatus }) => ({
@@ -519,4 +533,6 @@ export const {
   useGetDashboardOverviewQuery,
   useGetTrainingDataTraineesQuery,
   useGetTraineeRecordsQuery,
+  useGetPerformanceMetricsQuery,
+  useGetChartDataQuery,
 } = adminApi;

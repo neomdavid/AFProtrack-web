@@ -5,22 +5,10 @@ const STEP = 1;
 const MIN = 0;
 const MAX = 11;
 
-const fullLabels = [
-  "Jan 10, 2025",
-  "Feb 14, 2025",
-  "Mar 12, 2025",
-  "Apr 9, 2025",
-  "May 14, 2025",
-  "Jun 11, 2025",
-  "Jul 9, 2025",
-  "Aug 13, 2025",
-  "Sep 10, 2025",
-  "Oct 15, 2025",
-  "Nov 12, 2025",
-  "Dec 10, 2025",
-];
+export default function DateRangeSlider({ range, setRange, labels = [] }) {
+  // Use provided labels or fallback to empty array
+  const fullLabels = labels.length > 0 ? labels : [];
 
-export default function DateRangeSlider({ range, setRange }) {
   return (
     <div className="w-full max-w-  px-2">
       <Range
