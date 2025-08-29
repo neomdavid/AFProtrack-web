@@ -188,7 +188,7 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
 
   return (
     <dialog open={open} className="modal z-[10000]">
-      <div className="modal-box w-11/12 max-w-4xl relative bg-white p-8 pt-13">
+      <div className="modal-box w-11/12 max-w-4xl relative bg-white p-8 ">
         {/* X Close Button in form */}
         <form method="dialog" className="absolute top-4 right-4">
           <button className="btn btn-sm btn-circle btn-ghost" onClick={onClose}>
