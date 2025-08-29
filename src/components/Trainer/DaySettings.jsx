@@ -30,6 +30,26 @@ const DaySettings = ({
   const canComplete = !isAdmin || canMarkDayCompleted;
   const canReopen = !isAdmin || canReopenCompletedDay;
 
+  // Check if the selected date is in the past
+  const isPastDate = () => {
+    if (!selectedDate) return false;
+    const today = new Date();
+    const selected = new Date(selectedDate);
+    today.setHours(0, 0, 0, 0);
+    selected.setHours(0, 0, 0, 0);
+    return selected < today;
+  };
+
+  // Check if the selected date is in the future
+  const isFutureDate = () => {
+    if (!selectedDate) return false;
+    const today = new Date();
+    const selected = new Date(selectedDate);
+    today.setHours(0, 0, 0, 0);
+    selected.setHours(0, 0, 0, 0);
+    return selected > today;
+  };
+
   // Toggle handler: open corresponding modal; actual state updates after confirm
   const handleStatusToggle = (e) => {
     const goingToCancelled = e.target.checked;
@@ -92,7 +112,16 @@ const DaySettings = ({
                     onUncancelDay && onUncancelDay();
                   }
                 }}
-                disabled={!canEdit && !isDayCompleted}
+                disabled={!canEdit || isDayCompleted || isPastDate()}
+                title={
+                  !canEdit
+                    ? "You don't have permission to edit"
+                    : isDayCompleted
+                    ? "Day is already completed"
+                    : isPastDate()
+                    ? "Past dates cannot be set to active"
+                    : ""
+                }
               />
               <input
                 className={`btn btn-sm join-item ${
@@ -124,7 +153,16 @@ const DaySettings = ({
                     onMarkDayCompleted && onMarkDayCompleted();
                   }
                 }}
-                disabled={!canComplete || isDayCancelled}
+                disabled={!canComplete || isDayCancelled || isFutureDate()}
+                title={
+                  !canComplete
+                    ? "You don't have permission to complete days"
+                    : isDayCancelled
+                    ? "Cancelled days cannot be completed"
+                    : isFutureDate()
+                    ? "Future dates cannot be completed"
+                    : ""
+                }
               />
             </div>
           </div>

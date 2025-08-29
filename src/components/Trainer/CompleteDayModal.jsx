@@ -7,7 +7,8 @@ const CompleteDayModal = ({
   completeReason,
   onReasonChange,
   onConfirm,
-  selectedDate
+  selectedDate,
+  isLoading = false,
 }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
@@ -35,18 +36,23 @@ const CompleteDayModal = ({
           disabled={!canComplete}
         />
         <div className="modal-action">
-          <button
-            className="btn btn-ghost"
-            onClick={onClose}
-          >
+          <button className="btn btn-ghost" onClick={onClose}>
             Cancel
           </button>
           {canComplete && (
             <button
               className="btn btn-primary"
               onClick={onConfirm}
+              disabled={isLoading}
             >
-              Confirm
+              {isLoading ? (
+                <>
+                  <span className="loading loading-spinner loading-sm"></span>
+                  Completing...
+                </>
+              ) : (
+                "Confirm"
+              )}
             </button>
           )}
         </div>

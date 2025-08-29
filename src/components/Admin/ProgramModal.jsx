@@ -73,10 +73,35 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
     setEditData(programData);
   };
 
+  // Auto-derive status from start and end dates
+  const deriveStatusFromDates = (startDate, endDate) => {
+    if (!startDate || !endDate) return "upcoming";
+
+    const now = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (now < start) return "upcoming";
+    if (now >= start && now <= end) return "ongoing";
+    if (now > end) return "completed";
+
+    return "upcoming";
+  };
+
   const handleSaveEdit = async () => {
     setIsSaving(true);
     try {
-      await onEdit(editData);
+      // Auto-derive status from dates
+      const autoDerivedStatus = deriveStatusFromDates(
+        editData.startDate,
+        editData.endDate
+      );
+      const updatedData = {
+        ...editData,
+        status: autoDerivedStatus,
+      };
+
+      await onEdit(updatedData);
       setIsEditing(false);
       toast.success("Program updated successfully!");
     } catch (error) {
@@ -188,6 +213,26 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
               <div className="space-y-3">
                 <div className="flex items-center">
                   <span className="font-semibold text-gray min-w-[100px]">
+                    Program Name:
+                  </span>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="programName"
+                      value={editData.programName || ""}
+                      onChange={handleInputChange}
+                      className="input input-bordered input-sm flex-1 ml-3"
+                      disabled={!isFieldEditable("programName")}
+                    />
+                  ) : (
+                    <span className="ml-3 text-gray-800">
+                      {programData.programName || programData.name}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center">
+                  <span className="font-semibold text-gray min-w-[100px]">
                     Batch:
                   </span>
                   {isEditing ? (
@@ -250,41 +295,31 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
                   <span className="font-semibold text-gray min-w-[100px]">
                     Status:
                   </span>
-                  {isEditing ? (
-                    <select
-                      name="status"
-                      value={editData.status || ""}
-                      onChange={handleInputChange}
-                      className="select select-bordered select-sm flex-1 ml-3"
-                      disabled={!isFieldEditable("status")}
+                  <span className="ml-3">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-bold border ${
+                        programData.status === "upcoming"
+                          ? "bg-warning text-warning-content border-warning-content"
+                          : programData.status === "ongoing"
+                          ? "bg-primary text-white border-primary"
+                          : programData.status === "completed"
+                          ? "bg-success text-success-content border-success-content"
+                          : programData.status === "cancelled"
+                          ? "bg-error text-error-content border-error-content"
+                          : "bg-gray-100 text-gray-800 border-gray-300"
+                      }`}
                     >
-                      <option value="upcoming">Upcoming</option>
-                      <option value="ongoing">Ongoing</option>
-                      <option value="completed">Completed</option>
-                      <option value="cancelled">Cancelled</option>
-                    </select>
-                  ) : (
-                    <span className="ml-3">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-bold border ${
-                          programData.status === "upcoming"
-                            ? "bg-warning text-warning-content border-warning-content"
-                            : programData.status === "ongoing"
-                            ? "bg-primary text-white border-primary"
-                            : programData.status === "completed"
-                            ? "bg-success text-success-content border-success-content"
-                            : programData.status === "cancelled"
-                            ? "bg-error text-error-content border-error-content"
-                            : "bg-gray-100 text-gray-800 border-gray-300"
-                        }`}
-                      >
-                        {programData.status
-                          ? programData.status.charAt(0).toUpperCase() +
-                            programData.status.slice(1)
-                          : "Not specified"}
-                      </span>
+                      {programData.status
+                        ? programData.status.charAt(0).toUpperCase() +
+                          programData.status.slice(1)
+                        : "Not specified"}
                     </span>
-                  )}
+                    {isEditing && (
+                      <span className="ml-2 text-xs text-gray-500">
+                        (Auto-derived from dates)
+                      </span>
+                    )}
+                  </span>
                 </div>
               </div>
 
@@ -466,8 +501,6 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
             </p>
           </div>
         )}
-
-
 
         {/* Trainees Table Header Row */}
         <div className="flex items-center justify-between mb-2">

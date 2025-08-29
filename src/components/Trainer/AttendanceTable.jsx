@@ -1,5 +1,6 @@
 import React from "react";
 import { useAuth } from "../../hooks/useAuth";
+import { AttendanceTableSkeleton } from "../skeletons";
 
 const AttendanceTable = ({
   filteredTrainees,
@@ -11,6 +12,8 @@ const AttendanceTable = ({
   statusFilter,
   onSearchChange,
   onStatusFilterChange,
+  isLoading = false,
+  selectedDate,
 }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
@@ -18,6 +21,26 @@ const AttendanceTable = ({
 
   // Admin restrictions: can view but not edit attendance
   const canEditAttendance = !isAdmin || canRecordAttendance;
+
+  // Check if the selected date is in the future
+  const isFutureDate = () => {
+    if (!selectedDate) return false;
+    const today = new Date();
+    const selected = new Date(selectedDate);
+    today.setHours(0, 0, 0, 0);
+    selected.setHours(0, 0, 0, 0);
+    return selected > today;
+  };
+
+  // Check if the selected date is in the past
+  const isPastDate = () => {
+    if (!selectedDate) return false;
+    const today = new Date();
+    const selected = new Date(selectedDate);
+    today.setHours(0, 0, 0, 0);
+    selected.setHours(0, 0, 0, 0);
+    return selected < today;
+  };
 
   const getStatusBadge = (status) => {
     if (!status || status === "not_recorded") return null;
@@ -30,6 +53,10 @@ const AttendanceTable = ({
     }
     return <span className="badge badge-sm badge-ghost">{status}</span>;
   };
+
+  if (isLoading) {
+    return <AttendanceTableSkeleton rows={8} />;
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -85,7 +112,10 @@ const AttendanceTable = ({
                   <td className="text-gray-700">{trainee.email}</td>
                   <td className="">{getStatusBadge(currentStatus)}</td>
                   <td className="flex gap-2">
-                    {canEditAttendance && !isDayCompleted && !isDayCancelled ? (
+                    {canEditAttendance &&
+                    !isDayCompleted &&
+                    !isDayCancelled &&
+                    !isFutureDate() ? (
                       <>
                         <button
                           className={`btn btn-xs ${
@@ -113,13 +143,31 @@ const AttendanceTable = ({
                         </button>
                       </>
                     ) : (
-                      <span className="text-gray-500 text-sm">
-                        {isDayCompleted
-                          ? "Day Completed"
-                          : isDayCancelled
-                          ? "Day Cancelled"
-                          : "View Only"}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        {isDayCompleted ? (
+                          <span className="text-gray-500 text-sm">
+                            Day Completed
+                          </span>
+                        ) : isDayCancelled ? (
+                          <span className="text-gray-500 text-sm">
+                            Day Cancelled
+                          </span>
+                        ) : isFutureDate() ? (
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span className="text-blue-600 text-sm font-medium">
+                              Future Date
+                            </span>
+                            <span className="text-blue-500 text-xs">
+                              (No attendance yet)
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-500 text-sm">
+                            View Only
+                          </span>
+                        )}
+                      </div>
                     )}
                   </td>
                 </tr>

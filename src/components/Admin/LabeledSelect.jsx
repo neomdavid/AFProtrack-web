@@ -1,5 +1,4 @@
 import React from "react";
-import { CaretDownIcon } from "@phosphor-icons/react";
 
 const LabeledSelect = ({
   label,
@@ -36,10 +35,6 @@ const LabeledSelect = ({
           </option>
         ))}
       </select>
-      <CaretDownIcon
-        weight="bold"
-        className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none h-4 w-4"
-      />
     </div>
     {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
   </div>

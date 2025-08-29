@@ -1,6 +1,11 @@
 import React from "react";
 
-const ReactivateDayModal = ({ isOpen, onClose, onConfirm }) => {
+const ReactivateDayModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  isLoading = false,
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -14,8 +19,19 @@ const ReactivateDayModal = ({ isOpen, onClose, onConfirm }) => {
           <button className="btn btn-ghost" onClick={onClose}>
             Close
           </button>
-          <button className="btn btn-primary" onClick={onConfirm}>
-            Confirm
+          <button
+            className="btn btn-primary"
+            onClick={onConfirm}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <span className="loading loading-spinner loading-sm"></span>
+                Reactivating...
+              </>
+            ) : (
+              "Confirm"
+            )}
           </button>
         </div>
       </div>

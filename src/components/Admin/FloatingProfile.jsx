@@ -73,7 +73,7 @@ const FloatingProfile = ({ isSticky, onOpenProfileModal }) => {
         <div
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className={`
-transition-all duration-300 ease-in-out px-4 py-3 flex items-center gap-1.5 rounded-3xl cursor-pointer hover:bg-white/10
+transition-all duration-300 ease-in-out px-4 py-3 flex items-center gap-2 rounded-3xl cursor-pointer hover:bg-white/10
 ${
   isSticky || isDropdownOpen
     ? "backdrop-blur-lg shadow bg-white/20"
@@ -82,7 +82,7 @@ ${
 `}
         >
           {user?.avatar ? (
-            <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">
+            <div className="w-10 h-10 p-4 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">
               {user.avatar}
             </div>
           ) : (

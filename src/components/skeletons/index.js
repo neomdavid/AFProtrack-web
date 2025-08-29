@@ -4,6 +4,7 @@ export { default as TableSkeleton } from "./TableSkeleton";
 export { default as FormSkeleton } from "./FormSkeleton";
 export { default as ProgramsTableSkeleton } from "./ProgramsTableSkeleton";
 export { default as ProgramModalSkeleton } from "./ProgramModalSkeleton";
+export { default as AttendanceTableSkeleton } from "./AttendanceTableSkeleton";
 
 // Add more skeleton exports here as needed
 // export { default as CardSkeleton } from './CardSkeleton';

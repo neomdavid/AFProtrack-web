@@ -30,6 +30,7 @@ export const loginUser = createAsyncThunk(
           fullName: data.data.user.fullName,
           email: data.data.user.email,
           role: data.data.user.role,
+          rank: data.data.user.rank,
           accountType: data.data.user.accountType,
           unit: data.data.user.unit,
           branchOfService: data.data.user.branchOfService,

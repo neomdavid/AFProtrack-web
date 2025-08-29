@@ -1,6 +1,6 @@
 import React from "react";
 
-const ReopenDayModal = ({ isOpen, onClose, onConfirm }) => {
+const ReopenDayModal = ({ isOpen, onClose, onConfirm, isLoading = false }) => {
   if (!isOpen) return null;
   return (
     <dialog className="modal modal-open">
@@ -13,8 +13,19 @@ const ReopenDayModal = ({ isOpen, onClose, onConfirm }) => {
           <button className="btn btn-ghost" onClick={onClose}>
             Cancel
           </button>
-          <button className="btn btn-warning" onClick={onConfirm}>
-            Yes, Reopen Day
+          <button
+            className="btn btn-warning"
+            onClick={onConfirm}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <span className="loading loading-spinner loading-sm"></span>
+                Reopening...
+              </>
+            ) : (
+              "Yes, Reopen Day"
+            )}
           </button>
         </div>
       </div>

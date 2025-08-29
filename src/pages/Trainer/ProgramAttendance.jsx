@@ -136,10 +136,11 @@ const ProgramAttendance = () => {
   }, [defaultDate]);
 
   // Day attendance from API
-  const { data: dayAttendanceApi } = useGetDayAttendanceByDateQuery(
-    programId && selectedKey ? { programId, date: selectedKey } : skipToken,
-    { skip: !programId || !selectedKey }
-  );
+  const { data: dayAttendanceApi, isLoading: isLoadingAttendance } =
+    useGetDayAttendanceByDateQuery(
+      programId && selectedKey ? { programId, date: selectedKey } : skipToken,
+      { skip: !programId || !selectedKey }
+    );
 
   // Normalize day attendance to { [traineeId]: { status } }
   const dayAttendance = useMemo(() => {
@@ -434,7 +435,8 @@ const ProgramAttendance = () => {
     console.log("Export functionality");
   };
 
-  const [updateProgramEndDate] = useUpdateProgramEndDateMutation();
+  const [updateProgramEndDate, { isLoading: isUpdatingEndDate }] =
+    useUpdateProgramEndDateMutation();
   const handleSaveEndDate = async () => {
     if (!newEndDate || !programId) return;
     try {
@@ -460,7 +462,8 @@ const ProgramAttendance = () => {
     }
   };
 
-  const [markDayCompleted] = useMarkDayCompletedMutation();
+  const [markDayCompleted, { isLoading: isMarkingCompleted }] =
+    useMarkDayCompletedMutation();
   const handleCompleteDay = async () => {
     if (!selectedKey || !programId || !completeReason.trim()) return;
     try {
@@ -488,6 +491,7 @@ const ProgramAttendance = () => {
 
   const handleCancelDay = async (reason) => {
     if (programId && selectedKey) {
+      setIsCancellingDay(true);
       try {
         // eslint-disable-next-line no-console
         console.log("[Attendance] cancel day payload", {
@@ -512,12 +516,15 @@ const ProgramAttendance = () => {
       } catch (err) {
         console.error("Failed cancelling day", err);
         toast.error("Failed to cancel day");
+      } finally {
+        setIsCancellingDay(false);
       }
     }
   };
 
   const handleUncancelDay = async () => {
     if (programId && selectedKey) {
+      setIsReactivatingDay(true);
       try {
         // eslint-disable-next-line no-console
         console.log("[Attendance] uncancel day payload", {
@@ -541,11 +548,18 @@ const ProgramAttendance = () => {
       } catch (err) {
         console.error("Failed reactivating day", err);
         toast.error("Failed to reactivate day");
+      } finally {
+        setIsReactivatingDay(false);
       }
     }
   };
 
-  const [reopenCompletedDay] = useReopenCompletedDayMutation();
+  const [reopenCompletedDay, { isLoading: isReopeningDay }] =
+    useReopenCompletedDayMutation();
+
+  // Loading states for manual operations
+  const [isCancellingDay, setIsCancellingDay] = useState(false);
+  const [isReactivatingDay, setIsReactivatingDay] = useState(false);
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -597,6 +611,8 @@ const ProgramAttendance = () => {
         statusFilter={statusFilter}
         onSearchChange={setSearch}
         onStatusFilterChange={setStatusFilter}
+        isLoading={isLoadingAttendance}
+        selectedDate={selectedKey}
       />
 
       {/* Autosave indicator */}
@@ -618,6 +634,7 @@ const ProgramAttendance = () => {
         onReasonChange={(e) => setDeadlineReason(e.target.value)}
         onSave={handleSaveEndDate}
         currentEndDate={program.endDate}
+        isLoading={isUpdatingEndDate}
       />
 
       <CompleteDayModal
@@ -630,6 +647,7 @@ const ProgramAttendance = () => {
         onReasonChange={(e) => setCompleteReason(e.target.value)}
         onConfirm={handleCompleteDay}
         selectedDate={selectedKey}
+        isLoading={isMarkingCompleted}
       />
 
       <EditTimesModal
@@ -673,6 +691,7 @@ const ProgramAttendance = () => {
             toast.error("Failed to reopen day");
           }
         }}
+        isLoading={isReopeningDay}
       />
 
       <CancelDayModal
@@ -684,6 +703,7 @@ const ProgramAttendance = () => {
             setShowCancelModal(false);
           } catch {}
         }}
+        isLoading={isCancellingDay}
       />
 
       <ReactivateDayModal
@@ -695,6 +715,7 @@ const ProgramAttendance = () => {
             setShowReactivateModal(false);
           } catch {}
         }}
+        isLoading={isReactivatingDay}
       />
       <ToastContainer
         position="top-center"

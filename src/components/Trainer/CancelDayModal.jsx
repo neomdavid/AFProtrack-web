@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-const CancelDayModal = ({ isOpen, onClose, onConfirm }) => {
+const CancelDayModal = ({ isOpen, onClose, onConfirm, isLoading = false }) => {
   const [reason, setReason] = useState("");
 
   useEffect(() => {
@@ -32,9 +32,16 @@ const CancelDayModal = ({ isOpen, onClose, onConfirm }) => {
           <button
             className="btn btn-error"
             onClick={() => onConfirm(reason.trim())}
-            disabled={!reason.trim()}
+            disabled={!reason.trim() || isLoading}
           >
-            Confirm Cancel
+            {isLoading ? (
+              <>
+                <span className="loading loading-spinner loading-sm"></span>
+                Cancelling...
+              </>
+            ) : (
+              "Confirm Cancel"
+            )}
           </button>
         </div>
       </div>
