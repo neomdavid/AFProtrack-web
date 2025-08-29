@@ -8,6 +8,7 @@ import {
 } from "../../features/api/adminEndpoints";
 import { useAuth } from "../../hooks/useAuth";
 import AccountActionConfirmModal from "./AccountActionConfirmModal";
+import LoadingSpinner from "../LoadingSpinner";
 
 const AccessCard = ({ person }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -95,14 +96,15 @@ const AccessCard = ({ person }) => {
   };
 
   // Fetch details depending on active/inactive
-  const { data: activeDetails } = useGetActiveUserByIdQuery(person.id, {
+  const { data: activeDetails, isLoading: isLoadingActive } = useGetActiveUserByIdQuery(person.id, {
     skip: !isModalOpen || !displayActive,
   });
-  const { data: inactiveDetails } = useGetInactiveUserByIdQuery(person.id, {
+  const { data: inactiveDetails, isLoading: isLoadingInactive } = useGetInactiveUserByIdQuery(person.id, {
     skip: !isModalOpen || displayActive,
   });
 
   const detailsSource = displayActive ? activeDetails : inactiveDetails;
+  const isLoadingDetails = isLoadingActive || isLoadingInactive;
 
   // Normalize response: API may return the user object directly or as data.users[]
   const rawUsers = Array.isArray(detailsSource?.users)
@@ -197,6 +199,7 @@ const AccessCard = ({ person }) => {
 
             {/* AFP ID */}
             <p className="text-sm text-primary font-bold">{afpId}</p>
+            
             {/* Rank */}
             <p className="text-md text-black font">{rank}</p>
 
@@ -263,45 +266,60 @@ const AccessCard = ({ person }) => {
             </div>
 
             {/* Additional Details Container */}
-            <div className="w-full space-y-3 mt-6 text-left bg-gray/5 p-3 rounded-sm ">
-              <div className="flex gap-2 items-center">
-                <span className="text-sm font-semibold text-gray/90">
-                  Unit:
-                </span>
-                <span className="text-black text-[15px]">{unit}</span>
-              </div>
-              <div className="flex gap-2 items-center">
-                <span className="text-sm font-semibold text-gray/90">
-                  Branch of Service:
-                </span>
-                <span className="text-black text-[15px]">{branch}</span>
-              </div>
-              <div className="flex gap-2 items-center">
-                <span className="text-sm font-semibold text-gray/90">
-                  Division:
-                </span>
-                <span className="text-black text-[15px]">{division}</span>
-              </div>
-              <div className="flex gap-2 items-center">
-                <span className="text-sm font-semibold text-gray/90">
-                  Date of Birth:
-                </span>
-                <span className="text-black text-[15px]">
-                  {dateOfBirth && new Date(dateOfBirth).toLocaleDateString()}
-                </span>
-              </div>
-              <div className="flex gap-2 items-center">
-                <span className="text-sm font-semibold text-gray/90">
-                  Phone:
-                </span>
-                <span className="text-black text-[15px]">{contactNumber}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-semibold text-gray/90 mb-1">
-                  Address:
-                </span>
-                <span className="text-black text-[15px]">{address}</span>
-              </div>
+            <div className="w-full space-y-3 mt-6 text-left bg-gray/5 p-3 rounded-sm">
+              {isLoadingDetails ? (
+                // Show loading state for details
+                <div className="space-y-3">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <div key={index} className="flex gap-2 items-center">
+                      <div className="w-20 h-4 bg-gray-300 rounded animate-pulse" />
+                      <div className="w-32 h-4 bg-gray-300 rounded animate-pulse" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                // Show actual details
+                <>
+                  <div className="flex gap-2 items-center">
+                    <span className="text-sm font-semibold text-gray/90">
+                      Unit:
+                    </span>
+                    <span className="text-black text-[15px]">{unit}</span>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <span className="text-sm font-semibold text-gray/90">
+                      Branch of Service:
+                    </span>
+                    <span className="text-black text-[15px]">{branch}</span>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <span className="text-sm font-semibold text-gray/90">
+                      Division:
+                    </span>
+                    <span className="text-black text-[15px]">{division}</span>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <span className="text-sm font-semibold text-gray/90">
+                      Date of Birth:
+                    </span>
+                    <span className="text-black text-[15px]">
+                      {dateOfBirth && new Date(dateOfBirth).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex gap-2 items-center">
+                    <span className="text-sm font-semibold text-gray/90">
+                      Phone:
+                    </span>
+                    <span className="text-black text-[15px]">{contactNumber}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-gray/90 mb-1">
+                      Address:
+                    </span>
+                    <span className="text-black text-[15px]">{address}</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

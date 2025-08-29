@@ -40,8 +40,9 @@ const FloatingProfile = ({ isSticky, onOpenProfileModal }) => {
     setIsDropdownOpen(false);
   };
 
-  // Get user's rank/prefix from serviceId or use default
+  // Get user's rank from user data or use default
   const getUserRank = () => {
+    if (user?.rank) return user.rank;
     if (user?.role === "admin") return "System";
     if (user?.role === "trainer") return "Lt.";
     return "User";
@@ -72,7 +73,7 @@ const FloatingProfile = ({ isSticky, onOpenProfileModal }) => {
         <div
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className={`
-transition-all duration-300 ease-in-out px-4 py-3 flex items-center gap-1.5 rounded-3xl cursor-pointer hover:bg-white/10
+transition-all duration-300 ease-in-out px-4 py-3 flex items-center gap-2 rounded-3xl cursor-pointer hover:bg-white/10
 ${
   isSticky || isDropdownOpen
     ? "backdrop-blur-lg shadow bg-white/20"
@@ -80,7 +81,13 @@ ${
 }
 `}
         >
-          <UserCircleIcon size={39} />
+          {user?.avatar ? (
+            <div className="w-10 h-10 p-4 rounded-full bg-primary text-white flex items-center justify-center font-bold text-lg">
+              {user.avatar}
+            </div>
+          ) : (
+            <UserCircleIcon size={39} />
+          )}
           <div className="flex flex-col items-start gap-1">
             <p className="text-xs text-gray-700 mb-[-3px]">{getUserRank()}</p>
             <p className="text-sm flex font-light">{getDisplayName()}</p>

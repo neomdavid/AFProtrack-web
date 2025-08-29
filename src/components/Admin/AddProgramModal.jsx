@@ -17,6 +17,7 @@ const AddProgramModal = ({
 
   const [formData, setFormData] = useState({
     programName: "",
+    batch: "",
     startDate: "",
     endDate: "",
     enrollmentStartDate: "",
@@ -71,6 +72,7 @@ const AddProgramModal = ({
 
     if (
       formData.programName &&
+      formData.batch &&
       formData.startDate &&
       formData.endDate &&
       formData.enrollmentStartDate &&
@@ -83,6 +85,7 @@ const AddProgramModal = ({
     ) {
       const requestBody = {
         programName: formData.programName,
+        batch: formData.batch,
         startDate: formData.startDate,
         endDate: formData.endDate,
         enrollmentStartDate: formData.enrollmentStartDate,
@@ -129,6 +132,7 @@ const AddProgramModal = ({
   const handleCancel = () => {
     setFormData({
       programName: "",
+      batch: "",
       startDate: "",
       endDate: "",
       enrollmentStartDate: "",
@@ -203,6 +207,22 @@ const AddProgramModal = ({
                   value={formData.programName}
                   onChange={handleInputChange}
                   placeholder="Enter program name"
+                  className="input input-bordered w-full"
+                  required
+                />
+              </div>
+
+              {/* Batch Name*/}
+              <div>
+                <label className="label">
+                  <span className="label-text font-semibold">Batch Name*</span>
+                </label>
+                <input
+                  type="text"
+                  name="batch"
+                  value={formData.batch}
+                  onChange={handleInputChange}
+                  placeholder="Enter batch name"
                   className="input input-bordered w-full"
                   required
                 />
@@ -381,9 +401,17 @@ const AddProgramModal = ({
               </button>
               <button
                 type="submit"
+                disabled={isCreating}
                 className="btn btn-primary btn-sm sm:btn-md"
               >
-                {submitButtonText}
+                {isCreating ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm"></span>
+                    {mode === "edit" ? "Updating..." : "Creating..."}
+                  </>
+                ) : (
+                  submitButtonText
+                )}
               </button>
             </div>
 

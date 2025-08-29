@@ -9,11 +9,13 @@ const EditEndDateModal = ({
   onEndDateChange,
   onReasonChange,
   onSave,
-  currentEndDate
+  currentEndDate,
+  isLoading = false,
 }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
-  const canUpdateTrainingPrograms = user?.permissions?.canUpdateTrainingPrograms;
+  const canUpdateTrainingPrograms =
+    user?.permissions?.canUpdateTrainingPrograms;
 
   // Admin restrictions: can view but not edit
   const canEdit = !isAdmin || canUpdateTrainingPrograms;
@@ -70,9 +72,16 @@ const EditEndDateModal = ({
             <button
               className="btn btn-primary"
               onClick={onSave}
-              disabled={!newEndDate}
+              disabled={!newEndDate || isLoading}
             >
-              Save
+              {isLoading ? (
+                <>
+                  <span className="loading loading-spinner loading-sm"></span>
+                  Saving...
+                </>
+              ) : (
+                "Save"
+              )}
             </button>
           )}
         </div>

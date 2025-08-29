@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { config } from "../../config/env";
+import { toast } from "react-toastify";
 
 // Async thunks for authentication actions
 export const loginUser = createAsyncThunk(
@@ -29,6 +30,7 @@ export const loginUser = createAsyncThunk(
           fullName: data.data.user.fullName,
           email: data.data.user.email,
           role: data.data.user.role,
+          rank: data.data.user.rank,
           accountType: data.data.user.accountType,
           unit: data.data.user.unit,
           branchOfService: data.data.user.branchOfService,
@@ -187,6 +189,8 @@ const authSlice = createSlice({
         state.user = action.payload;
         state.isAuthenticated = true;
         state.error = null;
+        // Show welcome toast
+        toast.success(`Welcome ${action.payload.firstName}!`);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;

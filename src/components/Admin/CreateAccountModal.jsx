@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { CaretDownIcon } from "@phosphor-icons/react";
 import { useAuth } from "../../hooks/useAuth";
 import {
   useCreatePendingUserMutation,
@@ -26,7 +25,7 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
     firstName: "",
     lastName: "",
     suffix: "",
-    serviceId: "",
+    serviceId: "AFP-",
     email: "",
     unit: "",
     branchOfService: "",
@@ -96,6 +95,26 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
+    // Validation for names and suffix - no numbers allowed
+    if (["firstName", "lastName", "suffix"].includes(name)) {
+      const noNumbersRegex = /^[a-zA-Z\s\-'\.]*$/;
+      if (value && !noNumbersRegex.test(value)) {
+        return; // Don't update if numbers are entered
+      }
+    }
+
+    // Service ID validation - start with AFP and max length
+    if (name === "serviceId") {
+      if (value && !value.startsWith("AFP")) {
+        return; // Don't update if it doesn't start with AFP
+      }
+      if (value.length > 12) {
+        // AFP-YYYY-XXX format = 12 characters
+        return; // Don't update if too long
+      }
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -386,6 +405,7 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
                         fieldErrors.serviceId ? "input-error" : "input-bordered"
                       }`}
                       placeholder="AFP-2024-XXX"
+                      maxLength={12}
                       required
                     />
                     {fieldErrors.serviceId ? (
@@ -615,7 +635,7 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
                         name="role"
                         value={formData.role}
                         onChange={handleInputChange}
-                        className={`select w-full h-9 text-sm appearance-none ${
+                        className={`select w-full h-9 text-sm ${
                           fieldErrors.role ? "select-error" : "select-bordered"
                         }`}
                         required
@@ -626,10 +646,6 @@ const CreateAccountModal = ({ open, onClose, accountType }) => {
                           </option>
                         ))}
                       </select>
-                      <CaretDownIcon
-                        weight="bold"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none h-4 w-4"
-                      />
                     </div>
                     {fieldErrors.role && (
                       <p className="text-xs text-red-500 mt-1">
