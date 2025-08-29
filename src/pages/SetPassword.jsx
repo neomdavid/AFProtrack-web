@@ -52,8 +52,19 @@ const SetPassword = () => {
       return;
     }
 
-    if (password.length < 8) {
-      showToast("Password must be at least 8 characters long!", "error");
+    // Enhanced password validation
+    const hasMinLength = password.length >= 8;
+    const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(
+      password
+    );
+    const hasNumber = /\d/.test(password);
+    const hasUppercase = /[A-Z]/.test(password);
+
+    if (!hasMinLength || !hasSpecialChar || !hasNumber || !hasUppercase) {
+      showToast(
+        "Password must be at least 8 characters with 1 special character, 1 number, and 1 uppercase letter!",
+        "error"
+      );
       return;
     }
 
@@ -95,7 +106,7 @@ const SetPassword = () => {
             </p>
             <button
               onClick={() => navigate("/login")}
-              className="mb-6 bg-primary text-md py-2.5 rounded-2xl text-white font-semibold hover:cursor-pointer hover:bg-primary/90 transition-all duration-200"
+              className="bg-primary text-sm py-2 px-6 rounded-xl text-white font-semibold hover:cursor-pointer hover:bg-primary/90 transition-all duration-200"
             >
               Go to Login
             </button>
@@ -147,7 +158,7 @@ const SetPassword = () => {
             </p>
             <button
               onClick={() => navigate("/login")}
-              className="mb-6 bg-primary text-md py-2.5 rounded-2xl text-white font-semibold hover:cursor-pointer hover:bg-primary/90 transition-all duration-200"
+              className="bg-primary text-sm py-2 px-6 rounded-xl text-white font-semibold hover:cursor-pointer hover:bg-primary/90 transition-all duration-200"
             >
               Go to Login
             </button>
@@ -218,7 +229,8 @@ const SetPassword = () => {
                   </button>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Password must be at least 8 characters long
+                  Password must be at least 8 characters with 1 special
+                  character, 1 number, and 1 uppercase letter
                 </p>
               </div>
 

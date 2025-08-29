@@ -30,6 +30,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AccountConfirmationAccessDenied from "./components/AccountConfirmationAccessDenied";
 import { PERMISSIONS } from "./utils/rolePermissions";
 import NotFound from "./components/NotFound";
+import EmailVerification from "./pages/EmailVerification";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -43,6 +44,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/set-password" element={<SetPassword />} />
+          <Route path="/mobile/verify-email" element={<EmailVerification />} />
           <Route path="/test-colors" element={<ColorTest />} />
 
           {/* Protected Account Confirmation Route - Not nested under AdminLayout */}

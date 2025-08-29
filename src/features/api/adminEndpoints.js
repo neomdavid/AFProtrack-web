@@ -411,6 +411,38 @@ export const adminApi = apiSlice.injectEndpoints({
       providesTags: [{ type: "Dashboard", id: "BRANCH_STATS" }],
       transformResponse: (response) => response?.data || response,
     }),
+
+    // New consolidated dashboard overview endpoint
+    getDashboardOverview: builder.query({
+      query: () => "/dashboard/overview",
+      providesTags: [{ type: "Dashboard", id: "OVERVIEW" }],
+      transformResponse: (response) => response?.data || response,
+    }),
+
+    // Update user status by userId
+    updateUserStatusById: builder.mutation({
+      query: ({ userId, accountStatus }) => ({
+        url: `/users/${userId}/status`,
+        method: "PATCH",
+        body: { accountStatus },
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "User", id: arg.userId },
+        { type: "User", id: "ALL_USERS" },
+        { type: "User", id: "ACTIVE_USERS" },
+        { type: "User", id: "INACTIVE_USERS" },
+      ],
+    }),
+
+    // Mobile email verification - single endpoint that handles status update
+    verifyMobileEmail: builder.mutation({
+      query: (token) => ({
+        url: "/users/mobile/verify-email",
+        method: "POST",
+        body: { token },
+      }),
+      invalidatesTags: [{ type: "User", id: "ALL_USERS" }],
+    }),
   }),
   overrideExisting: true,
 });
@@ -448,4 +480,7 @@ export const {
   useGetUserStatsQuery,
   useGetProgramStatsQuery,
   useGetBranchStatsQuery,
+  useUpdateUserStatusByIdMutation,
+  useVerifyMobileEmailMutation,
+  useGetDashboardOverviewQuery,
 } = adminApi;

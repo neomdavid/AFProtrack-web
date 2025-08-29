@@ -6,7 +6,7 @@ import AddProgramModal from "./AddProgramModal";
 import ProgramsTable from "./ProgramsTable";
 import SearchFilterBar from "./SearchFilterBar";
 import { toast } from "react-toastify";
-import { useGetTrainingProgramsQuery } from "../../features/api/adminEndpoints";
+import { useGetTrainingProgramsQuery, useGetDashboardOverviewQuery } from "../../features/api/adminEndpoints";
 import { ProgramsTableSkeleton } from "../skeletons";
 
 const ProgramsTab = () => {
@@ -20,6 +20,9 @@ const ProgramsTab = () => {
   // Server-side pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Fetch dashboard overview data for counts
+  const { data: dashboardData } = useGetDashboardOverviewQuery();
 
   // Fetch via RTK Query
   const { data, error, isLoading, refetch } = useGetTrainingProgramsQuery({
@@ -97,13 +100,13 @@ const ProgramsTab = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 mb-[-26px]">
         <DashboardCard
           title="Total Trainings"
-          number="67"
+          number={dashboardData?.totalTrainings || 0}
           icon={<PersonSimpleRunIcon size={31} weight="fill" color="white" />}
           iconBgColor={"bg-[#272262]"}
         />
         <DashboardCard
           title="Total Schools"
-          number="8"
+          number={dashboardData?.totalSchools || 0}
           icon={<WarehouseIcon size={31} color="white" />}
           iconBgColor={"bg-[#E5B700]"}
         />
