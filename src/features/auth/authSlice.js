@@ -1,11 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { config } from "../../config/env";
 
 // Async thunks for authentication actions
 export const loginUser = createAsyncThunk(
   "auth/login",
   async ({ serviceId, password }, { rejectWithValue }) => {
     try {
-      const response = await fetch("http://localhost:5000/api/users/login", {
+      const response = await fetch(`${config.api.baseUrl}/users/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
