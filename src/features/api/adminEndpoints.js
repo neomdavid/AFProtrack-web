@@ -419,6 +419,41 @@ export const adminApi = apiSlice.injectEndpoints({
       transformResponse: (response) => response?.data || response,
     }),
 
+    // Training Data endpoints
+    getTrainingDataTrainees: builder.query({
+      query: ({
+        page = 1,
+        limit = 10,
+        search = "",
+        rank = "",
+        branchOfService = "",
+      } = {}) => {
+        const params = new URLSearchParams();
+        if (page) params.set("page", String(page));
+        if (limit) params.set("limit", String(limit));
+        if (search) params.set("search", search);
+        if (rank) params.set("rank", rank);
+        if (branchOfService) params.set("branchOfService", branchOfService);
+        return {
+          url: `/training-data/trainees?${params.toString()}`,
+          method: "GET",
+        };
+      },
+      providesTags: [{ type: "TrainingData", id: "TRAINEES" }],
+      transformResponse: (response) => response?.data || response,
+    }),
+
+    getTraineeRecords: builder.query({
+      query: (traineeId) => ({
+        url: `/training-data/trainees/${traineeId}/records`,
+        method: "GET",
+      }),
+      providesTags: (result, error, arg) => [
+        { type: "TrainingData", id: `TRAINEE_${arg}` },
+      ],
+      transformResponse: (response) => response?.data || response,
+    }),
+
     // Update user status by userId
     updateUserStatusById: builder.mutation({
       query: ({ userId, accountStatus }) => ({
@@ -437,9 +472,8 @@ export const adminApi = apiSlice.injectEndpoints({
     // Mobile email verification - single endpoint that handles status update
     verifyMobileEmail: builder.mutation({
       query: (token) => ({
-        url: "/users/mobile/verify-email",
+        url: `/users/mobile/verify-email?token=${token}`,
         method: "POST",
-        body: { token },
       }),
       invalidatesTags: [{ type: "User", id: "ALL_USERS" }],
     }),
@@ -483,4 +517,6 @@ export const {
   useUpdateUserStatusByIdMutation,
   useVerifyMobileEmailMutation,
   useGetDashboardOverviewQuery,
+  useGetTrainingDataTraineesQuery,
+  useGetTraineeRecordsQuery,
 } = adminApi;

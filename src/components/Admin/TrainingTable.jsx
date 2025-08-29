@@ -15,55 +15,6 @@ const PersonnelTable = ({ data }) => {
     setSelectedPerson(null);
   };
 
-  // Mock training records data
-  const getTrainingRecords = (personId) => [
-    {
-      id: 1,
-      date: "2025-01-15",
-      program: "Advanced Combat Training",
-      instructor: "Col. Maria Santos",
-      grade: "A+",
-      attendance: 100,
-      progress: 95,
-    },
-    {
-      id: 2,
-      date: "2025-01-10",
-      program: "Leadership Development",
-      instructor: "Maj. Juan Dela Cruz",
-      grade: "A",
-      attendance: 95,
-      progress: 88,
-    },
-    {
-      id: 3,
-      date: "2025-01-05",
-      program: "Strategic Planning",
-      instructor: "Lt. Col. Ana Reyes",
-      grade: "A-",
-      attendance: 100,
-      progress: 92,
-    },
-    {
-      id: 4,
-      date: "2024-12-20",
-      program: "Tactical Operations",
-      instructor: "Capt. Pedro Martinez",
-      grade: "B+",
-      attendance: 90,
-      progress: 85,
-    },
-    {
-      id: 5,
-      date: "2024-12-15",
-      program: "Communication Skills",
-      instructor: "Lt. Carmen Lopez",
-      grade: "A",
-      attendance: 100,
-      progress: 90,
-    },
-  ];
-
   const handleExport = () => {
     // Mock export functionality
     alert("Exporting training records...");
@@ -77,9 +28,12 @@ const PersonnelTable = ({ data }) => {
             <tr>
               <th></th>
               <th>Name</th>
+              <th>Service ID</th>
               <th>Email</th>
               <th>Rank</th>
+              <th>Unit</th>
               <th className="text-center">Trainings Attended</th>
+              <th className="text-center">Total Enrollments</th>
               <th className="text-center">Action</th>
             </tr>
           </thead>
@@ -88,15 +42,28 @@ const PersonnelTable = ({ data }) => {
               <tr key={person.id}>
                 <td>
                   <div className="flex justify-center items-center">
-                    <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-xs font-semibold">
-                      {person.avatar}
-                    </div>
+                    {person.profilePhoto?.cloudinaryUrl ? (
+                      <img 
+                        src={person.profilePhoto.cloudinaryUrl} 
+                        alt={person.name}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center text-xs font-semibold">
+                        {person.avatar}
+                      </div>
+                    )}
                   </div>
                 </td>
-                <td>{person.name}</td>
+                <td className="font-medium">{person.name}</td>
+                <td className="font-mono text-sm">{person.serviceId}</td>
                 <td>{person.email}</td>
                 <td>{person.rank}</td>
+                <td className="max-w-xs truncate" title={person.unit}>
+                  {person.unit}
+                </td>
                 <td className="text-center">{person.trainingsAttended}</td>
+                <td className="text-center">{person.totalEnrollments}</td>
                 <td className="flex justify-center items-center">
                   <button
                     className=" bg-primary  min-w-24.5 text-[12px] text-white py-1 px-3 rounded-sm hover:bg-primary/80 hover:cursor-pointer transition-all duration-300"
