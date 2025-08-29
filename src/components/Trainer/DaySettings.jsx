@@ -90,11 +90,11 @@ const DaySettings = ({
               disabled
             />
           </div>
-          <div>
+          <div className="flex flex-col">
             <label className="label">
               <span className="label-text">Day Status</span>
             </label>
-            <div className="join">
+            <div className="join mt-1">
               <input
                 className={`btn btn-sm join-item ${
                   dayStatus === "active" && !isDayCompleted
@@ -139,6 +139,13 @@ const DaySettings = ({
                   }
                 }}
                 disabled={!canEdit || isDayCompleted}
+                title={
+                  !canEdit
+                    ? "You don't have permission to edit"
+                    : isDayCompleted
+                    ? "Completed days cannot be cancelled"
+                    : ""
+                }
               />
               <input
                 className={`btn btn-sm join-item ${

@@ -613,6 +613,8 @@ const ProgramAttendance = () => {
         onStatusFilterChange={setStatusFilter}
         isLoading={isLoadingAttendance}
         selectedDate={selectedKey}
+        programStartTime={dayStartTime}
+        programEndTime={dayEndTime}
       />
 
       {/* Autosave indicator */}
