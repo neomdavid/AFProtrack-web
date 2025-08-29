@@ -4,6 +4,7 @@ import { ROLES } from "../../utils/rolePermissions";
 import {
   useGetTrainingProgramByIdQuery,
   useGetTraineeByIdQuery,
+  useUpdateTrainingProgramMutation,
 } from "../../features/api/adminEndpoints";
 import { ProgramModalSkeleton } from "../skeletons";
 import { toast } from "react-toastify";
@@ -28,6 +29,9 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(program || {});
   const [isSaving, setIsSaving] = useState(false);
+
+  // Use the new PATCH mutation
+  const [updateTrainingProgram] = useUpdateTrainingProgramMutation();
 
   // Fetch complete program details when modal opens
   const { data: completeProgram, isLoading } = useGetTrainingProgramByIdQuery(
@@ -80,12 +84,35 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
         editData.startDate,
         editData.endDate
       );
-      const updatedData = {
-        ...editData,
+
+      // Prepare updates for PATCH request
+      const updates = {
+        programName: editData.programName,
+        startDate: editData.startDate,
+        endDate: editData.endDate,
+        enrollmentStartDate: editData.enrollmentStartDate,
+        enrollmentEndDate: editData.enrollmentEndDate,
+        startTime: editData.startTime,
+        endTime: editData.endTime,
+        instructor: editData.instructor,
+        venue: editData.venue,
+        maxParticipants: editData.maxParticipants,
+        additionalDetails: editData.additionalDetails,
+        batch: editData.batch,
         status: autoDerivedStatus,
       };
 
-      await onEdit(updatedData);
+      // Call the PATCH API
+      await updateTrainingProgram({
+        programId: program.id,
+        updates,
+      }).unwrap();
+
+      // Call the original onEdit callback if provided
+      if (onEdit) {
+        await onEdit({ ...editData, status: autoDerivedStatus });
+      }
+
       setIsEditing(false);
       toast.success("Program updated successfully!");
     } catch (error) {
@@ -161,7 +188,7 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
 
   return (
     <dialog open={open} className="modal z-[10000]">
-      <div className="modal-box w-11/12 max-w-4xl relative bg-white p-8">
+      <div className="modal-box w-11/12 max-w-4xl relative bg-white p-8 pt-13">
         {/* X Close Button in form */}
         <form method="dialog" className="absolute top-4 right-4">
           <button className="btn btn-sm btn-circle btn-ghost" onClick={onClose}>
@@ -447,30 +474,6 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
               </div>
             </div>
           </div>
-
-          <div className="flex items-center gap-2 ml-6">
-            {!isEditing && user?.permissions?.canUpdateTrainingPrograms && (
-              <button
-                onClick={handleEditClick}
-                className="btn btn-primary btn-sm"
-              >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                  />
-                </svg>
-                Edit Details
-              </button>
-            )}
-          </div>
         </div>
 
         {/* Permission-based notice when editing */}
@@ -516,27 +519,29 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
                 </button>
               </>
             )}
-            <button
-              onClick={handleEditClick}
-              className="btn btn-sm btn-outline"
-              disabled={!user?.permissions?.canUpdateTrainingPrograms}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+            {!isEditing && (
+              <button
+                onClick={handleEditClick}
+                className="btn btn-sm btn-outline"
+                disabled={!user?.permissions?.canUpdateTrainingPrograms}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
-              </svg>
-              Edit Program
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                  />
+                </svg>
+                Edit Program
+              </button>
+            )}
             <button onClick={handleExport} className="btn btn-sm btn-primary">
               <svg
                 xmlns="http://www.w3.org/2000/svg"

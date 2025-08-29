@@ -286,6 +286,19 @@ export const adminApi = apiSlice.injectEndpoints({
       transformResponse: (response) => response?.data || response,
     }),
 
+    // Update training program (PATCH)
+    updateTrainingProgram: builder.mutation({
+      query: ({ programId, updates }) => ({
+        url: `/training-programs/${programId}`,
+        method: "PATCH",
+        body: updates,
+      }),
+      invalidatesTags: (result, error, arg) => [
+        { type: "Program", id: arg.programId },
+        { type: "Program", id: "LIST" },
+      ],
+    }),
+
     // Session meta by date
     getSessionMetaByDate: builder.query({
       query: ({ programId, date }) => ({
@@ -521,6 +534,7 @@ export const {
   useGetTrainingProgramsQuery,
   useCreateTrainingProgramMutation,
   useGetTrainingProgramByIdQuery,
+  useUpdateTrainingProgramMutation,
   useGetSessionMetaByDateQuery,
   useGetDayAttendanceByDateQuery,
   useRecordTraineeAttendanceMutation,
