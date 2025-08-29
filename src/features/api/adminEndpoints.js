@@ -392,6 +392,25 @@ export const adminApi = apiSlice.injectEndpoints({
         { type: "Program", id: `${arg.programId}-all-meta` },
       ],
     }),
+
+    // Dashboard Statistics
+    getUserStats: builder.query({
+      query: () => "/dashboard/user-stats",
+      providesTags: [{ type: "Dashboard", id: "USER_STATS" }],
+      transformResponse: (response) => response?.data || response,
+    }),
+
+    getProgramStats: builder.query({
+      query: () => "/dashboard/program-stats",
+      providesTags: [{ type: "Dashboard", id: "PROGRAM_STATS" }],
+      transformResponse: (response) => response?.data || response,
+    }),
+
+    getBranchStats: builder.query({
+      query: () => "/dashboard/branch-stats",
+      providesTags: [{ type: "Dashboard", id: "BRANCH_STATS" }],
+      transformResponse: (response) => response?.data || response,
+    }),
   }),
   overrideExisting: true,
 });
@@ -426,4 +445,7 @@ export const {
   useReopenCompletedDayMutation,
   useGetProgramSessionMetaQuery,
   useVerifyPasswordMutation,
+  useGetUserStatsQuery,
+  useGetProgramStatsQuery,
+  useGetBranchStatsQuery,
 } = adminApi;
