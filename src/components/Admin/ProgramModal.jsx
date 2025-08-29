@@ -2,6 +2,8 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { ROLES } from "../../utils/rolePermissions";
 import { useGetTrainingProgramByIdQuery } from "../../features/api/adminEndpoints";
+import { ProgramModalSkeleton } from "../skeletons";
+import { toast } from "react-toastify";
 
 const sampleTrainees = [
   {
@@ -41,6 +43,7 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
   const isTrainingStaff = user?.role === ROLES.TRAINING_STAFF;
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(program || {});
+  const [isSaving, setIsSaving] = useState(false);
 
   // Fetch complete program details when modal opens
   const { data: completeProgram, isLoading } = useGetTrainingProgramByIdQuery(
@@ -70,9 +73,18 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
     setEditData(programData);
   };
 
-  const handleSaveEdit = () => {
-    onEdit(editData);
-    setIsEditing(false);
+  const handleSaveEdit = async () => {
+    setIsSaving(true);
+    try {
+      await onEdit(editData);
+      setIsEditing(false);
+      toast.success("Program updated successfully!");
+    } catch (error) {
+      toast.error("Failed to update program. Please try again.");
+      console.error("Update failed:", error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleInputChange = (e) => {
@@ -132,10 +144,7 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
     return (
       <dialog open={open} className="modal z-[10000]">
         <div className="modal-box w-11/12 max-w-4xl relative bg-white p-8">
-          <div className="flex justify-center items-center h-32">
-            <div className="loading loading-spinner loading-lg"></div>
-            <span className="ml-4 text-lg">Loading program details...</span>
-          </div>
+          <ProgramModalSkeleton />
         </div>
       </dialog>
     );
@@ -458,82 +467,7 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
           </div>
         )}
 
-        {/* Program Details Section */}
-        {isEditing && (
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-            <h4 className="font-semibold mb-4">Program Information</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="label">
-                  <span className="label-text font-semibold">Program Name</span>
-                </label>
-                <input
-                  type="text"
-                  name="programName"
-                  value={editData.programName || ""}
-                  onChange={handleInputChange}
-                  className={`input input-bordered w-full ${
-                    !isFieldEditable("programName")
-                      ? "bg-gray-100 cursor-not-allowed"
-                      : ""
-                  }`}
-                  disabled={!isFieldEditable("programName")}
-                />
-              </div>
-              <div>
-                <label className="label">
-                  <span className="label-text font-semibold">Instructor</span>
-                </label>
-                <input
-                  type="text"
-                  name="instructor"
-                  value={editData.instructor || ""}
-                  onChange={handleInputChange}
-                  className={`input input-bordered w-full ${
-                    !isFieldEditable("instructor")
-                      ? "bg-gray-100 cursor-not-allowed"
-                      : ""
-                  }`}
-                  disabled={!isFieldEditable("instructor")}
-                />
-              </div>
-              <div>
-                <label className="label">
-                  <span className="label-text font-semibold">Venue</span>
-                </label>
-                <input
-                  type="text"
-                  name="venue"
-                  value={editData.venue || ""}
-                  onChange={handleInputChange}
-                  className={`input input-bordered w-full ${
-                    !isFieldEditable("venue")
-                      ? "bg-gray-100 cursor-not-allowed"
-                      : ""
-                  }`}
-                  disabled={!isFieldEditable("venue")}
-                />
-              </div>
-              <div>
-                <label className="label">
-                  <span className="label-text font-semibold">Start Time</span>
-                </label>
-                <input
-                  type="time"
-                  name="startTime"
-                  value={editData.startTime || ""}
-                  onChange={handleInputChange}
-                  className={`input input-bordered w-full ${
-                    !isFieldEditable("startTime")
-                      ? "bg-gray-100 cursor-not-allowed"
-                      : ""
-                  }`}
-                  disabled={!isFieldEditable("startTime")}
-                />
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {/* Trainees Table Header Row */}
         <div className="flex items-center justify-between mb-2">
@@ -551,9 +485,17 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
                 </button>
                 <button
                   onClick={handleSaveEdit}
+                  disabled={isSaving}
                   className="btn btn-sm btn-primary"
                 >
-                  Save Changes
+                  {isSaving ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm"></span>
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
                 </button>
               </>
             )}

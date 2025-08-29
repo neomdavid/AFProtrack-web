@@ -9,6 +9,7 @@ const AdTrainingOverview = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRank, setFilterRank] = useState("");
   const [filterDate, setFilterDate] = useState("");
+  const [isFiltering, setIsFiltering] = useState(false);
 
   // Get unique ranks for filter dropdown
   const uniqueRanks = useMemo(() => {
@@ -38,15 +39,24 @@ const AdTrainingOverview = () => {
   }, [searchTerm, filterRank, filterDate]);
 
   const handleSearchChange = (value) => {
+    setIsFiltering(true);
     setSearchTerm(value);
+    // Simulate filter delay
+    setTimeout(() => setIsFiltering(false), 300);
   };
 
   const handleRankChange = (value) => {
+    setIsFiltering(true);
     setFilterRank(value);
+    // Simulate filter delay
+    setTimeout(() => setIsFiltering(false), 300);
   };
 
   const handleDateChange = (value) => {
+    setIsFiltering(true);
     setFilterDate(value);
+    // Simulate filter delay
+    setTimeout(() => setIsFiltering(false), 300);
   };
 
   const clearFilters = () => {
@@ -86,12 +96,19 @@ const AdTrainingOverview = () => {
 
         {/* Results Summary */}
         <div className="mb-4 mt-4 px-1">
-          <p className="text-sm text-gray-600">
-            Showing {filteredData.length} of {trainingData.length} personnel
-            {(searchTerm || filterRank || filterDate) && (
-              <span className="text-primary font-medium"> (filtered)</span>
-            )}
-          </p>
+          {isFiltering ? (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="loading loading-spinner loading-sm"></div>
+              <span>Applying filters...</span>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-600">
+              Showing {filteredData.length} of {trainingData.length} personnel
+              {(searchTerm || filterRank || filterDate) && (
+                <span className="text-primary font-medium"> (filtered)</span>
+              )}
+            </p>
+          )}
         </div>
 
         <PersonnelTable data={filteredData} />

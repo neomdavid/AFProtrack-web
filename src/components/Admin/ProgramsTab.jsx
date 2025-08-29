@@ -7,6 +7,7 @@ import ProgramsTable from "./ProgramsTable";
 import SearchFilterBar from "./SearchFilterBar";
 import { toast } from "react-toastify";
 import { useGetTrainingProgramsQuery } from "../../features/api/adminEndpoints";
+import { ProgramsTableSkeleton } from "../skeletons";
 
 const ProgramsTab = () => {
   const [selectedProgram, setSelectedProgram] = useState(null);
@@ -128,15 +129,13 @@ const ProgramsTab = () => {
         />
 
         {/* Loading / Error */}
-        {isLoading && (
-          <div className="text-sm text-gray-600">Loading programs...</div>
-        )}
+        {isLoading && <ProgramsTableSkeleton rows={8} />}
         {error && !isLoading && (
           <div className="text-sm text-red-600">Failed to load programs</div>
         )}
 
         {/* Programs Table */}
-        {!isLoading && (
+        {!isLoading && !error && (
           <ProgramsTable
             programs={programs}
             onViewDetails={handleViewDetails}

@@ -5,6 +5,7 @@ import {
   useGetInactiveUsersQuery,
 } from "../../features/api/adminEndpoints";
 import AccessCard from "./AccessCard";
+import { AccessCardSkeleton } from "../skeletons";
 import CreateAccountModal from "./CreateAccountModal";
 
 const WebAccessTab = () => {
@@ -25,8 +26,20 @@ const WebAccessTab = () => {
     unit: selectedUnit,
     branchOfService: selectedBranch,
   };
-  const { data: activeData } = useGetActiveUsersQuery(common);
-  const { data: inactiveData } = useGetInactiveUsersQuery(common);
+  const {
+    data: activeData,
+    isLoading: isLoadingActive,
+    error: activeError,
+  } = useGetActiveUsersQuery(common);
+  const {
+    data: inactiveData,
+    isLoading: isLoadingInactive,
+    error: inactiveError,
+  } = useGetInactiveUsersQuery(common);
+
+  // Check if any data is still loading
+  const isLoading = isLoadingActive || isLoadingInactive;
+  const hasError = activeError || inactiveError;
 
   const extractUsers = (resp) => resp?.data?.users || resp?.users || [];
   const activeUsers = extractUsers(activeData);
@@ -95,6 +108,102 @@ const WebAccessTab = () => {
   const startIdx = (currentPage - 1) * limit;
   const pageItems = postFiltered.slice(startIdx, startIdx + limit);
 
+  // Show loading skeletons while data is loading
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-4">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex text-[14px]  items-center gap-2 bg-primary text-white py-2 px-4 rounded-md self-start btn-hover"
+        >
+          <PlusIcon size={17} />
+          <p className="">Create Account</p>
+        </button>
+
+        {/* Search and filter section */}
+        <section className="flex flex-col">
+          <div className="flex flex-wrap gap-2 mb-6 text-[14px]">
+            <div className="flex flex-col gap-1">
+              <p className="font-semibold text-gray ">Search</p>
+              <input
+                placeholder="Search Staff Name, Service ID, or Email"
+                className="bg-white/90 border w-70  rounded-md border-gray-300 p-2"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <p className="font-semibold text-gray">Filter</p>
+              <div className="relative">
+                <select
+                  className="bg-white/90 border w-70 appearance-none  rounded-md border-gray-300 p-2"
+                  value={selectedUnit}
+                  onChange={(e) => setSelectedUnit(e.target.value)}
+                >
+                  <option value="">All Units</option>
+                  {units.map((unit) => (
+                    <option key={unit} value={unit}>
+                      {unit}
+                    </option>
+                  ))}
+                </select>
+                <CaretDownIcon
+                  weight="bold"
+                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <p className="font-semibold text-gray">Branch of Service</p>
+              <div className="relative">
+                <select
+                  className="bg-white/90 border w-70 appearance-none  rounded-md border-gray-300 p-2"
+                  value={selectedBranch}
+                  onChange={(e) => setSelectedBranch(e.target.value)}
+                >
+                  <option value="">All Branches</option>
+                  {branches.map((branch) => (
+                    <option key={branch} value={branch}>
+                      {branch}
+                    </option>
+                  ))}
+                </select>
+                <CaretDownIcon
+                  weight="bold"
+                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Loading skeletons */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <AccessCardSkeleton key={index} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if there's an error
+  if (hasError) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-12">
+        <div className="text-center">
+          <p className="text-lg font-semibold text-red-600 mb-2">
+            Error loading accounts
+          </p>
+          <p className="text-gray-600">
+            Please try refreshing the page or contact support if the problem
+            persists.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <button
@@ -161,7 +270,7 @@ const WebAccessTab = () => {
       </section>
 
       {/* Personnel Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl-grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {pageItems.map((person) => (
           <AccessCard key={person.id} person={person} />
         ))}
