@@ -4,7 +4,9 @@ const DayPills = ({ sessions, selectedKey, onDateSelect, sessionMeta }) => {
   const today = new Date();
   const formatDayLabel = (d) =>
     d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-  const formatYMD = (d) => d.toISOString().slice(0, 10);
+  const pad2 = (n) => String(n).padStart(2, "0");
+  const formatYMD = (d) =>
+    `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 
   const getTooltipText = (ymd) => {
     const isCancelled = (sessionMeta[ymd]?.status || "active") === "cancelled";
@@ -30,6 +32,18 @@ const DayPills = ({ sessions, selectedKey, onDateSelect, sessionMeta }) => {
           const isCancelled =
             (sessionMeta[ymd]?.status || "active") === "cancelled";
           const isCompleted = !!sessionMeta[ymd]?.completed;
+
+          // Debug: show per-pill meta state
+          try {
+            // eslint-disable-next-line no-console
+            console.log("[DayPills] pill", ymd, {
+              isActive,
+              isToday,
+              meta: sessionMeta[ymd],
+            });
+          } catch (e) {
+            // ignore
+          }
 
           return (
             <button

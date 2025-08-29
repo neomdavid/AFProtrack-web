@@ -167,7 +167,7 @@ const ProgramModal = ({ open, onClose, program, onEdit }) => {
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex-1">
-            <h3 className="font-bold text-2xl mb-4">
+            <h3 className="font-bold text-2xl mb-6">
               {isEditing
                 ? "Edit Program Details"
                 : programData.programName || programData.name}

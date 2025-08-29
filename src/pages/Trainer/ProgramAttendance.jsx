@@ -49,8 +49,15 @@ const ProgramAttendance = () => {
     }
   }, [programData, programId]);
 
-  const toDate = (str) => (str ? new Date(str) : null);
-  const formatYMD = (d) => d.toISOString().slice(0, 10);
+  const pad2 = (n) => String(n).padStart(2, "0");
+  const parseYMDLocal = (str) => {
+    if (!str) return null;
+    const ymd = str.includes("T") ? str.slice(0, 10) : str;
+    const [y, m, d] = ymd.split("-").map(Number);
+    return new Date(y, (m || 1) - 1, d || 1);
+  };
+  const formatYMD = (d) =>
+    `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 
   // Helper to normalize date keys for consistent matching
   const normalizeDateKey = (dateStr) => {
@@ -64,17 +71,25 @@ const ProgramAttendance = () => {
   const getDateRange = (start, end) => {
     if (!start || !end) return [];
     const days = [];
-    const cur = new Date(start);
-    const last = new Date(end);
+    const cur = new Date(
+      start.getFullYear(),
+      start.getMonth(),
+      start.getDate()
+    );
+    const last = new Date(end.getFullYear(), end.getMonth(), end.getDate());
     while (cur <= last) {
-      days.push(new Date(cur));
+      days.push(new Date(cur.getFullYear(), cur.getMonth(), cur.getDate()));
       cur.setDate(cur.getDate() + 1);
     }
     return days;
   };
 
   const sessions = useMemo(
-    () => getDateRange(toDate(program?.startDate), toDate(program?.endDate)),
+    () =>
+      getDateRange(
+        parseYMDLocal(program?.startDate),
+        parseYMDLocal(program?.endDate)
+      ),
     [program]
   );
 
@@ -87,8 +102,25 @@ const ProgramAttendance = () => {
   }, [sessions]);
 
   const currentDateParam = searchParams.get("date") || defaultDate;
-  const selectedDate = currentDateParam ? new Date(currentDateParam) : null;
+  const selectedDate = currentDateParam
+    ? parseYMDLocal(currentDateParam)
+    : null;
   const selectedKey = selectedDate ? formatYMD(selectedDate) : null;
+
+  // Debug: selection and session keys
+  useEffect(() => {
+    try {
+      const sessionKeys = sessions.map((d) => formatYMD(d));
+      // eslint-disable-next-line no-console
+      console.log("[Attendance] selectedKey=", selectedKey, {
+        currentDateParam,
+        defaultDate,
+        sessionKeys,
+      });
+    } catch (e) {
+      // ignore
+    }
+  }, [selectedKey, currentDateParam, defaultDate, sessions]);
 
   useEffect(() => {
     if (!searchParams.get("date") && defaultDate) {
@@ -182,6 +214,21 @@ const ProgramAttendance = () => {
     program.defaultEndTime,
   ]);
 
+  // Debug: meta keys and flags
+  useEffect(() => {
+    try {
+      const keys = Object.keys(completeSessionMeta || {});
+      const sample = selectedKey ? completeSessionMeta[selectedKey] : undefined;
+      // eslint-disable-next-line no-console
+      console.log("[Attendance] sessionMeta keys=", keys, {
+        selectedKey,
+        selectedMeta: sample,
+      });
+    } catch (e) {
+      // ignore
+    }
+  }, [completeSessionMeta, selectedKey]);
+
   const dayMeta = completeSessionMeta[selectedKey] || {};
   const dayStartTime = dayMeta.startTime ?? program.defaultStartTime;
   const dayEndTime = dayMeta.endTime ?? program.defaultEndTime;
@@ -199,6 +246,14 @@ const ProgramAttendance = () => {
   const updateAttendance = async (traineeId, patch) => {
     if (!selectedKey || !programId || !patch?.status) return;
     try {
+      // eslint-disable-next-line no-console
+      console.log("[Attendance] recordTraineeAttendance payload", {
+        programId,
+        traineeId,
+        date: selectedKey,
+        status: patch.status,
+        remarks: patch.remarks || "",
+      });
       await recordAttendance({
         programId,
         traineeId,
@@ -206,6 +261,8 @@ const ProgramAttendance = () => {
         status: patch.status,
         remarks: patch.remarks || "",
       }).unwrap();
+      // eslint-disable-next-line no-console
+      console.log("[Attendance] recordTraineeAttendance success");
     } catch (e) {
       console.error("Failed to record attendance", e);
     }
@@ -288,6 +345,15 @@ const ProgramAttendance = () => {
     const value = e.target.value;
     if (programId && selectedKey) {
       try {
+        // eslint-disable-next-line no-console
+        console.log("[Attendance] updateSessionMeta startTime payload", {
+          programId,
+          date: selectedKey,
+          startTime: value,
+          endTime: dayEndTime,
+          status: dayStatus,
+          reason: dayMeta.reason,
+        });
         await updateSessionMetaMutation({
           programId,
           date: selectedKey,
@@ -296,6 +362,8 @@ const ProgramAttendance = () => {
           status: dayStatus,
           reason: dayMeta.reason,
         }).unwrap();
+        // eslint-disable-next-line no-console
+        console.log("[Attendance] updateSessionMeta startTime success");
       } catch (err) {
         console.error("Failed updating startTime", err);
       }
@@ -306,6 +374,15 @@ const ProgramAttendance = () => {
     const value = e.target.value;
     if (programId && selectedKey) {
       try {
+        // eslint-disable-next-line no-console
+        console.log("[Attendance] updateSessionMeta endTime payload", {
+          programId,
+          date: selectedKey,
+          startTime: dayStartTime,
+          endTime: value,
+          status: dayStatus,
+          reason: dayMeta.reason,
+        });
         await updateSessionMetaMutation({
           programId,
           date: selectedKey,
@@ -314,6 +391,8 @@ const ProgramAttendance = () => {
           status: dayStatus,
           reason: dayMeta.reason,
         }).unwrap();
+        // eslint-disable-next-line no-console
+        console.log("[Attendance] updateSessionMeta endTime success");
       } catch (err) {
         console.error("Failed updating endTime", err);
       }
@@ -324,6 +403,15 @@ const ProgramAttendance = () => {
     const value = e.target.value;
     if (programId && selectedKey) {
       try {
+        // eslint-disable-next-line no-console
+        console.log("[Attendance] updateSessionMeta status payload", {
+          programId,
+          date: selectedKey,
+          startTime: dayStartTime,
+          endTime: dayEndTime,
+          status: value,
+          reason: dayMeta.reason,
+        });
         await updateSessionMetaMutation({
           programId,
           date: selectedKey,
@@ -332,6 +420,8 @@ const ProgramAttendance = () => {
           status: value,
           reason: dayMeta.reason,
         }).unwrap();
+        // eslint-disable-next-line no-console
+        console.log("[Attendance] updateSessionMeta status success");
       } catch (err) {
         console.error("Failed updating status", err);
       }
@@ -352,10 +442,17 @@ const ProgramAttendance = () => {
   const handleReopenDay = async () => {
     if (!selectedKey || !programId) return;
     try {
+      // eslint-disable-next-line no-console
+      console.log("[Attendance] reopenCompletedDay payload", {
+        programId,
+        date: selectedKey,
+      });
       await reopenCompletedDay({
         programId,
         date: selectedKey,
       }).unwrap();
+      // eslint-disable-next-line no-console
+      console.log("[Attendance] reopenCompletedDay success");
     } catch (e) {
       console.error("Failed to reopen day", e);
     }
@@ -375,6 +472,12 @@ const ProgramAttendance = () => {
   const handleSaveEndDate = async () => {
     if (!newEndDate || !programId) return;
     try {
+      // eslint-disable-next-line no-console
+      console.log("[Attendance] updateProgramEndDate payload", {
+        programId,
+        endDate: newEndDate,
+        reason: deadlineReason,
+      });
       await updateProgramEndDate({
         programId,
         endDate: newEndDate,
@@ -382,6 +485,8 @@ const ProgramAttendance = () => {
       }).unwrap();
       setProgram((p) => ({ ...p, endDate: newEndDate }));
       setShowDeadlineModal(false);
+      // eslint-disable-next-line no-console
+      console.log("[Attendance] updateProgramEndDate success");
     } catch (e) {
       console.error("Failed to update end date", e);
     }
@@ -391,6 +496,12 @@ const ProgramAttendance = () => {
   const handleCompleteDay = async () => {
     if (!selectedKey || !programId || !completeReason.trim()) return;
     try {
+      // eslint-disable-next-line no-console
+      console.log("[Attendance] markDayCompleted payload", {
+        programId,
+        date: selectedKey,
+        reason: completeReason,
+      });
       await markDayCompleted({
         programId,
         date: selectedKey,
@@ -398,6 +509,8 @@ const ProgramAttendance = () => {
       }).unwrap();
       setShowCompleteModal(false);
       setCompleteReason("");
+      // eslint-disable-next-line no-console
+      console.log("[Attendance] markDayCompleted success");
     } catch (e) {
       console.error("Failed to mark day as completed", e);
     }
@@ -406,6 +519,15 @@ const ProgramAttendance = () => {
   const handleCancelDay = async (reason) => {
     if (programId && selectedKey) {
       try {
+        // eslint-disable-next-line no-console
+        console.log("[Attendance] cancel day payload", {
+          programId,
+          date: selectedKey,
+          startTime: dayStartTime,
+          endTime: dayEndTime,
+          status: "cancelled",
+          reason,
+        });
         await updateSessionMetaMutation({
           programId,
           date: selectedKey,
@@ -414,6 +536,8 @@ const ProgramAttendance = () => {
           status: "cancelled",
           reason,
         }).unwrap();
+        // eslint-disable-next-line no-console
+        console.log("[Attendance] cancel day success");
       } catch (err) {
         console.error("Failed cancelling day", err);
       }
@@ -423,6 +547,14 @@ const ProgramAttendance = () => {
   const handleUncancelDay = async () => {
     if (programId && selectedKey) {
       try {
+        // eslint-disable-next-line no-console
+        console.log("[Attendance] uncancel day payload", {
+          programId,
+          date: selectedKey,
+          startTime: dayStartTime,
+          endTime: dayEndTime,
+          status: "active",
+        });
         await updateSessionMetaMutation({
           programId,
           date: selectedKey,
@@ -431,6 +563,8 @@ const ProgramAttendance = () => {
           status: "active",
           reason: undefined,
         }).unwrap();
+        // eslint-disable-next-line no-console
+        console.log("[Attendance] uncancel day success");
       } catch (err) {
         console.error("Failed reactivating day", err);
       }

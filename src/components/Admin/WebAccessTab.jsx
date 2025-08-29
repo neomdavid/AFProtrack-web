@@ -1,9 +1,6 @@
 import { CaretDownIcon, PlusIcon } from "@phosphor-icons/react";
 import React, { useState, useMemo } from "react";
-import {
-  useGetActiveUsersQuery,
-  useGetInactiveUsersQuery,
-} from "../../features/api/adminEndpoints";
+import { useGetUsersQuery } from "../../features/api/adminEndpoints";
 import AccessCard from "./AccessCard";
 import CreateAccountModal from "./CreateAccountModal";
 
@@ -13,22 +10,16 @@ const WebAccessTab = () => {
   const [selectedBranch, setSelectedBranch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data: activeData } = useGetActiveUsersQuery({
+  // Use the new combined endpoint with all users
+  const { data: usersData } = useGetUsersQuery({
+    status: "all", // Get both active and inactive
     roles: ["admin", "training_staff"],
-  });
-  const { data: inactiveData } = useGetInactiveUsersQuery({
-    roles: ["admin", "training_staff"],
+    search: searchTerm,
+    unit: selectedUnit,
+    branchOfService: selectedBranch,
   });
 
-  // Combine active and inactive users
-  const activeUsers = activeData?.users || [];
-  const inactiveUsers = inactiveData?.users || [];
-
-  // Add status to each user
-  const allUsers = [
-    ...activeUsers.map((user) => ({ ...user, accountStatus: "active" })),
-    ...inactiveUsers.map((user) => ({ ...user, accountStatus: "inactive" })),
-  ];
+  const allUsers = usersData?.users || [];
 
   // Map backend -> AccessCard props
   const people = allUsers.map((u) => ({
@@ -54,22 +45,8 @@ const WebAccessTab = () => {
     ...new Set(people.map((person) => person.branchOfService).filter(Boolean)),
   ];
 
-  // Filter personnel based on search and filters
-  const filteredPersonnel = useMemo(() => {
-    return people.filter((person) => {
-      const matchesSearch =
-        searchTerm === "" ||
-        person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        person.afpId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        person.email.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesUnit = selectedUnit === "" || person.unit === selectedUnit;
-      const matchesBranch =
-        selectedBranch === "" || person.branchOfService === selectedBranch;
-
-      return matchesSearch && matchesUnit && matchesBranch;
-    });
-  }, [people, searchTerm, selectedUnit, selectedBranch]);
+  // Backend handles filtering, so we just use the people array directly
+  const filteredPersonnel = people;
 
   return (
     <div className="flex flex-col gap-4">

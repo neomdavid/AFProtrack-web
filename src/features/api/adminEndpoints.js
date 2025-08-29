@@ -64,7 +64,54 @@ export const adminApi = apiSlice.injectEndpoints({
       providesTags: [{ type: "User", id: "ALL_USERS" }],
     }),
 
-    // Active users by roles (supports multiple role params)
+    // Combined users endpoint with comprehensive filtering
+    getUsers: builder.query({
+      query: ({
+        status = "all",
+        roles = [],
+        search = "",
+        rank = "",
+        division = "",
+        unit = "",
+        branchOfService = "",
+        page = 1,
+        limit = 100,
+      } = {}) => {
+        const params = new URLSearchParams();
+
+        // Status filter
+        if (status !== "all") {
+          params.set("status", status);
+        }
+
+        // Role filters
+        roles.forEach((r) => params.append("role", r));
+
+        // Search filter
+        if (search) {
+          params.set("search", search);
+        }
+
+        // Additional filters
+        if (rank) params.set("rank", rank);
+        if (division) params.set("division", division);
+        if (unit) params.set("unit", unit);
+        if (branchOfService) params.set("branchOfService", branchOfService);
+
+        // Pagination
+        params.set("page", String(page));
+        params.set("limit", String(limit));
+
+        return {
+          url: `/users?${params.toString()}`,
+          method: "GET",
+        };
+      },
+      transformResponse: (response) => response?.data || response,
+      providesTags: [{ type: "User", id: "ALL_USERS" }],
+    }),
+
+    // Active users by roles (supports multiple role params) - kept for backward compatibility
     getActiveUsers: builder.query({
       query: ({ roles = [], page = 1, limit = 100 } = {}) => {
         const params = new URLSearchParams();
@@ -80,7 +127,7 @@ export const adminApi = apiSlice.injectEndpoints({
       providesTags: [{ type: "User", id: "ACTIVE_USERS" }],
     }),
 
-    // Inactive users by roles (supports multiple role params)
+    // Inactive users by roles (supports multiple role params) - kept for backward compatibility
     getInactiveUsers: builder.query({
       query: ({ roles = [], page = 1, limit = 100 } = {}) => {
         const params = new URLSearchParams();
@@ -273,6 +320,7 @@ export const adminApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, arg) => [
         { type: "Program", id: `${arg.programId}-meta-${arg.date}` },
+        { type: "Program", id: `${arg.programId}-all-meta` },
       ],
     }),
 
@@ -297,6 +345,7 @@ export const adminApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, arg) => [
         { type: "Program", id: `${arg.programId}-meta-${arg.date}` },
+        { type: "Program", id: `${arg.programId}-all-meta` },
       ],
     }),
 
@@ -308,6 +357,7 @@ export const adminApi = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (result, error, arg) => [
         { type: "Program", id: `${arg.programId}-meta-${arg.date}` },
+        { type: "Program", id: `${arg.programId}-all-meta` },
       ],
     }),
   }),
@@ -332,6 +382,7 @@ export const {
   useGetDayAttendanceByDateQuery,
   useRecordTraineeAttendanceMutation,
   useUpdateSessionMetaMutation,
+  useGetUsersQuery,
   useGetActiveUsersQuery,
   useGetActiveUserByIdQuery,
   useDeleteUserMutation,
