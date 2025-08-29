@@ -46,6 +46,7 @@ export const adminApi = apiSlice.injectEndpoints({
         unit = "",
         sortBy = "",
         sortOrder = "desc",
+        branchOfService = "",
       } = {}) => {
         const params = new URLSearchParams();
         if (page) params.set("page", String(page));
@@ -54,6 +55,7 @@ export const adminApi = apiSlice.injectEndpoints({
         if (role) params.set("role", role);
         if (accountStatus) params.set("accountStatus", accountStatus);
         if (unit) params.set("unit", unit);
+        if (branchOfService) params.set("branchOfService", branchOfService);
         if (sortBy) params.set("sortBy", sortBy);
         if (sortOrder) params.set("sortOrder", sortOrder);
         return {
@@ -113,11 +115,21 @@ export const adminApi = apiSlice.injectEndpoints({
 
     // Active users by roles (supports multiple role params) - kept for backward compatibility
     getActiveUsers: builder.query({
-      query: ({ roles = [], page = 1, limit = 100 } = {}) => {
+      query: ({
+        roles = [],
+        page = 1,
+        limit = 100,
+        search = "",
+        unit = "",
+        branchOfService = "",
+      } = {}) => {
         const params = new URLSearchParams();
         params.set("page", String(page));
         params.set("limit", String(limit));
         roles.forEach((r) => params.append("role", r));
+        if (search) params.set("search", search);
+        if (unit) params.set("unit", unit);
+        if (branchOfService) params.set("branchOfService", branchOfService);
         return {
           url: `/users/active?${params.toString()}`,
           method: "GET",
@@ -129,11 +141,21 @@ export const adminApi = apiSlice.injectEndpoints({
 
     // Inactive users by roles (supports multiple role params) - kept for backward compatibility
     getInactiveUsers: builder.query({
-      query: ({ roles = [], page = 1, limit = 100 } = {}) => {
+      query: ({
+        roles = [],
+        page = 1,
+        limit = 100,
+        search = "",
+        unit = "",
+        branchOfService = "",
+      } = {}) => {
         const params = new URLSearchParams();
         params.set("page", String(page));
         params.set("limit", String(limit));
         roles.forEach((r) => params.append("role", r));
+        if (search) params.set("search", search);
+        if (unit) params.set("unit", unit);
+        if (branchOfService) params.set("branchOfService", branchOfService);
         return {
           url: `/users/inactive?${params.toString()}`,
           method: "GET",
@@ -147,6 +169,16 @@ export const adminApi = apiSlice.injectEndpoints({
     getActiveUserById: builder.query({
       query: (userId) => ({
         url: `/users/active?id=${userId}`,
+        method: "GET",
+      }),
+      transformResponse: (response) => response?.data || response,
+      providesTags: (result, error, arg) => [{ type: "User", id: arg }],
+    }),
+
+    // Inactive user details by id
+    getInactiveUserById: builder.query({
+      query: (userId) => ({
+        url: `/users/inactive?id=${userId}`,
         method: "GET",
       }),
       transformResponse: (response) => response?.data || response,
@@ -384,13 +416,14 @@ export const {
   useUpdateSessionMetaMutation,
   useGetUsersQuery,
   useGetActiveUsersQuery,
+  useGetInactiveUsersQuery,
   useGetActiveUserByIdQuery,
+  useGetInactiveUserByIdQuery,
   useDeleteUserMutation,
   useUpdateUserStatusMutation,
   useUpdateProgramEndDateMutation,
   useMarkDayCompletedMutation,
   useReopenCompletedDayMutation,
   useGetProgramSessionMetaQuery,
-  useGetInactiveUsersQuery,
   useVerifyPasswordMutation,
 } = adminApi;

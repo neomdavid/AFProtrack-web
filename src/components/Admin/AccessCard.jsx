@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { TrashIcon } from "@phosphor-icons/react";
 import {
   useGetActiveUserByIdQuery,
+  useGetInactiveUserByIdQuery,
   useDeleteUserMutation,
   useUpdateUserStatusMutation,
 } from "../../features/api/adminEndpoints";
@@ -10,7 +11,19 @@ import AccountActionConfirmModal from "./AccountActionConfirmModal";
 
 const AccessCard = ({ person }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isActive, setIsActive] = useState(person.accountStatus === "active");
+
+  // Displayed active state: must be backend-active (isActive) AND accountStatus==='active'
+  const computeDisplayedActive = (p) => {
+    const accStatus = (p?.accountStatus || "active").toLowerCase();
+    const flag =
+      typeof p?.isActive === "boolean" ? p.isActive : accStatus === "active";
+    return flag && accStatus === "active";
+  };
+
+  const [displayActive, setDisplayActive] = useState(
+    computeDisplayedActive(person)
+  );
+
   const [deleteUser] = useDeleteUserMutation();
   const [updateUserStatus] = useUpdateUserStatusMutation();
   const { user: currentUser } = useAuth();
@@ -27,10 +40,10 @@ const AccessCard = ({ person }) => {
   const isOwnAccount =
     currentUser?.id === person.id || currentUser?._id === person.id;
 
-  // Update isActive when person.accountStatus changes
+  // Update displayed active when person changes
   React.useEffect(() => {
-    setIsActive(person.accountStatus === "active");
-  }, [person.accountStatus]);
+    setDisplayActive(computeDisplayedActive(person));
+  }, [person.isActive, person.accountStatus]);
 
   const handleCardClick = () => {
     setIsModalOpen(true);
@@ -81,27 +94,35 @@ const AccessCard = ({ person }) => {
     showConfirmModal("archive");
   };
 
-  const { data: userDetails } = useGetActiveUserByIdQuery(person.id, {
-    skip: !isModalOpen,
+  // Fetch details depending on active/inactive
+  const { data: activeDetails } = useGetActiveUserByIdQuery(person.id, {
+    skip: !isModalOpen || !displayActive,
+  });
+  const { data: inactiveDetails } = useGetInactiveUserByIdQuery(person.id, {
+    skip: !isModalOpen || displayActive,
   });
 
+  const detailsSource = displayActive ? activeDetails : inactiveDetails;
+
   // Normalize response: API may return the user object directly or as data.users[]
-  const rawUsers = Array.isArray(userDetails?.users) ? userDetails.users : null;
+  const rawUsers = Array.isArray(detailsSource?.users)
+    ? detailsSource.users
+    : null;
   const details = rawUsers
     ? rawUsers.find((u) => (u.id || u._id) === person.id) || {}
-    : userDetails || {};
+    : detailsSource || {};
   const fullName = details.fullName || person.name;
   const avatar = details.avatar || person.avatar;
   const afpId = details.serviceId || person.afpId;
   const email = details.email || person.email;
   const unit = details.unit || person.unit;
   const branch = details.branchOfService || person.branchOfService;
-  const division = details.division || "";
-  const rank = details.rank || "";
-  const address = details.address || "";
-  const contactNumber = details.contactNumber || "";
-  const dateOfBirth = details.dateOfBirth || "";
-  const role = details.role || "";
+  const division = details.division || person.division || "";
+  const rank = details.rank || person.rank || "";
+  const address = details.address || person.address || "";
+  const contactNumber = details.contactNumber || person.contactNumber || "";
+  const dateOfBirth = details.dateOfBirth || person.dateOfBirth || "";
+  const role = details.role || person.role || "";
 
   return (
     <>
@@ -128,12 +149,12 @@ const AccessCard = ({ person }) => {
               ) : (
                 <div
                   className={`text-xs px-2 py-1 rounded-full font-medium flex-shrink-0 ${
-                    person.accountStatus === "active"
+                    displayActive
                       ? "bg-green-100 text-green-800"
                       : "bg-gray-200 text-gray-800"
                   }`}
                 >
-                  {person.accountStatus === "active" ? "Active" : "Inactive"}
+                  {displayActive ? "Active" : "Inactive"}
                 </div>
               )}
             </div>
@@ -210,7 +231,7 @@ const AccessCard = ({ person }) => {
                   <input
                     type="checkbox"
                     className="sr-only peer"
-                    checked={isActive}
+                    checked={displayActive}
                     onChange={async (e) => {
                       if (isOwnAccount) return; // Prevent own account manipulation
                       const next = e.target.checked;
@@ -221,7 +242,7 @@ const AccessCard = ({ person }) => {
                   />
                   <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   <span className="ml-3 text-sm font-medium text-black">
-                    {isActive ? "Active" : "Inactive"}
+                    {displayActive ? "Active" : "Inactive"}
                   </span>
                 </label>
               </div>

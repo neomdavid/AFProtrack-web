@@ -1,6 +1,9 @@
 import { CaretDownIcon, PlusIcon } from "@phosphor-icons/react";
 import React, { useState, useMemo } from "react";
-import { useGetUsersQuery } from "../../features/api/adminEndpoints";
+import {
+  useGetActiveUsersQuery,
+  useGetInactiveUsersQuery,
+} from "../../features/api/adminEndpoints";
 import AccessCard from "./AccessCard";
 import CreateAccountModal from "./CreateAccountModal";
 
@@ -10,18 +13,36 @@ const WebAccessTab = () => {
   const [selectedBranch, setSelectedBranch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Use the new combined endpoint with all users
-  const { data: usersData } = useGetUsersQuery({
-    status: "all", // Get both active and inactive
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+
+  // Fetch active and inactive (accountStatus implicitly active; routes return by isActive)
+  const common = {
+    page: 1,
+    limit: 1000, // aggregate, then paginate client-side
     roles: ["admin", "training_staff"],
     search: searchTerm,
     unit: selectedUnit,
     branchOfService: selectedBranch,
+  };
+  const { data: activeData } = useGetActiveUsersQuery(common);
+  const { data: inactiveData } = useGetInactiveUsersQuery(common);
+
+  const extractUsers = (resp) => resp?.data?.users || resp?.users || [];
+  const activeUsers = extractUsers(activeData);
+  const inactiveUsers = extractUsers(inactiveData);
+
+  // Merge + dedupe by id
+  const byId = new Map();
+  [...activeUsers, ...inactiveUsers].forEach((u) => {
+    const id = u?.id || u?._id;
+    if (!id) return;
+    const prior = byId.get(id) || {};
+    byId.set(id, { ...prior, ...u });
   });
+  const allUsers = Array.from(byId.values());
 
-  const allUsers = usersData?.users || [];
-
-  // Map backend -> AccessCard props
+  // Map -> people
   const people = allUsers.map((u) => ({
     id: u.id || u._id,
     avatar:
@@ -34,19 +55,45 @@ const WebAccessTab = () => {
     email: u.email || "",
     unit: u.unit || "",
     branchOfService: u.branchOfService || "",
-    accountStatus: u.accountStatus || "active",
+    accountStatus: (u.accountStatus || "active").toLowerCase(),
+    isActive: typeof u.isActive === "boolean" ? u.isActive : true,
+    role: (u.role || "").toLowerCase(),
   }));
 
-  // Get unique units and branches for filter options
+  // Filter roles just in case
+  const filteredByRole = people.filter((p) =>
+    ["admin", "training_staff"].includes((p.role || "").toLowerCase())
+  );
+
+  // Unique units/branches from filtered set
   const units = [
-    ...new Set(people.map((person) => person.unit).filter(Boolean)),
+    ...new Set(filteredByRole.map((person) => person.unit).filter(Boolean)),
   ];
   const branches = [
-    ...new Set(people.map((person) => person.branchOfService).filter(Boolean)),
+    ...new Set(
+      filteredByRole.map((person) => person.branchOfService).filter(Boolean)
+    ),
   ];
 
-  // Backend handles filtering, so we just use the people array directly
-  const filteredPersonnel = people;
+  // Search/unit/branch already applied in queries; keep client safety net
+  const postFiltered = filteredByRole.filter((p) => {
+    const matchesSearch =
+      !searchTerm ||
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.afpId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesUnit = !selectedUnit || p.unit === selectedUnit;
+    const matchesBranch =
+      !selectedBranch || p.branchOfService === selectedBranch;
+    return matchesSearch && matchesUnit && matchesBranch;
+  });
+
+  // Client-side pagination for unified list
+  const totalItems = postFiltered.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / limit));
+  const currentPage = Math.min(page, totalPages);
+  const startIdx = (currentPage - 1) * limit;
+  const pageItems = postFiltered.slice(startIdx, startIdx + limit);
 
   return (
     <div className="flex flex-col gap-4">
@@ -114,10 +161,32 @@ const WebAccessTab = () => {
       </section>
 
       {/* Personnel Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {filteredPersonnel.map((person) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl-grid-cols-4 gap-4">
+        {pageItems.map((person) => (
           <AccessCard key={person.id} person={person} />
         ))}
+      </div>
+
+      <div className="flex items-center justify-between mt-2">
+        <div className="text-sm text-gray-600">
+          Page {currentPage} of {totalPages}
+        </div>
+        <div className="join">
+          <button
+            className="btn btn-sm join-item"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage <= 1}
+          >
+            Prev
+          </button>
+          <button
+            className="btn btn-sm join-item"
+            onClick={() => setPage((p) => (p < totalPages ? p + 1 : p))}
+            disabled={currentPage >= totalPages}
+          >
+            Next
+          </button>
+        </div>
       </div>
 
       {/* Create Account Modal */}

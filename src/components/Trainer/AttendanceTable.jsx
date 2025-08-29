@@ -20,7 +20,7 @@ const AttendanceTable = ({
   const canEditAttendance = !isAdmin || canRecordAttendance;
 
   const getStatusBadge = (status) => {
-    if (!status) return null;
+    if (!status || status === "not_recorded") return null;
 
     if (status === "present") {
       return <span className="badge badge-sm badge-success">Present</span>;

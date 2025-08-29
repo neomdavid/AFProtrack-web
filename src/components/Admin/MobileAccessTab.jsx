@@ -1,6 +1,9 @@
 import { CaretDownIcon, PlusIcon } from "@phosphor-icons/react";
 import React, { useState, useMemo } from "react";
-import { useGetActiveUsersQuery, useGetInactiveUsersQuery } from "../../features/api/adminEndpoints";
+import {
+  useGetActiveUsersQuery,
+  useGetInactiveUsersQuery,
+} from "../../features/api/adminEndpoints";
 import AccessCard from "./AccessCard";
 import CreateAccountModal from "./CreateAccountModal";
 
@@ -10,18 +13,34 @@ const MobileAccessTab = () => {
   const [selectedBranch, setSelectedBranch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data: activeData } = useGetActiveUsersQuery({ roles: ["trainee"] });
-  const { data: inactiveData } = useGetInactiveUsersQuery({ roles: ["trainee"] });
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
 
-  // Combine active and inactive users
-  const activeUsers = activeData?.users || [];
-  const inactiveUsers = inactiveData?.users || [];
-  
-  // Add status to each user
-  const allUsers = [
-    ...activeUsers.map(user => ({ ...user, accountStatus: 'active' })),
-    ...inactiveUsers.map(user => ({ ...user, accountStatus: 'inactive' }))
-  ];
+  // Fetch active + inactive trainees and merge
+  const common = {
+    page: 1,
+    limit: 1000,
+    roles: ["trainee"],
+    search: searchTerm,
+    unit: selectedUnit,
+    branchOfService: selectedBranch,
+  };
+  const { data: activeData } = useGetActiveUsersQuery(common);
+  const { data: inactiveData } = useGetInactiveUsersQuery(common);
+
+  const extractUsers = (resp) => resp?.data?.users || resp?.users || [];
+  const activeUsers = extractUsers(activeData);
+  const inactiveUsers = extractUsers(inactiveData);
+
+  // Merge + dedupe by id
+  const byId = new Map();
+  [...activeUsers, ...inactiveUsers].forEach((u) => {
+    const id = u?.id || u?._id;
+    if (!id) return;
+    const prior = byId.get(id) || {};
+    byId.set(id, { ...prior, ...u });
+  });
+  const allUsers = Array.from(byId.values());
 
   // Map backend -> AccessCard props
   const people = allUsers.map((u) => ({
@@ -36,7 +55,8 @@ const MobileAccessTab = () => {
     email: u.email || "",
     unit: u.unit || "",
     branchOfService: u.branchOfService || "",
-    accountStatus: u.accountStatus || "active",
+    accountStatus: (u.accountStatus || "active").toLowerCase(),
+    isActive: typeof u.isActive === "boolean" ? u.isActive : true,
   }));
 
   // Get unique units and branches for filter options
@@ -47,7 +67,7 @@ const MobileAccessTab = () => {
     ...new Set(people.map((person) => person.branchOfService).filter(Boolean)),
   ];
 
-  // Filter personnel based on search and filters
+  // Filter personnel based on search and filters (safety net)
   const filteredPersonnel = useMemo(() => {
     return people.filter((person) => {
       const matchesSearch =
@@ -63,6 +83,13 @@ const MobileAccessTab = () => {
       return matchesSearch && matchesUnit && matchesBranch;
     });
   }, [people, searchTerm, selectedUnit, selectedBranch]);
+
+  // Client-side pagination
+  const totalItems = filteredPersonnel.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / limit));
+  const currentPage = Math.min(page, totalPages);
+  const startIdx = (currentPage - 1) * limit;
+  const pageItems = filteredPersonnel.slice(startIdx, startIdx + limit);
 
   return (
     <div className="flex flex-col gap-4">
@@ -129,11 +156,32 @@ const MobileAccessTab = () => {
         </div>
       </section>
 
-      {/* Personnel Cards */}
+      {/* Trainees unified list (Active/Inactive badge derives from isActive/accountStatus) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {filteredPersonnel.map((person) => (
+        {pageItems.map((person) => (
           <AccessCard key={person.id} person={person} />
         ))}
+      </div>
+      <div className="flex items-center justify-between mt-2">
+        <div className="text-sm text-gray-600">
+          Page {currentPage} of {totalPages}
+        </div>
+        <div className="join">
+          <button
+            className="btn btn-sm join-item"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage <= 1}
+          >
+            Prev
+          </button>
+          <button
+            className="btn btn-sm join-item"
+            onClick={() => setPage((p) => (p < totalPages ? p + 1 : p))}
+            disabled={currentPage >= totalPages}
+          >
+            Next
+          </button>
+        </div>
       </div>
 
       {/* Create Account Modal
