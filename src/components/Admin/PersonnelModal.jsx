@@ -48,10 +48,10 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
         </form>
 
         <div className="flex flex-col sm:flex-row text-center sm:text-left items-center gap-3 sm:gap-6 mb-5 sm:mb-6">
-          {person.profilePhoto?.cloudinaryUrl ? (
+          {trainee?.profilePhoto?.cloudinaryUrl ? (
             <img
-              src={person.profilePhoto.cloudinaryUrl}
-              alt={person.name}
+              src={trainee.profilePhoto.cloudinaryUrl}
+              alt={trainee.name}
               className="w-20 h-20 rounded-full object-cover flex-shrink-0"
             />
           ) : (
@@ -61,16 +61,16 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
           )}
           <div className="flex-1">
             <h3 className="font-bold text-xl sm:text-2xl text-black mb-0.5">
-              {person.name}
+              {trainee?.name || person.name}
             </h3>
-            <p className="text-gray-600 mb-1">{person.rank}</p>
-            <p className="text-sm text-gray-500 mb-1">{person.serviceId}</p>
-            <p className="text-sm text-gray-500">{person.email}</p>
-            {person.unit && (
-              <p className="text-sm text-gray-500">{person.unit}</p>
+            <p className="text-gray-600 mb-1">{trainee?.rank || person.rank}</p>
+            <p className="text-sm text-gray-500 mb-1">{trainee?.serviceId || person.serviceId}</p>
+            <p className="text-sm text-gray-500">{trainee?.email || person.email}</p>
+            {trainee?.unit && (
+              <p className="text-sm text-gray-500">{trainee.unit}</p>
             )}
-            {person.branchOfService && (
-              <p className="text-sm text-gray-500">{person.branchOfService}</p>
+            {trainee?.branchOfService && (
+              <p className="text-sm text-gray-500">{trainee.branchOfService}</p>
             )}
           </div>
         </div>
@@ -116,77 +116,37 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
               <table className="table table-zebra text-sm sm:text-md w-full text-black">
                 <thead>
                   <tr>
-                    <th>Date</th>
                     <th>Program</th>
                     <th>Instructor</th>
-                    <th>Grade</th>
-                    <th>Attendance</th>
-                    <th>Progress</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th>Enrollment Date</th>
                   </tr>
                 </thead>
                 <tbody>
                   {records.map((record) => (
-                    <tr key={record.id}>
-                      <td className="font-medium">
-                        {formatDateShort(record.date)}
-                      </td>
-                      <td>{record.program}</td>
+                    <tr key={record._id}>
+                      <td className="font-medium">{record.programName}</td>
                       <td>{record.instructor}</td>
+                      <td>{formatDateShort(record.startDate)}</td>
+                      <td>{formatDateShort(record.endDate)}</td>
                       <td>
                         <span
                           className={`badge badge-sm whitespace-nowrap ${
-                            record.grade?.startsWith("A")
-                              ? "bg-success"
-                              : record.grade?.startsWith("B")
-                              ? "badge-warning"
-                              : "badge-error"
+                            record.status === "enrolled"
+                              ? "badge-primary"
+                              : record.status === "completed"
+                              ? "badge-success"
+                              : record.status === "dropped"
+                              ? "badge-error"
+                              : "badge-warning"
                           }`}
                         >
-                          {record.grade || "N/A"}
+                          {record.status}
                         </span>
                       </td>
-                      <td>
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 bg-base-300 rounded-full h-2">
-                            <div
-                              className={`h-2 rounded-full ${
-                                (record.attendance || 0) >= 95
-                                  ? "bg-success-content"
-                                  : (record.attendance || 0) >= 85
-                                  ? "bg-primary"
-                                  : (record.attendance || 0) >= 75
-                                  ? "bg-warning"
-                                  : "bg-error"
-                              }`}
-                              style={{ width: `${record.attendance || 0}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-sm font-medium">
-                            {record.attendance || 0}%
-                          </span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 bg-base-300 rounded-full h-2">
-                            <div
-                              className={`h-2 rounded-full ${
-                                (record.progress || 0) >= 90
-                                  ? "bg-success-content"
-                                  : (record.progress || 0) >= 80
-                                  ? "bg-primary"
-                                  : (record.progress || 0) >= 70
-                                  ? "bg-warning"
-                                  : "bg-error"
-                              }`}
-                              style={{ width: `${record.progress || 0}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-sm font-medium">
-                            {record.progress || 0}%
-                          </span>
-                        </div>
-                      </td>
+                      <td>{formatDateShort(record.enrolledAt)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -209,15 +169,15 @@ const PersonnelModal = ({ person, isOpen, onClose }) => {
             </div>
             <div className="text-center">
               <p className="text-xl sm:text-2xl font-bold text-primary">
-                {statistics.attendanceRate || 0}%
+                {statistics.averageGrade || 0}
               </p>
-              <p className="text-sm text-gray-600">Attendance Rate</p>
+              <p className="text-sm text-gray-600">Average Grade</p>
             </div>
             <div className="text-center">
               <p className="text-xl sm:text-2xl font-bold text-success-content">
-                {statistics.averageProgress || 0}%
+                {statistics.attendanceRate || 0}%
               </p>
-              <p className="text-sm text-gray-600">Average Progress</p>
+              <p className="text-sm text-gray-600">Attendance Rate</p>
             </div>
           </div>
         </div>
